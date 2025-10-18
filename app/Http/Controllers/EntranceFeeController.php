@@ -28,7 +28,8 @@ class EntranceFeeController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('type', 'like', "%{$search}%");
+                    ->orWhere('rental_type', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -36,9 +37,9 @@ class EntranceFeeController extends Controller
         if ($request->filled('filters')) {
             $filters = $request->filters;
 
-            if (isset($filters['type']) && !empty($filters['type'])) {
-                $typeFilters = is_array($filters['type']) ? $filters['type'] : [$filters['type']];
-                $query->whereIn('type', $typeFilters);
+            if (isset($filters['rental_type']) && !empty($filters['rental_type'])) {
+                $rentalTypeFilters = is_array($filters['rental_type']) ? $filters['rental_type'] : [$filters['rental_type']];
+                $query->whereIn('rental_type', $rentalTypeFilters);
             }
 
             if (isset($filters['is_active']) && !empty($filters['is_active'])) {
@@ -64,7 +65,7 @@ class EntranceFeeController extends Controller
 
         $allowedSortFields = [
             'name',
-            'type',
+            'rental_type',
             'price',
             'min_age',
             'max_age',
@@ -96,13 +97,14 @@ class EntranceFeeController extends Controller
             return [
                 'id' => $fee->id,
                 'name' => $fee->name,
-                'type' => $fee->type,
-                'type_label' => ucfirst(str_replace('_', ' ', $fee->type)),
+                'rental_type' => $fee->rental_type,
+                'rental_type_label' => ucfirst(str_replace('_', ' ', $fee->rental_type)),
                 'price' => $fee->price,
                 'formatted_price' => number_format($fee->price, 2),
                 'min_age' => $fee->min_age,
                 'max_age' => $fee->max_age,
                 'age_range' => $ageRange,
+                'description' => $fee->description,
                 'is_active' => $fee->is_active,
                 'status_label' => $fee->is_active ? 'Active' : 'Inactive',
                 'created_at' => $fee->created_at->format('M d, Y'),
@@ -121,15 +123,12 @@ class EntranceFeeController extends Controller
 
     private function getFilterOptions()
     {
-        $types = EntranceFee::select('type')->distinct()->get()->map(function ($fee) {
-            return [
-                'value' => $fee->type,
-                'label' => ucfirst(str_replace('_', ' ', $fee->type)),
-            ];
-        })->toArray();
-
+        // Simpler approach with fixed options instead of dynamic query
         return [
-            'type' => $types,
+            'rental_type' => [
+                ['value' => 'day_tour', 'label' => 'Day Tour'],
+                ['value' => 'overnight', 'label' => 'Overnight'],
+            ],
             'is_active' => [
                 ['value' => 'active', 'label' => 'Active'],
                 ['value' => 'inactive', 'label' => 'Inactive'],

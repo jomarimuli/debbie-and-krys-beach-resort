@@ -36,7 +36,6 @@ export default function ShowRoomModal({
                     </DialogHeader>
 
                     <div className="overflow-y-auto flex-1 space-y-6 pr-2">
-                        {/* Room Images */}
                         {room.images && room.images.length > 0 && (
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
@@ -61,7 +60,6 @@ export default function ShowRoomModal({
                             </div>
                         )}
 
-                        {/* Basic Information */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Room Name</label>
@@ -72,16 +70,15 @@ export default function ShowRoomModal({
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Room Type</label>
+                                <label className="text-sm font-medium text-gray-700">Room Size</label>
                                 <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                                    <Badge variant={room.type === 'big_room' ? 'default' : 'secondary'}>
-                                        {room.type_label}
+                                    <Badge variant={room.size === 'big' ? 'default' : 'secondary'}>
+                                        {room.size_label}
                                     </Badge>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Description */}
                         {room.description && (
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Description</label>
@@ -91,7 +88,6 @@ export default function ShowRoomModal({
                             </div>
                         )}
 
-                        {/* Capacity & Pricing */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Maximum Pax</label>
@@ -102,15 +98,37 @@ export default function ShowRoomModal({
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Base Price</label>
+                                <label className="text-sm font-medium text-gray-700">Day Tour Price</label>
                                 <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                                     <DollarSign className="w-4 h-4 text-gray-500" />
-                                    <span className="font-medium">₱{room.formatted_base_price}</span>
+                                    <span className="font-medium">₱{room.formatted_day_tour_price}</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Entrance Fees */}
+                        {room.overnight_price && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">Overnight Price</label>
+                                    <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                                        <DollarSign className="w-4 h-4 text-gray-500" />
+                                        <span className="font-medium">₱{room.formatted_overnight_price}</span>
+                                    </div>
+                                </div>
+
+                                {room.free_cottage_size && (
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700">Free Cottage</label>
+                                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                                            <Badge variant="outline">
+                                                {room.free_cottage_size} cottage
+                                            </Badge>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Free Entrance Count</label>
@@ -121,15 +139,14 @@ export default function ShowRoomModal({
                             </div>
 
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">Excess Entrance Fee</label>
+                                <label className="text-sm font-medium text-gray-700">Excess Pax Fee</label>
                                 <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                                     <DollarSign className="w-4 h-4 text-gray-500" />
-                                    <span>₱{room.formatted_excess_fee}</span>
+                                    <span>₱{room.formatted_excess_pax_fee}</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Quantity & Features */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Available Quantity</label>
@@ -157,7 +174,6 @@ export default function ShowRoomModal({
                             </div>
                         </div>
 
-                        {/* Status */}
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">Status</label>
                             <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
@@ -167,7 +183,6 @@ export default function ShowRoomModal({
                             </div>
                         </div>
 
-                        {/* Timestamps */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Created At</label>
@@ -195,7 +210,6 @@ export default function ShowRoomModal({
                 </DialogContent>
             </Dialog>
 
-            {/* Image Preview Modal */}
             {selectedImage && (
                 <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
                     <DialogContent className="max-w-4xl">

@@ -1,4 +1,3 @@
-// resources/js/types/cottage.ts
 import type { PaginatedData, FilterOptions, DataTableState } from './datatable';
 
 export interface Cottage {

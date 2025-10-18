@@ -1,48 +1,45 @@
-// resources/js/types/room.ts
 import type { PaginatedData, FilterOptions, DataTableState } from './datatable';
 
 export interface Room {
     id: number;
     name: string;
-    type: string;
+    size: string;
     description: string | null;
     max_pax: number;
-    base_price: number;
+    day_tour_price: number;
+    overnight_price: number | null;
     quantity: number;
     has_ac: boolean;
     free_entrance_count: number;
-    excess_entrance_fee: number;
-    inclusions: RoomInclusions | null;
+    free_cottage_size: string | null;
+    excess_pax_fee: number;
     images: string[] | null;
     is_active: boolean;
     created_at: string;
     updated_at: string;
 }
 
-export interface RoomInclusions {
-    free_cottage?: string;
-    free_entrance?: number;
-}
-
 export interface RoomData extends Room {
     available_quantity: number;
-    type_label: string;
+    size_label: string;
     status_label: string;
-    formatted_base_price: string;
-    formatted_excess_fee: string;
+    formatted_day_tour_price: string;
+    formatted_overnight_price: string;
+    formatted_excess_pax_fee: string;
 }
 
 export interface RoomFormData {
     name: string;
-    type: string;
+    size: string;
     description: string | null;
     max_pax: number;
-    base_price: number;
+    day_tour_price: number;
+    overnight_price: number | null;
     quantity: number;
     has_ac: boolean;
     free_entrance_count: number;
-    excess_entrance_fee: number;
-    inclusions: RoomInclusions | null;
+    free_cottage_size: string | null;
+    excess_pax_fee: number;
     images: string[] | null;
     is_active: boolean;
 }

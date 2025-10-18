@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('cottages', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('size'); // big, small
+            $table->string('name'); // "Big Cottage", "Small Cottage"
+            $table->enum('size', ['big', 'small']);
             $table->text('description')->nullable();
-            $table->integer('max_pax');
-            $table->decimal('day_tour_price', 10, 2);
-            $table->decimal('overnight_price', 10, 2);
+            $table->integer('max_pax'); // 15 for big, 8 for small
+            $table->decimal('day_tour_price', 10, 2); // ₱800 big, ₱400 small
+            $table->decimal('overnight_price', 10, 2); // ₱1,000 big, ₱600 small
             $table->integer('quantity');
             $table->json('images')->nullable();
             $table->boolean('is_active')->default(true);

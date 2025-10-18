@@ -29,4 +29,9 @@ class Cottage extends Model
         'images' => 'array',
         'is_active' => 'boolean',
     ];
+
+    public function bookingItems()
+    {
+        return $this->morphMany(BookingItem::class, 'bookable');
+    }
 }

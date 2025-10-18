@@ -39,9 +39,9 @@ class RoomController extends Controller
         if ($request->filled('filters')) {
             $filters = $request->filters;
 
-            if (isset($filters['type']) && !empty($filters['type'])) {
-                $typeFilters = is_array($filters['type']) ? $filters['type'] : [$filters['type']];
-                $query->whereIn('type', $typeFilters);
+            if (isset($filters['size']) && !empty($filters['size'])) {
+                $sizeFilters = is_array($filters['size']) ? $filters['size'] : [$filters['size']];
+                $query->whereIn('size', $sizeFilters);
             }
 
             if (isset($filters['is_active']) && !empty($filters['is_active'])) {
@@ -67,9 +67,10 @@ class RoomController extends Controller
 
         $allowedSortFields = [
             'name',
-            'type',
+            'size',
             'max_pax',
-            'base_price',
+            'day_tour_price',
+            'overnight_price',
             'quantity',
             'created_at',
             'updated_at',
@@ -90,18 +91,20 @@ class RoomController extends Controller
             return [
                 'id' => $room->id,
                 'name' => $room->name,
-                'type' => $room->type,
-                'type_label' => ucfirst(str_replace('_', ' ', $room->type)),
+                'size' => $room->size,
+                'size_label' => ucfirst($room->size),
                 'description' => $room->description,
                 'max_pax' => $room->max_pax,
-                'base_price' => $room->base_price,
-                'formatted_base_price' => number_format($room->base_price, 2),
+                'day_tour_price' => $room->day_tour_price,
+                'formatted_day_tour_price' => number_format($room->day_tour_price, 2),
+                'overnight_price' => $room->overnight_price,
+                'formatted_overnight_price' => $room->overnight_price ? number_format($room->overnight_price, 2) : null,
                 'quantity' => $room->quantity,
                 'has_ac' => $room->has_ac,
                 'free_entrance_count' => $room->free_entrance_count,
-                'excess_entrance_fee' => $room->excess_entrance_fee,
-                'formatted_excess_fee' => number_format($room->excess_entrance_fee, 2),
-                'inclusions' => $room->inclusions,
+                'free_cottage_size' => $room->free_cottage_size,
+                'excess_pax_fee' => $room->excess_pax_fee,
+                'formatted_excess_pax_fee' => number_format($room->excess_pax_fee, 2),
                 'images' => $room->images,
                 'is_active' => $room->is_active,
                 'status_label' => $room->is_active ? 'Active' : 'Inactive',
@@ -122,9 +125,9 @@ class RoomController extends Controller
     private function getFilterOptions()
     {
         return [
-            'type' => [
-                ['value' => 'big_room', 'label' => 'Big Room'],
-                ['value' => 'small_room', 'label' => 'Small Room'],
+            'size' => [
+                ['value' => 'big', 'label' => 'Big'],
+                ['value' => 'small', 'label' => 'Small'],
             ],
             'is_active' => [
                 ['value' => 'active', 'label' => 'Active'],

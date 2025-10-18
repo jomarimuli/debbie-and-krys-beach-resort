@@ -4,6 +4,7 @@ import type { RoleIndexData } from './role';
 import type { RoomIndexData } from './room';
 import type { CottageIndexData } from './cottage';
 import type { EntranceFeeIndexData } from './entrance-fee';
+import type { BookingIndexData } from './booking';
 
 export * from './datatable';
 export * from './user';
@@ -11,6 +12,7 @@ export * from './role';
 export * from './room';
 export * from './cottage';
 export * from './entrance-fee';
+export * from './booking';
 
 // Common types
 export interface BreadcrumbItem {
@@ -98,3 +100,4 @@ export type RoleIndexProps = PageProps & RoleIndexData;
 export type RoomIndexProps = PageProps & RoomIndexData;
 export type CottageIndexProps = PageProps & CottageIndexData;
 export type EntranceFeeIndexProps = PageProps & EntranceFeeIndexData;
+export type BookingIndexProps = PageProps & BookingIndexData;

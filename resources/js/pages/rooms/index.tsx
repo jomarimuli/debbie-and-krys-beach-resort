@@ -50,8 +50,8 @@ export default function Index({ rooms, filterOptions, queryParams, ...props }: R
             width: '200px',
         },
         {
-            key: 'type_display',
-            label: 'Type',
+            key: 'size_display',
+            label: 'Size',
             sortable: true,
             searchable: false,
             filterable: true,
@@ -66,8 +66,8 @@ export default function Index({ rooms, filterOptions, queryParams, ...props }: R
             width: '100px',
         },
         {
-            key: 'base_price_display',
-            label: 'Base Price',
+            key: 'day_tour_price_display',
+            label: 'Day Tour Price',
             sortable: true,
             searchable: false,
             filterable: false,
@@ -103,13 +103,13 @@ export default function Index({ rooms, filterOptions, queryParams, ...props }: R
         ...rooms,
         data: rooms.data.map(room => ({
             ...room,
-            type_display: (
-                <Badge variant={room.type === 'big_room' ? 'default' : 'secondary'}>
-                    {room.type_label}
+            size_display: (
+                <Badge variant={room.size === 'big' ? 'default' : 'secondary'}>
+                    {room.size_label}
                 </Badge>
             ),
-            base_price_display: (
-                <span className="font-medium">₱{room.formatted_base_price}</span>
+            day_tour_price_display: (
+                <span className="font-medium">₱{room.formatted_day_tour_price}</span>
             ),
             status_display: (
                 <Badge variant={room.is_active ? 'default' : 'secondary'}>
@@ -128,9 +128,9 @@ export default function Index({ rooms, filterOptions, queryParams, ...props }: R
 
     const rawRoomsData = rooms.data.map(room => ({
         name: room.name,
-        type: room.type_label,
+        size: room.size_label,
         max_pax: room.max_pax,
-        base_price: room.formatted_base_price,
+        day_tour_price: room.formatted_day_tour_price,
         quantity: room.quantity,
         status: room.status_label,
         created_at: room.created_at,

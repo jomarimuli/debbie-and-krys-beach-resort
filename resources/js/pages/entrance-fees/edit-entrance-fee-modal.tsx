@@ -10,7 +10,15 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from '@/components/ui/select';
 import { type EntranceFeeData, type EntranceFeeFormData } from '@/types';
 import entranceFees from '@/routes/entrance-fees';
 import { LoaderCircle } from 'lucide-react';
@@ -28,10 +36,11 @@ export default function EditEntranceFeeModal({
 }: EditEntranceFeeModalProps) {
     const { data, setData, put, processing, errors, reset } = useForm<EntranceFeeFormData>({
         name: '',
-        type: '',
+        rental_type: 'day_tour',
         price: 0,
         min_age: null,
         max_age: null,
+        description: null,
         is_active: true,
     });
 
@@ -39,10 +48,11 @@ export default function EditEntranceFeeModal({
         if (open && entranceFee) {
             setData({
                 name: entranceFee.name,
-                type: entranceFee.type,
+                rental_type: entranceFee.rental_type,
                 price: entranceFee.price,
                 min_age: entranceFee.min_age,
                 max_age: entranceFee.max_age,
+                description: entranceFee.description,
                 is_active: entranceFee.is_active,
             });
         }
@@ -58,7 +68,7 @@ export default function EditEntranceFeeModal({
         });
     };
 
-    const canSubmit = data.name && data.type && data.price >= 0 && !processing;
+    const canSubmit = data.name && data.rental_type && data.price >= 0 && !processing;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -74,7 +84,7 @@ export default function EditEntranceFeeModal({
                             id="name"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
-                            placeholder="e.g., Day Tour - Adult"
+                            placeholder="e.g., Adult (Day Tour)"
                             className={errors.name ? 'border-red-500' : ''}
                         />
                         {errors.name && (
@@ -83,16 +93,33 @@ export default function EditEntranceFeeModal({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="type">Fee Type</Label>
-                        <Input
-                            id="type"
-                            value={data.type}
-                            onChange={(e) => setData('type', e.target.value)}
-                            placeholder="e.g., day_tour_adult, overnight"
-                            className={errors.type ? 'border-red-500' : ''}
+                        <Label htmlFor="rental_type">Rental Type</Label>
+                        <Select value={data.rental_type} onValueChange={(value) => setData('rental_type', value)}>
+                            <SelectTrigger className={errors.rental_type ? 'border-red-500' : ''}>
+                                <SelectValue placeholder="Select rental type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="day_tour">Day Tour</SelectItem>
+                                <SelectItem value="overnight">Overnight</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {errors.rental_type && (
+                            <p className="text-sm text-red-500">{errors.rental_type}</p>
+                        )}
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                            id="description"
+                            value={data.description || ''}
+                            onChange={(e) => setData('description', e.target.value || null)}
+                            placeholder="Optional description"
+                            rows={2}
+                            className={errors.description ? 'border-red-500' : ''}
                         />
-                        {errors.type && (
-                            <p className="text-sm text-red-500">{errors.type}</p>
+                        {errors.description && (
+                            <p className="text-sm text-red-500">{errors.description}</p>
                         )}
                     </div>
 

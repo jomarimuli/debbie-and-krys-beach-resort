@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, Tag, Users, Calendar } from 'lucide-react';
+import { DollarSign, Tag, Users, Calendar, FileText } from 'lucide-react';
 import { EntranceFeeData } from '@/types';
 
 interface ShowEntranceFeeModalProps {
@@ -32,7 +32,6 @@ export default function ShowEntranceFeeModal({
                 </DialogHeader>
 
                 <div className="overflow-y-auto flex-1 space-y-6 pr-2">
-                    {/* Basic Information */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">Fee Name</label>
@@ -43,16 +42,25 @@ export default function ShowEntranceFeeModal({
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Fee Type</label>
+                            <label className="text-sm font-medium text-gray-700">Rental Type</label>
                             <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                                 <Badge variant="outline">
-                                    {entranceFee.type_label}
+                                    {entranceFee.rental_type_label}
                                 </Badge>
                             </div>
                         </div>
                     </div>
 
-                    {/* Price */}
+                    {entranceFee.description && (
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">Description</label>
+                            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                                <FileText className="w-4 h-4 text-gray-500" />
+                                <p className="text-sm text-gray-700">{entranceFee.description}</p>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">Price</label>
                         <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
@@ -61,7 +69,6 @@ export default function ShowEntranceFeeModal({
                         </div>
                     </div>
 
-                    {/* Age Range */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">Age Range</label>
                         <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
@@ -70,7 +77,6 @@ export default function ShowEntranceFeeModal({
                         </div>
                     </div>
 
-                    {/* Age Details */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">Minimum Age</label>
@@ -87,7 +93,6 @@ export default function ShowEntranceFeeModal({
                         </div>
                     </div>
 
-                    {/* Status */}
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-gray-700">Status</label>
                         <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
@@ -97,7 +102,6 @@ export default function ShowEntranceFeeModal({
                         </div>
                     </div>
 
-                    {/* Timestamps */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">Created At</label>

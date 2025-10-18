@@ -112,7 +112,7 @@ export default function Welcome() {
 
                             <div className="flex flex-col sm:flex-row gap-4 pt-4">
                                 <Link
-                                    href='#'
+                                    href='/guest-bookings/create'
                                     className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white bg-[#E55A2B] border border-[#E55A2B] rounded-md hover:bg-[#D14D24] hover:border-[#D14D24] active:bg-[#B8421F] transition-all duration-200 shadow-md hover:shadow-lg"
                                 >
                                     Book Now

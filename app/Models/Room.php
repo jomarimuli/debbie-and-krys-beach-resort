@@ -11,28 +11,34 @@ class Room extends Model
 
     protected $fillable = [
         'name',
-        'type',
+        'size',
         'description',
         'max_pax',
-        'base_price',
+        'day_tour_price',
+        'overnight_price',
         'quantity',
         'has_ac',
         'free_entrance_count',
-        'excess_entrance_fee',
-        'inclusions',
+        'free_cottage_size',
+        'excess_pax_fee',
         'images',
         'is_active',
     ];
 
     protected $casts = [
         'max_pax' => 'integer',
-        'base_price' => 'decimal:2',
+        'day_tour_price' => 'decimal:2',
+        'overnight_price' => 'decimal:2',
         'quantity' => 'integer',
         'has_ac' => 'boolean',
         'free_entrance_count' => 'integer',
-        'excess_entrance_fee' => 'decimal:2',
-        'inclusions' => 'array',
+        'excess_pax_fee' => 'decimal:2',
         'images' => 'array',
         'is_active' => 'boolean',
     ];
+
+    public function bookingItems()
+    {
+        return $this->morphMany(BookingItem::class, 'bookable');
+    }
 }

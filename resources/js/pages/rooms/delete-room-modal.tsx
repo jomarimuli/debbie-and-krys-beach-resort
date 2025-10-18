@@ -52,9 +52,9 @@ export default function DeleteRoomModal({
 
                 <div className="space-y-2 text-sm text-gray-600">
                     <p><strong>Name:</strong> {room?.name}</p>
-                    <p><strong>Type:</strong> {room?.type_label}</p>
+                    <p><strong>Size:</strong> {room?.size_label}</p>
                     <p><strong>Max Pax:</strong> {room?.max_pax}</p>
-                    <p><strong>Base Price:</strong> ₱{room?.formatted_base_price}</p>
+                    <p><strong>Day Tour Price:</strong> ₱{room?.formatted_day_tour_price}</p>
                     <p><strong>Quantity:</strong> {room?.quantity}</p>
                     <p><strong>Status:</strong> {room?.status_label}</p>
                 </div>

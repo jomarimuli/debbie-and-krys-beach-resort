@@ -50,8 +50,8 @@ export default function Index({ entranceFees, filterOptions, queryParams, ...pro
             width: '250px',
         },
         {
-            key: 'type_display',
-            label: 'Type',
+            key: 'rental_type_display',
+            label: 'Rental Type',
             sortable: true,
             searchable: false,
             filterable: true,
@@ -95,9 +95,9 @@ export default function Index({ entranceFees, filterOptions, queryParams, ...pro
         ...entranceFees,
         data: entranceFees.data.map(fee => ({
             ...fee,
-            type_display: (
+            rental_type_display: (
                 <Badge variant="outline">
-                    {fee.type_label}
+                    {fee.rental_type_label}
                 </Badge>
             ),
             price_display: (
@@ -120,7 +120,7 @@ export default function Index({ entranceFees, filterOptions, queryParams, ...pro
 
     const rawEntranceFeesData = entranceFees.data.map(fee => ({
         name: fee.name,
-        type: fee.type_label,
+        rental_type: fee.rental_type_label,
         price: fee.formatted_price,
         age_range: fee.age_range,
         status: fee.status_label,

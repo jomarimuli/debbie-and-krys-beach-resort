@@ -47,6 +47,12 @@ class PermissionRoleUserSeeder extends Seeder
 
             // entrance fee
             'entrance fee access',
+
+            // booking
+            'booking access',
+
+            // walk in
+            'walk in access'
         ];
 
         foreach ($permissions as $permission) {
@@ -86,7 +92,10 @@ class PermissionRoleUserSeeder extends Seeder
             'guard_name' => 'web'
         ]);
 
-        $staffRole->givePermissionTo('staff access');
+        $staffRole->givePermissionTo([
+            'staff access',
+            'booking access'
+        ]);
 
         // Create staff user
         $staffUser = User::firstOrCreate(
@@ -107,7 +116,10 @@ class PermissionRoleUserSeeder extends Seeder
             'guard_name' => 'web'
         ]);
 
-        $customerRole->givePermissionTo('customer access');
+        $customerRole->givePermissionTo([
+            'customer access',
+            'booking access'
+        ]);
 
         // Create customer user
         $customerUser = User::firstOrCreate(

@@ -13,16 +13,20 @@ return new class extends Migration
     {
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('type'); // big_room, small_room
+            $table->string('name'); // "Big Room", "Small Room"
+            $table->enum('size', ['big', 'small']);
             $table->text('description')->nullable();
             $table->integer('max_pax');
-            $table->decimal('base_price', 10, 2);
+            $table->decimal('day_tour_price', 10, 2);
+            $table->decimal('overnight_price', 10, 2)->nullable(); // for future if you add overnight rooms
             $table->integer('quantity');
-            $table->boolean('has_ac')->default(false);
-            $table->integer('free_entrance_count')->default(0);
-            $table->decimal('excess_entrance_fee', 10, 2)->default(0);
-            $table->json('inclusions')->nullable(); // free cottage info
+            $table->boolean('has_ac')->default(true); // your rooms are all AC
+
+            // Inclusions
+            $table->integer('free_entrance_count'); // 6 for big, 4 for small
+            $table->string('free_cottage_size')->nullable(); // 'small' - both get 1 small cottage
+            $table->decimal('excess_pax_fee', 10, 2); // ₱150 for both
+
             $table->json('images')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

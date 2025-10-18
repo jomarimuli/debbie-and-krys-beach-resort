@@ -11,10 +11,11 @@ class EntranceFee extends Model
 
     protected $fillable = [
         'name',
-        'type',
+        'rental_type',
         'price',
         'min_age',
         'max_age',
+        'description',
         'is_active',
     ];
 

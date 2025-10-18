@@ -52,7 +52,7 @@ export default function DeleteEntranceFeeModal({
 
                 <div className="space-y-2 text-sm text-gray-600">
                     <p><strong>Name:</strong> {entranceFee?.name}</p>
-                    <p><strong>Type:</strong> {entranceFee?.type_label}</p>
+                    <p><strong>Rental Type:</strong> {entranceFee?.rental_type_label}</p>
                     <p><strong>Price:</strong> ₱{entranceFee?.formatted_price}</p>
                     <p><strong>Age Range:</strong> {entranceFee?.age_range}</p>
                     <p><strong>Status:</strong> {entranceFee?.status_label}</p>

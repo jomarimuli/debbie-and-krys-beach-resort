@@ -15,10 +15,11 @@ class StoreEntranceFeeRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'type' => ['required', 'string', 'max:255'],
+            'rental_type' => ['required', 'string', 'in:day_tour,overnight'],
             'price' => ['required', 'numeric', 'min:0'],
             'min_age' => ['nullable', 'integer', 'min:0'],
             'max_age' => ['nullable', 'integer', 'min:0', 'gt:min_age'],
+            'description' => ['nullable', 'string'],
             'is_active' => ['required', 'boolean'],
         ];
     }

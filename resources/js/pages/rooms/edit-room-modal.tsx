@@ -39,15 +39,16 @@ export default function EditRoomModal({
 
     const { data, setData, post, processing, errors, reset } = useForm<any>({
         name: '',
-        type: 'big_room',
+        size: 'big',
         description: null,
         max_pax: 1,
-        base_price: 0,
+        day_tour_price: 0,
+        overnight_price: null,
         quantity: 1,
         has_ac: false,
         free_entrance_count: 0,
-        excess_entrance_fee: 0,
-        inclusions: null,
+        free_cottage_size: null,
+        excess_pax_fee: 0,
         images: null,
         existing_images: [],
         is_active: true,
@@ -57,20 +58,22 @@ export default function EditRoomModal({
     useEffect(() => {
         if (open && room) {
             const roomExistingImages = room.images || [];
+
             setExistingImages(roomExistingImages);
             setNewImagePreviews([]);
 
             setData({
                 name: room.name,
-                type: room.type,
+                size: room.size,
                 description: room.description,
                 max_pax: room.max_pax,
-                base_price: room.base_price,
+                day_tour_price: room.day_tour_price,
+                overnight_price: room.overnight_price,
                 quantity: room.quantity,
                 has_ac: room.has_ac,
                 free_entrance_count: room.free_entrance_count,
-                excess_entrance_fee: room.excess_entrance_fee,
-                inclusions: room.inclusions,
+                free_cottage_size: room.free_cottage_size,
+                excess_pax_fee: room.excess_pax_fee,
                 images: null,
                 existing_images: roomExistingImages,
                 is_active: room.is_active,
@@ -83,7 +86,6 @@ export default function EditRoomModal({
         const files = Array.from(e.target.files || []);
         setData('images', files as any);
 
-        // Create preview URLs for new images
         const previews = files.map(file => URL.createObjectURL(file));
         setNewImagePreviews(previews);
     };
@@ -118,7 +120,7 @@ export default function EditRoomModal({
         onOpenChange(false);
     };
 
-    const canSubmit = data.name && data.max_pax > 0 && data.base_price >= 0 && !processing;
+    const canSubmit = data.name && data.max_pax > 0 && data.day_tour_price >= 0 && !processing;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -143,18 +145,18 @@ export default function EditRoomModal({
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="type">Room Type</Label>
-                        <Select value={data.type} onValueChange={(value) => setData('type', value)}>
-                            <SelectTrigger className={errors.type ? 'border-red-500' : ''}>
-                                <SelectValue placeholder="Select type" />
+                        <Label htmlFor="size">Room Size</Label>
+                        <Select value={data.size} onValueChange={(value) => setData('size', value)}>
+                            <SelectTrigger className={errors.size ? 'border-red-500' : ''}>
+                                <SelectValue placeholder="Select size" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="big_room">Big Room</SelectItem>
-                                <SelectItem value="small_room">Small Room</SelectItem>
+                                <SelectItem value="big">Big</SelectItem>
+                                <SelectItem value="small">Small</SelectItem>
                             </SelectContent>
                         </Select>
-                        {errors.type && (
-                            <p className="text-sm text-red-500">{errors.type}</p>
+                        {errors.size && (
+                            <p className="text-sm text-red-500">{errors.size}</p>
                         )}
                     </div>
 
@@ -205,20 +207,39 @@ export default function EditRoomModal({
                         </div>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="base_price">Base Price (₱)</Label>
-                        <Input
-                            id="base_price"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={data.base_price}
-                            onChange={(e) => setData('base_price', parseFloat(e.target.value))}
-                            className={errors.base_price ? 'border-red-500' : ''}
-                        />
-                        {errors.base_price && (
-                            <p className="text-sm text-red-500">{errors.base_price}</p>
-                        )}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="day_tour_price">Day Tour Price (₱)</Label>
+                            <Input
+                                id="day_tour_price"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={data.day_tour_price}
+                                onChange={(e) => setData('day_tour_price', parseFloat(e.target.value))}
+                                className={errors.day_tour_price ? 'border-red-500' : ''}
+                            />
+                            {errors.day_tour_price && (
+                                <p className="text-sm text-red-500">{errors.day_tour_price}</p>
+                            )}
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="overnight_price">Overnight Price (₱)</Label>
+                            <Input
+                                id="overnight_price"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={data.overnight_price || ''}
+                                onChange={(e) => setData('overnight_price', e.target.value ? parseFloat(e.target.value) : null)}
+                                placeholder="Optional"
+                                className={errors.overnight_price ? 'border-red-500' : ''}
+                            />
+                            {errors.overnight_price && (
+                                <p className="text-sm text-red-500">{errors.overnight_price}</p>
+                            )}
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -238,23 +259,41 @@ export default function EditRoomModal({
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="excess_entrance_fee">Excess Entrance Fee (₱)</Label>
+                            <Label htmlFor="excess_pax_fee">Excess Pax Fee (₱)</Label>
                             <Input
-                                id="excess_entrance_fee"
+                                id="excess_pax_fee"
                                 type="number"
                                 min="0"
                                 step="0.01"
-                                value={data.excess_entrance_fee}
-                                onChange={(e) => setData('excess_entrance_fee', parseFloat(e.target.value))}
-                                className={errors.excess_entrance_fee ? 'border-red-500' : ''}
+                                value={data.excess_pax_fee}
+                                onChange={(e) => setData('excess_pax_fee', parseFloat(e.target.value))}
+                                className={errors.excess_pax_fee ? 'border-red-500' : ''}
                             />
-                            {errors.excess_entrance_fee && (
-                                <p className="text-sm text-red-500">{errors.excess_entrance_fee}</p>
+                            {errors.excess_pax_fee && (
+                                <p className="text-sm text-red-500">{errors.excess_pax_fee}</p>
                             )}
                         </div>
                     </div>
 
-                    {/* Existing Images */}
+                    <div className="grid gap-2">
+                        <Label htmlFor="free_cottage_size">Free Cottage Size</Label>
+                        <Select
+                            value={data.free_cottage_size || ''}
+                            onValueChange={(value) => setData('free_cottage_size', value || null)}
+                        >
+                            <SelectTrigger className={errors.free_cottage_size ? 'border-red-500' : ''}>
+                                <SelectValue placeholder="Select cottage size (optional)" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="big">Big</SelectItem>
+                                <SelectItem value="small">Small</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {errors.free_cottage_size && (
+                            <p className="text-sm text-red-500">{errors.free_cottage_size}</p>
+                        )}
+                    </div>
+
                     {existingImages.length > 0 && (
                         <div className="grid gap-2">
                             <Label>Current Images</Label>
@@ -279,7 +318,6 @@ export default function EditRoomModal({
                         </div>
                     )}
 
-                    {/* New Image Upload */}
                     <div className="grid gap-2">
                         <Label htmlFor="images">Add New Images</Label>
                         <div className="flex items-center gap-2">
@@ -305,7 +343,6 @@ export default function EditRoomModal({
                             <p className="text-sm text-red-600">{errors.images}</p>
                         )}
 
-                        {/* New Image Previews */}
                         {newImagePreviews.length > 0 && (
                             <div className="grid grid-cols-3 gap-2 mt-2">
                                 {newImagePreviews.map((preview, index) => (

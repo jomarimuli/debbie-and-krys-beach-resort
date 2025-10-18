@@ -33,15 +33,16 @@ export default function CreateRoomModal({ open, onOpenChange }: CreateRoomModalP
 
     const { data, setData, post, processing, errors, reset } = useForm<RoomFormData>({
         name: '',
-        type: 'big_room',
+        size: 'big',
         description: null,
         max_pax: 1,
-        base_price: 0,
+        day_tour_price: 0,
+        overnight_price: null,
         quantity: 1,
         has_ac: false,
         free_entrance_count: 0,
-        excess_entrance_fee: 0,
-        inclusions: null,
+        free_cottage_size: null,
+        excess_pax_fee: 0,
         images: null,
         is_active: true,
     });
@@ -50,7 +51,6 @@ export default function CreateRoomModal({ open, onOpenChange }: CreateRoomModalP
         const files = Array.from(e.target.files || []);
         setData('images', files as any);
 
-        // Create preview URLs
         const previews = files.map(file => URL.createObjectURL(file));
         setImagePreviews(previews);
     };
@@ -81,7 +81,7 @@ export default function CreateRoomModal({ open, onOpenChange }: CreateRoomModalP
         onOpenChange(false);
     };
 
-    const canSubmit = data.name && data.max_pax > 0 && data.base_price >= 0 && !processing;
+    const canSubmit = data.name && data.max_pax > 0 && data.day_tour_price >= 0 && !processing;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -106,18 +106,18 @@ export default function CreateRoomModal({ open, onOpenChange }: CreateRoomModalP
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="type">Room Type</Label>
-                        <Select value={data.type} onValueChange={(value) => setData('type', value)}>
-                            <SelectTrigger className={errors.type ? 'border-red-500' : ''}>
-                                <SelectValue placeholder="Select type" />
+                        <Label htmlFor="size">Room Size</Label>
+                        <Select value={data.size} onValueChange={(value) => setData('size', value)}>
+                            <SelectTrigger className={errors.size ? 'border-red-500' : ''}>
+                                <SelectValue placeholder="Select size" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="big_room">Big Room</SelectItem>
-                                <SelectItem value="small_room">Small Room</SelectItem>
+                                <SelectItem value="big">Big</SelectItem>
+                                <SelectItem value="small">Small</SelectItem>
                             </SelectContent>
                         </Select>
-                        {errors.type && (
-                            <p className="text-sm text-red-600">{errors.type}</p>
+                        {errors.size && (
+                            <p className="text-sm text-red-600">{errors.size}</p>
                         )}
                     </div>
 
@@ -168,20 +168,39 @@ export default function CreateRoomModal({ open, onOpenChange }: CreateRoomModalP
                         </div>
                     </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="base_price">Base Price (₱)</Label>
-                        <Input
-                            id="base_price"
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={data.base_price}
-                            onChange={(e) => setData('base_price', parseFloat(e.target.value))}
-                            className={errors.base_price ? 'border-red-500' : ''}
-                        />
-                        {errors.base_price && (
-                            <p className="text-sm text-red-600">{errors.base_price}</p>
-                        )}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="day_tour_price">Day Tour Price (₱)</Label>
+                            <Input
+                                id="day_tour_price"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={data.day_tour_price}
+                                onChange={(e) => setData('day_tour_price', parseFloat(e.target.value))}
+                                className={errors.day_tour_price ? 'border-red-500' : ''}
+                            />
+                            {errors.day_tour_price && (
+                                <p className="text-sm text-red-600">{errors.day_tour_price}</p>
+                            )}
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="overnight_price">Overnight Price (₱)</Label>
+                            <Input
+                                id="overnight_price"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={data.overnight_price || ''}
+                                onChange={(e) => setData('overnight_price', e.target.value ? parseFloat(e.target.value) : null)}
+                                placeholder="Optional"
+                                className={errors.overnight_price ? 'border-red-500' : ''}
+                            />
+                            {errors.overnight_price && (
+                                <p className="text-sm text-red-600">{errors.overnight_price}</p>
+                            )}
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -201,23 +220,41 @@ export default function CreateRoomModal({ open, onOpenChange }: CreateRoomModalP
                         </div>
 
                         <div className="grid gap-2">
-                            <Label htmlFor="excess_entrance_fee">Excess Entrance Fee (₱)</Label>
+                            <Label htmlFor="excess_pax_fee">Excess Pax Fee (₱)</Label>
                             <Input
-                                id="excess_entrance_fee"
+                                id="excess_pax_fee"
                                 type="number"
                                 min="0"
                                 step="0.01"
-                                value={data.excess_entrance_fee}
-                                onChange={(e) => setData('excess_entrance_fee', parseFloat(e.target.value))}
-                                className={errors.excess_entrance_fee ? 'border-red-500' : ''}
+                                value={data.excess_pax_fee}
+                                onChange={(e) => setData('excess_pax_fee', parseFloat(e.target.value))}
+                                className={errors.excess_pax_fee ? 'border-red-500' : ''}
                             />
-                            {errors.excess_entrance_fee && (
-                                <p className="text-sm text-red-600">{errors.excess_entrance_fee}</p>
+                            {errors.excess_pax_fee && (
+                                <p className="text-sm text-red-600">{errors.excess_pax_fee}</p>
                             )}
                         </div>
                     </div>
 
-                    {/* Image Upload */}
+                    <div className="grid gap-2">
+                        <Label htmlFor="free_cottage_size">Free Cottage Size</Label>
+                        <Select
+                            value={data.free_cottage_size || ''}
+                            onValueChange={(value) => setData('free_cottage_size', value || null)}
+                        >
+                            <SelectTrigger className={errors.free_cottage_size ? 'border-red-500' : ''}>
+                                <SelectValue placeholder="Select cottage size (optional)" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="big">Big</SelectItem>
+                                <SelectItem value="small">Small</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {errors.free_cottage_size && (
+                            <p className="text-sm text-red-600">{errors.free_cottage_size}</p>
+                        )}
+                    </div>
+
                     <div className="grid gap-2">
                         <Label htmlFor="images">Room Images</Label>
                         <div className="flex items-center gap-2">
@@ -243,7 +280,6 @@ export default function CreateRoomModal({ open, onOpenChange }: CreateRoomModalP
                             <p className="text-sm text-red-600">{errors.images}</p>
                         )}
 
-                        {/* Image Previews */}
                         {imagePreviews.length > 0 && (
                             <div className="grid grid-cols-3 gap-2 mt-2">
                                 {imagePreviews.map((preview, index) => (
