@@ -151,6 +151,7 @@ class UserController extends Controller
                 'id' => $user->id,
                 'name' => ucwords($user->name),
                 'email' => $user->email,
+                'phone' => $user->phone,
                 'status' => $user->status,
                 'status_label' => ucfirst($user->status),
                 'email_verified_at' => $user->email_verified_at,
@@ -232,6 +233,7 @@ class UserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'phone' => ['nullable', 'string', 'max:20'],
             'password' => $this->getPasswordValidationRules(),
             'password_confirmation' => ['required', 'same:password'],
             'status' => ['required', 'string', 'in:active,inactive'],
@@ -244,6 +246,7 @@ class UserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
             'password' => Hash::make($request->password),
             'status' => $request->status,
             'email_verified_at' => $request->email_verified_at ? now() : null,
@@ -274,6 +277,7 @@ class UserController extends Controller
         $validationRules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'phone' => ['nullable', 'string', 'max:20'],
             'password' => $passwordRules,
             'status' => ['required', 'string', 'in:active,inactive'],
             'email_verified_at' => ['nullable', 'boolean'],
@@ -292,6 +296,7 @@ class UserController extends Controller
         $updateData = [
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
             'status' => $request->status,
             'email_verified_at' => $request->email_verified_at ? now() : null,
             'password_changed_at' => $request->password_changed_at ? now() : null,

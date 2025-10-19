@@ -4,6 +4,7 @@ export interface User {
     id: number;
     name: string;
     email: string;
+    phone?: string;
     avatar?: string;
     email_verified_at: string | null;
     password_changed_at: string | null;
@@ -32,6 +33,7 @@ export interface UserData extends User {
 export interface UserFormData {
     name: string;
     email: string;
+    phone?: string;
     password: string;
     password_confirmation: string;
     status: string;

@@ -41,6 +41,7 @@ export default function EditUserModal({
     const { data, setData, put, processing, errors, reset } = useForm<UserFormData>({
         name: '',
         email: '',
+        phone: '',
         password: '',
         password_confirmation: '',
         status: 'active',
@@ -54,6 +55,7 @@ export default function EditUserModal({
             setData({
                 name: user.name,
                 email: user.email,
+                phone: user.phone || '',
                 password: '',
                 password_confirmation: '',
                 status: user.status,
@@ -159,6 +161,22 @@ export default function EditUserModal({
                         />
                         {errors.email && (
                             <p className="text-sm text-red-500">{errors.email}</p>
+                        )}
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                            id="phone"
+                            type="tel"
+                            value={data.phone}
+                            onChange={(e) => setData('phone', e.target.value)}
+                            placeholder="Enter phone number"
+                            className={errors.phone ? 'border-red-500' : ''}
+                            disabled={user?.id === 1}
+                        />
+                        {errors.phone && (
+                            <p className="text-sm text-red-500">{errors.phone}</p>
                         )}
                     </div>
 

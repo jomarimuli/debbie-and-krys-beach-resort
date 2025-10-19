@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, ShieldCheck, User, Mail, Calendar, Shield as ShieldIcon, Lock } from 'lucide-react';
+import { Shield, ShieldCheck, User, Mail, Calendar, Shield as ShieldIcon, Lock, Phone } from 'lucide-react';
 import { UserData } from '@/types';
 
 interface ShowUserModalProps {
@@ -30,23 +30,29 @@ export default function ShowUserModal({
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="overflow-y-auto flex-1 space-y-6 pr-2">
+                <div className="overflow-y-auto flex-1 space-y-4 pr-2">
                     {/* Basic Information */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Full Name</label>
-                            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                                <User className="w-4 h-4 text-gray-500" />
-                                <span>{user.name}</span>
-                            </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Full Name</label>
+                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                            <User className="w-4 h-4 text-gray-500" />
+                            <span>{user.name}</span>
                         </div>
+                    </div>
 
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">Email Address</label>
-                            <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
-                                <Mail className="w-4 h-4 text-gray-500" />
-                                <span className="break-all text-sm">{user.email}</span>
-                            </div>
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Email Address</label>
+                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                            <Mail className="w-4 h-4 text-gray-500" />
+                            <span className="break-all text-sm">{user.email}</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Phone Number</label>
+                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                            <Phone className="w-4 h-4 text-gray-500" />
+                            <span className="text-sm">{user.phone || 'Not provided'}</span>
                         </div>
                     </div>
 

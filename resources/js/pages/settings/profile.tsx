@@ -83,6 +83,22 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                     )}
                                 </div>
 
+                                <div className="grid gap-2">
+                                    <Label htmlFor="phone">Phone number</Label>
+
+                                    <Input
+                                        id="phone"
+                                        type="tel"
+                                        className="mt-1 block w-full"
+                                        defaultValue={auth.user?.phone}
+                                        name="phone"
+                                        autoComplete="tel"
+                                        placeholder="+1 (555) 000-0000"
+                                    />
+
+                                    <InputError className="mt-2" message={errors.phone} />
+                                </div>
+
                                 {mustVerifyEmail && auth.user?.email_verified_at === null && !isAdmin && (
                                     <div>
                                         <p className="-mt-4 text-sm text-muted-foreground">
