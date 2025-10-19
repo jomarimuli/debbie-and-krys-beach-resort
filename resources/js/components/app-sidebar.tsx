@@ -25,24 +25,6 @@ const allNavItems: NavItem[] = [
         isExternal: true,
     },
     {
-        title: 'Rooms',
-        href: '/rooms',
-        icon: Hotel,
-        requiredPermissions: ['room access', 'global access'],
-    },
-    {
-        title: 'Cottages',
-        href: '/cottages',
-        icon: Home,
-        requiredPermissions: ['cottage access', 'global access'],
-    },
-    {
-        title: 'Entrance Fees',
-        href: '/entrance-fees',
-        icon: DollarSign,
-        requiredPermissions: ['entrance fee access', 'global access'],
-    },
-    {
         title: 'Users',
         href: '/users',
         icon: Users,
