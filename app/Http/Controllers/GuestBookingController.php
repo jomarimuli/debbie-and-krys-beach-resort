@@ -30,6 +30,7 @@ class GuestBookingController extends Controller
 
         try {
             $booking = Booking::create([
+                'booking_number' => 'BK-' . strtoupper(uniqid()),
                 'booking_type' => 'guest',
                 'user_id' => null,
                 'guest_name' => $request->guest_name,
@@ -46,12 +47,30 @@ class GuestBookingController extends Controller
             ]);
 
             $subtotal = 0;
+            $totalExcessFees = 0;
+
             foreach ($request->items as $item) {
                 $bookableType = $item['item_type'] === 'room' ? Room::class : Cottage::class;
-                $bookable = $bookableType::find($item['bookable_id']);
+                $bookable = $bookableType::findOrFail($item['bookable_id']);
 
-                $totalPrice = $item['unit_price'] * $item['quantity'];
-                $subtotal += $totalPrice;
+                $itemTotal = $item['unit_price'] * $item['quantity'];
+
+                // Calculate excess pax fee (ROOMS ONLY)
+                $extraPax = 0;
+                $excessFee = 0;
+                $freeEntranceCount = 0;
+                $freeCottageSize = null;
+
+                if ($item['item_type'] === 'room') {
+                    $freeEntranceCount = $bookable->free_entrance_count;
+                    $freeCottageSize = $bookable->free_cottage_size;
+
+                    if ($item['pax'] > $freeEntranceCount) {
+                        $extraPax = $item['pax'] - $freeEntranceCount;
+                        $excessFee = $extraPax * $bookable->excess_pax_fee;
+                        $totalExcessFees += $excessFee;
+                    }
+                }
 
                 BookingItem::create([
                     'booking_id' => $booking->id,
@@ -63,14 +82,20 @@ class GuestBookingController extends Controller
                     'quantity' => $item['quantity'],
                     'pax' => $item['pax'],
                     'unit_price' => $item['unit_price'],
-                    'total_price' => $totalPrice,
+                    'total_price' => $itemTotal,
+                    'free_entrance_count' => $freeEntranceCount,
+                    'free_cottage_size' => $freeCottageSize,
+                    'extra_pax' => $extraPax,
+                    'excess_pax_fee' => $excessFee,
                 ]);
+
+                $subtotal += $itemTotal;
             }
 
             $entranceFeeTotal = 0;
             foreach ($request->entrance_fees as $fee) {
                 $freeCount = $fee['free_count'] ?? 0;
-                $paidCount = $fee['pax_count'] - $freeCount;
+                $paidCount = max(0, $fee['pax_count'] - $freeCount);
                 $total = $paidCount * $fee['rate'];
                 $entranceFeeTotal += $total;
 
@@ -89,22 +114,23 @@ class GuestBookingController extends Controller
                 ]);
             }
 
+            $grandTotal = $subtotal + $totalExcessFees + $entranceFeeTotal;
+
             $booking->update([
                 'subtotal' => $subtotal,
                 'entrance_fee_total' => $entranceFeeTotal,
-                'total_amount' => $subtotal + $entranceFeeTotal,
-                'balance' => $subtotal + $entranceFeeTotal,
+                'total_amount' => $grandTotal,
+                'balance' => $grandTotal,
             ]);
 
             DB::commit();
 
-            return Inertia::render('guest-bookings/confirmation', [
-                'booking' => $booking->load(['bookingItems.bookable', 'entranceFeeDetails']),
-            ])->with('success', 'Booking submitted successfully! We will contact you shortly.');
+            return redirect()->route('guest-bookings.show', $booking->booking_number)
+                ->with('success', 'Booking submitted successfully! We will contact you shortly.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Failed to create booking: ' . $e->getMessage());
+            return back()->withInput()->with('error', 'Failed to create booking: ' . $e->getMessage());
         }
     }
 

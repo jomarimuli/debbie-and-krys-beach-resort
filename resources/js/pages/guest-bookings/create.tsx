@@ -9,8 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { toast } from 'sonner';
+import ImageViewer from '@/components/image-viewer';
 import type { Room, Cottage, BookingItemFormData, EntranceFeeFormData } from '@/types';
 
 interface GuestBookingCreateProps {
@@ -42,7 +42,11 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
             free_count: 0
         },
     ]);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+    // Image viewer state
+    const [imageViewerOpen, setImageViewerOpen] = useState(false);
+    const [currentImages, setCurrentImages] = useState<string[]>([]);
+    const [initialImageIndex, setInitialImageIndex] = useState(0);
 
     const { data, setData, post, processing, errors } = useForm({
         guest_name: '',
@@ -57,6 +61,12 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
         items: [] as BookingItemFormData[],
         entrance_fees: [] as EntranceFeeFormData[],
     });
+
+    const openImageViewer = (images: string[], startIndex: number = 0) => {
+        setCurrentImages(images);
+        setInitialImageIndex(startIndex);
+        setImageViewerOpen(true);
+    };
 
     const addItem = (type: 'room' | 'cottage', item: Room | Cottage) => {
         const bookableType = type === 'room' ? 'App\\Models\\Room' : 'App\\Models\\Cottage';
@@ -76,10 +86,13 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
         };
 
         setSelectedItems([...selectedItems, newItem]);
+        toast.success(`${item.name} added to booking`);
     };
 
     const removeItem = (index: number) => {
+        const item = selectedItems[index];
         setSelectedItems(selectedItems.filter((_, i) => i !== index));
+        toast.info(`${item.item_name} removed`);
     };
 
     const updateItem = (index: number, field: keyof BookingItemFormData, value: any) => {
@@ -146,15 +159,27 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
         return selectedItems.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0);
     };
 
+    const calculateExcessPaxFees = () => {
+        return selectedItems.reduce((sum, item) => {
+            if (item.item_type !== 'room') return sum;
+
+            const room = rooms.find(r => r.id === item.bookable_id);
+            if (!room) return sum;
+
+            const extraPax = Math.max(0, item.pax - room.free_entrance_count);
+            return sum + (extraPax * room.excess_pax_fee);
+        }, 0);
+    };
+
     const calculateEntranceFeeTotal = () => {
         return entranceFees.reduce((sum, fee) => {
-            const paid = fee.pax_count - (fee.free_count || 0);
+            const paid = Math.max(0, fee.pax_count - (fee.free_count || 0));
             return sum + (paid * fee.rate);
         }, 0);
     };
 
     const calculateTotal = () => {
-        return calculateSubtotal() + calculateEntranceFeeTotal();
+        return calculateSubtotal() + calculateExcessPaxFees() + calculateEntranceFeeTotal();
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -166,6 +191,11 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
         }
 
         const totalPax = calculateTotalPax();
+
+        if (totalPax === 0) {
+            toast.error('Please specify number of guests for your booking');
+            return;
+        }
 
         post('/guest-bookings', {
             data: {
@@ -196,6 +226,14 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
             : parseFloat(cottage.day_tour_price.toString());
     };
 
+    const getExcessPaxFee = (roomId: number, pax: number) => {
+        const room = rooms.find(r => r.id === roomId);
+        if (!room) return 0;
+
+        const extraPax = Math.max(0, pax - room.free_entrance_count);
+        return extraPax * room.excess_pax_fee;
+    };
+
     return (
         <>
             <Head title="Book Your Stay" />
@@ -210,6 +248,7 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Guest Information */}
                         <Card>
                             <CardHeader>
                                 <CardTitle>Your Information</CardTitle>
@@ -274,6 +313,7 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                             </CardContent>
                         </Card>
 
+                        {/* Booking Details */}
                         <Card>
                             <CardHeader>
                                 <CardTitle>Booking Details</CardTitle>
@@ -324,7 +364,7 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                                         <div className="space-y-2">
                                             <Label htmlFor="check_out_date">
                                                 <Calendar className="inline w-4 h-4 mr-1" />
-                                                Check-out Date
+                                                Check-out Date *
                                             </Label>
                                             <Input
                                                 id="check_out_date"
@@ -332,13 +372,18 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                                                 value={data.check_out_date || ''}
                                                 onChange={(e) => setData('check_out_date', e.target.value)}
                                                 min={data.check_in_date || new Date().toISOString().split('T')[0]}
+                                                required={data.rental_type === 'overnight'}
                                             />
+                                            {errors.check_out_date && (
+                                                <p className="text-sm text-red-500">{errors.check_out_date}</p>
+                                            )}
                                         </div>
                                     )}
                                 </div>
                             </CardContent>
                         </Card>
 
+                        {/* Select Rooms */}
                         <Card>
                             <CardHeader>
                                 <CardTitle>Select Rooms</CardTitle>
@@ -356,8 +401,8 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                                                     <img
                                                         src={`/storage/${room.images[0]}`}
                                                         alt={room.name}
-                                                        className="w-full h-32 object-cover rounded-lg cursor-pointer"
-                                                        onClick={() => setSelectedImage(`/storage/${room.images[0]}`)}
+                                                        className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                                        onClick={() => openImageViewer(room.images!, 0)}
                                                     />
                                                     {room.images.length > 1 && (
                                                         <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
@@ -374,6 +419,13 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                                                         Max: {room.max_pax} pax
                                                         {room.has_ac && ' • With AC'}
                                                     </p>
+                                                    <p className="text-xs text-[#64748B] mt-1">
+                                                        Includes: {room.free_entrance_count} free entrance
+                                                        {room.free_cottage_size && ` + 1 ${room.free_cottage_size} cottage`}
+                                                    </p>
+                                                    <p className="text-xs text-[#E55A2B] font-medium">
+                                                        Excess: ₱{room.excess_pax_fee}/pax beyond {room.free_entrance_count}
+                                                    </p>
                                                 </div>
                                                 <p className="font-bold text-[#E55A2B]">₱{getRoomPrice(room).toLocaleString()}</p>
                                             </div>
@@ -386,9 +438,10 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                                                 variant="outline"
                                                 size="sm"
                                                 className="w-full"
+                                                disabled={room.quantity === 0}
                                             >
                                                 <Plus className="w-4 h-4 mr-1" />
-                                                Add Room
+                                                {room.quantity > 0 ? 'Add Room' : 'Not Available'}
                                             </Button>
                                         </div>
                                     ))}
@@ -396,6 +449,7 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                             </CardContent>
                         </Card>
 
+                        {/* Select Cottages */}
                         <Card>
                             <CardHeader>
                                 <CardTitle>Select Cottages</CardTitle>
@@ -413,8 +467,8 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                                                     <img
                                                         src={`/storage/${cottage.images[0]}`}
                                                         alt={cottage.name}
-                                                        className="w-full h-32 object-cover rounded-lg cursor-pointer"
-                                                        onClick={() => setSelectedImage(`/storage/${cottage.images[0]}`)}
+                                                        className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                                        onClick={() => openImageViewer(cottage.images!, 0)}
                                                     />
                                                     {cottage.images.length > 1 && (
                                                         <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
@@ -440,9 +494,10 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                                                 variant="outline"
                                                 size="sm"
                                                 className="w-full"
+                                                disabled={cottage.quantity === 0}
                                             >
                                                 <Plus className="w-4 h-4 mr-1" />
-                                                Add Cottage
+                                                {cottage.quantity > 0 ? 'Add Cottage' : 'Not Available'}
                                             </Button>
                                         </div>
                                     ))}
@@ -450,6 +505,7 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                             </CardContent>
                         </Card>
 
+                        {/* Your Selection */}
                         {selectedItems.length > 0 && (
                             <Card>
                                 <CardHeader>
@@ -500,23 +556,42 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                                                 </div>
 
                                                 <div className="space-y-2">
-                                                    <Label>Number of Guests</Label>
+                                                    <Label>Number of Guests *</Label>
                                                     <Input
                                                         type="number"
                                                         value={item.pax}
                                                         onChange={(e) => updateItem(index, 'pax', parseInt(e.target.value) || 0)}
                                                         min={0}
+                                                        required
                                                     />
                                                 </div>
                                             </div>
 
-                                            <div className="mt-3 pt-3 border-t border-[#D4B896]">
+                                            <div className="mt-3 pt-3 border-t border-[#D4B896] space-y-1">
                                                 <div className="flex justify-between text-sm">
-                                                    <span>Price</span>
+                                                    <span>Base Price ({item.quantity}x)</span>
                                                     <span className="font-semibold">
                                                         ₱{(item.unit_price * item.quantity).toLocaleString()}
                                                     </span>
                                                 </div>
+                                                {item.item_type === 'room' && item.pax > 0 && (
+                                                    <>
+                                                        {(() => {
+                                                            const excessFee = getExcessPaxFee(item.bookable_id, item.pax);
+                                                            const room = rooms.find(r => r.id === item.bookable_id);
+                                                            const extraPax = room ? Math.max(0, item.pax - room.free_entrance_count) : 0;
+
+                                                            return excessFee > 0 && (
+                                                                <div className="flex justify-between text-sm text-[#E55A2B]">
+                                                                    <span>Excess Pax Fee ({extraPax} pax)</span>
+                                                                    <span className="font-semibold">
+                                                                        ₱{excessFee.toLocaleString()}
+                                                                    </span>
+                                                                </div>
+                                                            );
+                                                        })()}
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -524,6 +599,7 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                             </Card>
                         )}
 
+                        {/* Entrance Fees */}
                         {selectedItems.length > 0 && (
                             <Card>
                                 <CardHeader>
@@ -545,7 +621,7 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                                             </div>
                                             <div className="flex items-end">
                                                 <p className="text-sm text-[#64748B]">
-                                                    Total: ₱{((fee.pax_count - (fee.free_count || 0)) * fee.rate).toLocaleString()}
+                                                    Total: ₱{(Math.max(0, fee.pax_count - (fee.free_count || 0)) * fee.rate).toLocaleString()}
                                                 </p>
                                             </div>
                                         </div>
@@ -554,6 +630,7 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                             </Card>
                         )}
 
+                        {/* Additional Notes */}
                         <Card>
                             <CardHeader>
                                 <CardTitle>Additional Notes</CardTitle>
@@ -569,6 +646,7 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                             </CardContent>
                         </Card>
 
+                        {/* Booking Summary */}
                         {selectedItems.length > 0 && (
                             <Card className="bg-[#EBE6D8]">
                                 <CardHeader>
@@ -586,6 +664,12 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                                         <span>Rooms & Cottages</span>
                                         <span className="font-semibold">₱{calculateSubtotal().toLocaleString()}</span>
                                     </div>
+                                    {calculateExcessPaxFees() > 0 && (
+                                        <div className="flex justify-between text-sm text-[#E55A2B]">
+                                            <span>Excess Pax Fees</span>
+                                            <span className="font-semibold">₱{calculateExcessPaxFees().toLocaleString()}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between text-sm">
                                         <span>Entrance Fees</span>
                                         <span className="font-semibold">₱{calculateEntranceFeeTotal().toLocaleString()}</span>
@@ -620,17 +704,13 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                 </div>
             </div>
 
-            {selectedImage && (
-                <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-                    <DialogContent className="max-w-4xl">
-                        <img
-                            src={selectedImage}
-                            alt="Preview"
-                            className="w-full h-auto max-h-[80vh] object-contain"
-                        />
-                    </DialogContent>
-                </Dialog>
-            )}
+            {/* Image Viewer */}
+            <ImageViewer
+                images={currentImages}
+                initialIndex={initialImageIndex}
+                open={imageViewerOpen}
+                onOpenChange={setImageViewerOpen}
+            />
         </>
     );
 }
