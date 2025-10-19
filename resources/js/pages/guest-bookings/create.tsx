@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import ImageViewer from '@/components/image-viewer';
 import type { Room, Cottage, BookingItemFormData, EntranceFeeFormData } from '@/types';
@@ -248,442 +249,449 @@ export default function GuestBookingCreate({ rooms, cottages }: GuestBookingCrea
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Guest Information */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Your Information</CardTitle>
-                                <CardDescription>Please provide your contact details</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="guest_name">Full Name *</Label>
-                                        <Input
-                                            id="guest_name"
-                                            value={data.guest_name}
-                                            onChange={(e) => setData('guest_name', e.target.value)}
-                                            placeholder="Juan Dela Cruz"
-                                            required
-                                        />
-                                        {errors.guest_name && (
-                                            <p className="text-sm text-red-500">{errors.guest_name}</p>
-                                        )}
-                                    </div>
+                        <Tabs defaultValue="information" className="w-full">
+                            <TabsList className="grid w-full grid-cols-5">
+                                <TabsTrigger value="information">Your Info</TabsTrigger>
+                                <TabsTrigger value="details">Booking</TabsTrigger>
+                                <TabsTrigger value="rooms">Rooms</TabsTrigger>
+                                <TabsTrigger value="cottages">Cottages</TabsTrigger>
+                                <TabsTrigger value="summary">Summary</TabsTrigger>
+                            </TabsList>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="guest_email">Email Address *</Label>
-                                        <Input
-                                            id="guest_email"
-                                            type="email"
-                                            value={data.guest_email}
-                                            onChange={(e) => setData('guest_email', e.target.value)}
-                                            placeholder="juan@example.com"
-                                            required
-                                        />
-                                        {errors.guest_email && (
-                                            <p className="text-sm text-red-500">{errors.guest_email}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="guest_phone">Phone Number *</Label>
-                                        <Input
-                                            id="guest_phone"
-                                            type="tel"
-                                            value={data.guest_phone}
-                                            onChange={(e) => setData('guest_phone', e.target.value)}
-                                            placeholder="0927 821 0836"
-                                            required
-                                        />
-                                        {errors.guest_phone && (
-                                            <p className="text-sm text-red-500">{errors.guest_phone}</p>
-                                        )}
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="guest_address">Address</Label>
-                                        <Input
-                                            id="guest_address"
-                                            value={data.guest_address || ''}
-                                            onChange={(e) => setData('guest_address', e.target.value)}
-                                            placeholder="City, Province"
-                                        />
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Booking Details */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Booking Details</CardTitle>
-                                <CardDescription>Select your dates and booking type</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label>Booking Type *</Label>
-                                    <RadioGroup
-                                        value={data.rental_type}
-                                        onValueChange={(value) => handleRentalTypeChange(value as 'overnight' | 'day_tour')}
-                                    >
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="day_tour" id="day_tour" />
-                                            <Label htmlFor="day_tour" className="font-normal cursor-pointer">
-                                                Day Tour
-                                            </Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="overnight" id="overnight" />
-                                            <Label htmlFor="overnight" className="font-normal cursor-pointer">
-                                                Overnight Stay
-                                            </Label>
-                                        </div>
-                                    </RadioGroup>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="check_in_date">
-                                            <Calendar className="inline w-4 h-4 mr-1" />
-                                            Check-in Date *
-                                        </Label>
-                                        <Input
-                                            id="check_in_date"
-                                            type="date"
-                                            value={data.check_in_date}
-                                            onChange={(e) => setData('check_in_date', e.target.value)}
-                                            min={new Date().toISOString().split('T')[0]}
-                                            required
-                                        />
-                                        {errors.check_in_date && (
-                                            <p className="text-sm text-red-500">{errors.check_in_date}</p>
-                                        )}
-                                    </div>
-
-                                    {data.rental_type === 'overnight' && (
+                            {/* Tab 1: Your Information */}
+                            <TabsContent value="information" className="space-y-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Your Information</CardTitle>
+                                        <CardDescription>Please provide your contact details</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label htmlFor="check_out_date">
+                                            <Label htmlFor="guest_name">Full Name *</Label>
+                                            <Input
+                                                id="guest_name"
+                                                value={data.guest_name}
+                                                onChange={(e) => setData('guest_name', e.target.value)}
+                                                placeholder="Juan Dela Cruz"
+                                                required
+                                            />
+                                            {errors.guest_name && (
+                                                <p className="text-sm text-red-500">{errors.guest_name}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="guest_email">Email Address *</Label>
+                                            <Input
+                                                id="guest_email"
+                                                type="email"
+                                                value={data.guest_email}
+                                                onChange={(e) => setData('guest_email', e.target.value)}
+                                                placeholder="juan@example.com"
+                                                required
+                                            />
+                                            {errors.guest_email && (
+                                                <p className="text-sm text-red-500">{errors.guest_email}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="guest_phone">Phone Number *</Label>
+                                            <Input
+                                                id="guest_phone"
+                                                type="tel"
+                                                value={data.guest_phone}
+                                                onChange={(e) => setData('guest_phone', e.target.value)}
+                                                placeholder="0927 821 0836"
+                                                required
+                                            />
+                                            {errors.guest_phone && (
+                                                <p className="text-sm text-red-500">{errors.guest_phone}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="guest_address">Address</Label>
+                                            <Input
+                                                id="guest_address"
+                                                value={data.guest_address || ''}
+                                                onChange={(e) => setData('guest_address', e.target.value)}
+                                                placeholder="City, Province"
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="notes">Additional Notes</Label>
+                                            <Textarea
+                                                id="notes"
+                                                value={data.notes || ''}
+                                                onChange={(e) => setData('notes', e.target.value)}
+                                                placeholder="Special requests, dietary requirements, etc."
+                                                rows={4}
+                                            />
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+
+                            {/* Tab 2: Booking Details */}
+                            <TabsContent value="details" className="space-y-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Booking Details</CardTitle>
+                                        <CardDescription>Select your dates and booking type</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label>Booking Type *</Label>
+                                            <RadioGroup
+                                                value={data.rental_type}
+                                                onValueChange={(value) => handleRentalTypeChange(value as 'overnight' | 'day_tour')}
+                                            >
+                                                <div className="flex items-center space-x-2">
+                                                    <RadioGroupItem value="day_tour" id="day_tour" />
+                                                    <Label htmlFor="day_tour" className="font-normal cursor-pointer">
+                                                        Day Tour
+                                                    </Label>
+                                                </div>
+                                                <div className="flex items-center space-x-2">
+                                                    <RadioGroupItem value="overnight" id="overnight" />
+                                                    <Label htmlFor="overnight" className="font-normal cursor-pointer">
+                                                        Overnight Stay
+                                                    </Label>
+                                                </div>
+                                            </RadioGroup>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="check_in_date">
                                                 <Calendar className="inline w-4 h-4 mr-1" />
-                                                Check-out Date *
+                                                Check-in Date *
                                             </Label>
                                             <Input
-                                                id="check_out_date"
+                                                id="check_in_date"
                                                 type="date"
-                                                value={data.check_out_date || ''}
-                                                onChange={(e) => setData('check_out_date', e.target.value)}
-                                                min={data.check_in_date || new Date().toISOString().split('T')[0]}
-                                                required={data.rental_type === 'overnight'}
+                                                value={data.check_in_date}
+                                                onChange={(e) => setData('check_in_date', e.target.value)}
+                                                min={new Date().toISOString().split('T')[0]}
+                                                required
                                             />
-                                            {errors.check_out_date && (
-                                                <p className="text-sm text-red-500">{errors.check_out_date}</p>
+                                            {errors.check_in_date && (
+                                                <p className="text-sm text-red-500">{errors.check_in_date}</p>
                                             )}
                                         </div>
-                                    )}
-                                </div>
-                            </CardContent>
-                        </Card>
 
-                        {/* Select Rooms */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Select Rooms</CardTitle>
-                                <CardDescription>Choose your preferred accommodations</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {rooms.map((room) => (
-                                        <div
-                                            key={room.id}
-                                            className="border border-[#D4B896] rounded-lg p-4 hover:border-[#C3A277] transition-colors"
-                                        >
-                                            {room.images && room.images.length > 0 && (
-                                                <div className="relative mb-3 group">
-                                                    <img
-                                                        src={`/storage/${room.images[0]}`}
-                                                        alt={room.name}
-                                                        className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                                        onClick={() => openImageViewer(room.images!, 0)}
-                                                    />
-                                                    {room.images.length > 1 && (
-                                                        <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
-                                                            <ImageIcon className="w-3 h-3" />
-                                                            {room.images.length}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
-                                                    <h3 className="font-semibold text-[#2C3E50]">{room.name}</h3>
-                                                    <p className="text-sm text-[#64748B]">
-                                                        Max: {room.max_pax} pax
-                                                        {room.has_ac && ' • With AC'}
-                                                    </p>
-                                                    <p className="text-xs text-[#64748B] mt-1">
-                                                        Includes: {room.free_entrance_count} free entrance
-                                                        {room.free_cottage_size && ` + 1 ${room.free_cottage_size} cottage`}
-                                                    </p>
-                                                    <p className="text-xs text-[#E55A2B] font-medium">
-                                                        Excess: ₱{room.excess_pax_fee}/pax beyond {room.free_entrance_count}
-                                                    </p>
-                                                </div>
-                                                <p className="font-bold text-[#E55A2B]">₱{getRoomPrice(room).toLocaleString()}</p>
-                                            </div>
-                                            {room.description && (
-                                                <p className="text-sm text-[#64748B] mb-3">{room.description}</p>
-                                            )}
-                                            <Button
-                                                type="button"
-                                                onClick={() => addItem('room', room)}
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-full"
-                                                disabled={room.quantity === 0}
-                                            >
-                                                <Plus className="w-4 h-4 mr-1" />
-                                                {room.quantity > 0 ? 'Add Room' : 'Not Available'}
-                                            </Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Select Cottages */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Select Cottages</CardTitle>
-                                <CardDescription>Add cottages to your booking</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {cottages.map((cottage) => (
-                                        <div
-                                            key={cottage.id}
-                                            className="border border-[#D4B896] rounded-lg p-4 hover:border-[#C3A277] transition-colors"
-                                        >
-                                            {cottage.images && cottage.images.length > 0 && (
-                                                <div className="relative mb-3 group">
-                                                    <img
-                                                        src={`/storage/${cottage.images[0]}`}
-                                                        alt={cottage.name}
-                                                        className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                                        onClick={() => openImageViewer(cottage.images!, 0)}
-                                                    />
-                                                    {cottage.images.length > 1 && (
-                                                        <div className="absolute top-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-xs flex items-center gap-1">
-                                                            <ImageIcon className="w-3 h-3" />
-                                                            {cottage.images.length}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
-                                                    <h3 className="font-semibold text-[#2C3E50]">{cottage.name}</h3>
-                                                    <p className="text-sm text-[#64748B]">Max: {cottage.max_pax} pax</p>
-                                                </div>
-                                                <p className="font-bold text-[#E55A2B]">₱{getCottagePrice(cottage).toLocaleString()}</p>
-                                            </div>
-                                            {cottage.description && (
-                                                <p className="text-sm text-[#64748B] mb-3">{cottage.description}</p>
-                                            )}
-                                            <Button
-                                                type="button"
-                                                onClick={() => addItem('cottage', cottage)}
-                                                variant="outline"
-                                                size="sm"
-                                                className="w-full"
-                                                disabled={cottage.quantity === 0}
-                                            >
-                                                <Plus className="w-4 h-4 mr-1" />
-                                                {cottage.quantity > 0 ? 'Add Cottage' : 'Not Available'}
-                                            </Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        {/* Your Selection */}
-                        {selectedItems.length > 0 && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Your Selection</CardTitle>
-                                    <CardDescription>Review and adjust your booking</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    {selectedItems.map((item, index) => (
-                                        <div key={index} className="border border-[#D4B896] rounded-lg p-4">
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div>
-                                                    <h4 className="font-semibold text-[#2C3E50]">{item.item_name}</h4>
-                                                    <p className="text-sm text-[#64748B] capitalize">{item.item_type}</p>
-                                                </div>
-                                                <Button
-                                                    type="button"
-                                                    onClick={() => removeItem(index)}
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="text-red-500 hover:text-red-700"
-                                                >
-                                                    <X className="w-4 h-4" />
-                                                </Button>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-4">
-                                                <div className="space-y-2">
-                                                    <Label>Quantity</Label>
-                                                    <div className="flex items-center gap-2">
-                                                        <Button
-                                                            type="button"
-                                                            onClick={() => updateItem(index, 'quantity', Math.max(1, item.quantity - 1))}
-                                                            variant="outline"
-                                                            size="sm"
-                                                        >
-                                                            <Minus className="w-4 h-4" />
-                                                        </Button>
-                                                        <span className="w-12 text-center">{item.quantity}</span>
-                                                        <Button
-                                                            type="button"
-                                                            onClick={() => updateItem(index, 'quantity', item.quantity + 1)}
-                                                            variant="outline"
-                                                            size="sm"
-                                                        >
-                                                            <Plus className="w-4 h-4" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-2">
-                                                    <Label>Number of Guests *</Label>
-                                                    <Input
-                                                        type="number"
-                                                        value={item.pax}
-                                                        onChange={(e) => updateItem(index, 'pax', parseInt(e.target.value) || 0)}
-                                                        min={0}
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="mt-3 pt-3 border-t border-[#D4B896] space-y-1">
-                                                <div className="flex justify-between text-sm">
-                                                    <span>Base Price ({item.quantity}x)</span>
-                                                    <span className="font-semibold">
-                                                        ₱{(item.unit_price * item.quantity).toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                {item.item_type === 'room' && item.pax > 0 && (
-                                                    <>
-                                                        {(() => {
-                                                            const excessFee = getExcessPaxFee(item.bookable_id, item.pax);
-                                                            const room = rooms.find(r => r.id === item.bookable_id);
-                                                            const extraPax = room ? Math.max(0, item.pax - room.free_entrance_count) : 0;
-
-                                                            return excessFee > 0 && (
-                                                                <div className="flex justify-between text-sm text-[#E55A2B]">
-                                                                    <span>Excess Pax Fee ({extraPax} pax)</span>
-                                                                    <span className="font-semibold">
-                                                                        ₱{excessFee.toLocaleString()}
-                                                                    </span>
-                                                                </div>
-                                                            );
-                                                        })()}
-                                                    </>
+                                        {data.rental_type === 'overnight' && (
+                                            <div className="space-y-2">
+                                                <Label htmlFor="check_out_date">
+                                                    <Calendar className="inline w-4 h-4 mr-1" />
+                                                    Check-out Date *
+                                                </Label>
+                                                <Input
+                                                    id="check_out_date"
+                                                    type="date"
+                                                    value={data.check_out_date || ''}
+                                                    onChange={(e) => setData('check_out_date', e.target.value)}
+                                                    min={data.check_in_date || new Date().toISOString().split('T')[0]}
+                                                    required={data.rental_type === 'overnight'}
+                                                />
+                                                {errors.check_out_date && (
+                                                    <p className="text-sm text-red-500">{errors.check_out_date}</p>
                                                 )}
                                             </div>
-                                        </div>
-                                    ))}
-                                </CardContent>
-                            </Card>
-                        )}
+                                        )}
 
-                        {/* Entrance Fees */}
-                        {selectedItems.length > 0 && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Entrance Fees</CardTitle>
-                                    <CardDescription>Specify number of guests by category</CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    {entranceFees.map((fee, index) => (
-                                        <div key={index} className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label>{fee.fee_name} (₱{fee.rate})</Label>
-                                                <Input
-                                                    type="number"
-                                                    value={fee.pax_count}
-                                                    onChange={(e) => updateEntranceFee(index, 'pax_count', parseInt(e.target.value) || 0)}
-                                                    min={0}
-                                                    placeholder="Number of guests"
-                                                />
-                                            </div>
-                                            <div className="flex items-end">
-                                                <p className="text-sm text-[#64748B]">
-                                                    Total: ₱{(Math.max(0, fee.pax_count - (fee.free_count || 0)) * fee.rate).toLocaleString()}
-                                                </p>
+                                        <div className="pt-4 border-t">
+                                            <h3 className="font-semibold mb-4">Entrance Fees</h3>
+                                            <div className="space-y-3">
+                                                {entranceFees.map((fee, index) => (
+                                                    <div key={index}>
+                                                        <Label>{fee.fee_name} (₱{fee.rate})</Label>
+                                                        <Input
+                                                            type="number"
+                                                            value={fee.pax_count}
+                                                            onChange={(e) => updateEntranceFee(index, 'pax_count', parseInt(e.target.value) || 0)}
+                                                            min={0}
+                                                            placeholder="Number of guests"
+                                                            className="mt-1"
+                                                        />
+                                                        <p className="text-xs text-[#64748B] mt-1">
+                                                            Total: ₱{(Math.max(0, fee.pax_count - (fee.free_count || 0)) * fee.rate).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
-                                    ))}
-                                </CardContent>
-                            </Card>
-                        )}
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
 
-                        {/* Additional Notes */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Additional Notes</CardTitle>
-                                <CardDescription>Any special requests or requirements?</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Textarea
-                                    value={data.notes || ''}
-                                    onChange={(e) => setData('notes', e.target.value)}
-                                    placeholder="Special requests, dietary requirements, etc."
-                                    rows={4}
-                                />
-                            </CardContent>
-                        </Card>
-
-                        {/* Booking Summary */}
-                        {selectedItems.length > 0 && (
-                            <Card className="bg-[#EBE6D8]">
-                                <CardHeader>
-                                    <CardTitle>Booking Summary</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-2">
-                                    <div className="flex justify-between text-sm">
-                                        <span>Total Guests</span>
-                                        <span className="font-semibold">
-                                            <Users className="inline w-4 h-4 mr-1" />
-                                            {calculateTotalPax()} pax
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span>Rooms & Cottages</span>
-                                        <span className="font-semibold">₱{calculateSubtotal().toLocaleString()}</span>
-                                    </div>
-                                    {calculateExcessPaxFees() > 0 && (
-                                        <div className="flex justify-between text-sm text-[#E55A2B]">
-                                            <span>Excess Pax Fees</span>
-                                            <span className="font-semibold">₱{calculateExcessPaxFees().toLocaleString()}</span>
+                            {/* Tab 3: Select Rooms */}
+                            <TabsContent value="rooms" className="space-y-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Select Rooms</CardTitle>
+                                        <CardDescription>Choose your preferred accommodations</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                                            {rooms.map((room) => (
+                                                <div
+                                                    key={room.id}
+                                                    className="border border-[#D4B896] rounded-lg p-3 hover:border-[#C3A277] transition-colors"
+                                                >
+                                                    <div className="flex gap-3">
+                                                        {room.images && room.images.length > 0 && (
+                                                            <div className="relative flex-shrink-0">
+                                                                <img
+                                                                    src={`/storage/${room.images[0]}`}
+                                                                    alt={room.name}
+                                                                    className="w-24 h-24 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity"
+                                                                    onClick={() => openImageViewer(room.images!, 0)}
+                                                                />
+                                                                {room.images.length > 1 && (
+                                                                    <div className="absolute top-1 right-1 bg-black/70 text-white px-1.5 py-0.5 rounded text-xs flex items-center gap-1">
+                                                                        <ImageIcon className="w-3 h-3" />
+                                                                        {room.images.length}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex justify-between items-start mb-1">
+                                                                <h3 className="font-semibold text-[#2C3E50] text-sm">{room.name}</h3>
+                                                                <p className="font-bold text-[#E55A2B] text-sm">₱{getRoomPrice(room).toLocaleString()}</p>
+                                                            </div>
+                                                            <p className="text-xs text-[#64748B]">
+                                                                Max: {room.max_pax} pax{room.has_ac && ' • AC'}
+                                                            </p>
+                                                            <p className="text-xs text-[#64748B]">
+                                                                Free: {room.free_entrance_count} entrance
+                                                                {room.free_cottage_size && ` + ${room.free_cottage_size} cottage`}
+                                                            </p>
+                                                            <p className="text-xs text-[#E55A2B] font-medium">
+                                                                Excess: ₱{room.excess_pax_fee}/pax
+                                                            </p>
+                                                            {room.description && (
+                                                                <p className="text-xs text-[#64748B] mt-1 line-clamp-2">{room.description}</p>
+                                                            )}
+                                                            <Button
+                                                                type="button"
+                                                                onClick={() => addItem('room', room)}
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="w-full mt-2 h-8 text-xs"
+                                                                disabled={room.quantity === 0}
+                                                            >
+                                                                <Plus className="w-3 h-3 mr-1" />
+                                                                {room.quantity > 0 ? 'Add' : 'N/A'}
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                    )}
-                                    <div className="flex justify-between text-sm">
-                                        <span>Entrance Fees</span>
-                                        <span className="font-semibold">₱{calculateEntranceFeeTotal().toLocaleString()}</span>
-                                    </div>
-                                    <div className="pt-2 border-t border-[#D4B896]">
-                                        <div className="flex justify-between text-lg font-bold">
-                                            <span>Total Amount</span>
-                                            <span className="text-[#E55A2B]">₱{calculateTotal().toLocaleString()}</span>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
 
+                            {/* Tab 4: Select Cottages */}
+                            <TabsContent value="cottages" className="space-y-4">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Select Cottages</CardTitle>
+                                        <CardDescription>Add cottages to your booking</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="space-y-3 max-h-[600px] overflow-y-auto pr-2">
+                                            {cottages.map((cottage) => (
+                                                <div
+                                                    key={cottage.id}
+                                                    className="border border-[#D4B896] rounded-lg p-3 hover:border-[#C3A277] transition-colors"
+                                                >
+                                                    <div className="flex gap-3">
+                                                        {cottage.images && cottage.images.length > 0 && (
+                                                            <div className="relative flex-shrink-0">
+                                                                <img
+                                                                    src={`/storage/${cottage.images[0]}`}
+                                                                    alt={cottage.name}
+                                                                    className="w-24 h-24 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity"
+                                                                    onClick={() => openImageViewer(cottage.images!, 0)}
+                                                                />
+                                                                {cottage.images.length > 1 && (
+                                                                    <div className="absolute top-1 right-1 bg-black/70 text-white px-1.5 py-0.5 rounded text-xs flex items-center gap-1">
+                                                                        <ImageIcon className="w-3 h-3" />
+                                                                        {cottage.images.length}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex justify-between items-start mb-1">
+                                                                <h3 className="font-semibold text-[#2C3E50] text-sm">{cottage.name}</h3>
+                                                                <p className="font-bold text-[#E55A2B] text-sm">₱{getCottagePrice(cottage).toLocaleString()}</p>
+                                                            </div>
+                                                            <p className="text-xs text-[#64748B]">Max: {cottage.max_pax} pax</p>
+                                                            {cottage.description && (
+                                                                <p className="text-xs text-[#64748B] mt-1 line-clamp-2">{cottage.description}</p>
+                                                            )}
+                                                            <Button
+                                                                type="button"
+                                                                onClick={() => addItem('cottage', cottage)}
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="w-full mt-2 h-8 text-xs"
+                                                                disabled={cottage.quantity === 0}
+                                                            >
+                                                                <Plus className="w-3 h-3 mr-1" />
+                                                                {cottage.quantity > 0 ? 'Add' : 'N/A'}
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </TabsContent>
+
+                            {/* Tab 5: Summary */}
+                            <TabsContent value="summary" className="space-y-4">
+                                {selectedItems.length > 0 ? (
+                                    <>
+                                        <Card>
+                                            <CardHeader>
+                                                <CardTitle>Your Selection</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="space-y-3">
+                                                {selectedItems.map((item, index) => (
+                                                    <div key={index} className="border border-[#D4B896] rounded-lg p-3">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <div>
+                                                                <h4 className="font-semibold text-sm">{item.item_name}</h4>
+                                                                <p className="text-xs text-[#64748B] capitalize">{item.item_type}</p>
+                                                            </div>
+                                                            <Button
+                                                                type="button"
+                                                                onClick={() => removeItem(index)}
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </Button>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div className="space-y-1">
+                                                                <Label className="text-xs">Quantity</Label>
+                                                                <div className="flex items-center gap-1">
+                                                                    <Button
+                                                                        type="button"
+                                                                        onClick={() => updateItem(index, 'quantity', Math.max(1, item.quantity - 1))}
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="h-7 w-7 p-0"
+                                                                    >
+                                                                        <Minus className="w-3 h-3" />
+                                                                    </Button>
+                                                                    <span className="w-8 text-center text-sm">{item.quantity}</span>
+                                                                    <Button
+                                                                        type="button"
+                                                                        onClick={() => updateItem(index, 'quantity', item.quantity + 1)}
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="h-7 w-7 p-0"
+                                                                    >
+                                                                        <Plus className="w-3 h-3" />
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="space-y-1">
+                                                                <Label className="text-xs">Guests *</Label>
+                                                                <Input
+                                                                    type="number"
+                                                                    value={item.pax}
+                                                                    onChange={(e) => updateItem(index, 'pax', parseInt(e.target.value) || 0)}
+                                                                    min={0}
+                                                                    required
+                                                                    className="h-7 text-sm"
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="mt-2 pt-2 border-t border-[#D4B896] space-y-0.5">
+                                                            <div className="flex justify-between text-xs">
+                                                                <span>Base ({item.quantity}x)</span>
+                                                                <span className="font-semibold">
+                                                                    ₱{(item.unit_price * item.quantity).toLocaleString()}
+                                                                </span>
+                                                            </div>
+                                                            {item.item_type === 'room' && item.pax > 0 && (() => {
+                                                                const excessFee = getExcessPaxFee(item.bookable_id, item.pax);
+                                                                const room = rooms.find(r => r.id === item.bookable_id);
+                                                                const extraPax = room ? Math.max(0, item.pax - room.free_entrance_count) : 0;
+
+                                                                return excessFee > 0 && (
+                                                                    <div className="flex justify-between text-xs text-[#E55A2B]">
+                                                                        <span>Excess ({extraPax})</span>
+                                                                        <span className="font-semibold">₱{excessFee.toLocaleString()}</span>
+                                                                    </div>
+                                                                );
+                                                            })()}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </CardContent>
+                                        </Card>
+
+                                        <Card className="bg-[#EBE6D8]">
+                                            <CardHeader>
+                                                <CardTitle>Booking Summary</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="space-y-2">
+                                                <div className="flex justify-between text-sm">
+                                                    <span>Total Guests</span>
+                                                    <span className="font-semibold">
+                                                        <Users className="inline w-4 h-4 mr-1" />
+                                                        {calculateTotalPax()} pax
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between text-sm">
+                                                    <span>Rooms & Cottages</span>
+                                                    <span className="font-semibold">₱{calculateSubtotal().toLocaleString()}</span>
+                                                </div>
+                                                {calculateExcessPaxFees() > 0 && (
+                                                    <div className="flex justify-between text-sm text-[#E55A2B]">
+                                                        <span>Excess Pax Fees</span>
+                                                        <span className="font-semibold">₱{calculateExcessPaxFees().toLocaleString()}</span>
+                                                    </div>
+                                                )}
+                                                <div className="flex justify-between text-sm">
+                                                    <span>Entrance Fees</span>
+                                                    <span className="font-semibold">₱{calculateEntranceFeeTotal().toLocaleString()}</span>
+                                                </div>
+                                                <div className="pt-2 border-t border-[#D4B896]">
+                                                    <div className="flex justify-between text-lg font-bold">
+                                                        <span>Total Amount</span>
+                                                        <span className="text-[#E55A2B]">₱{calculateTotal().toLocaleString()}</span>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </>
+                                ) : (
+                                    <Card>
+                                        <CardContent className="py-12 text-center">
+                                            <p className="text-[#64748B]">No items selected yet. Please go to Rooms or Cottages tab to add items to your booking.</p>
+                                        </CardContent>
+                                    </Card>
+                                )}
+                            </TabsContent>
+                        </Tabs>
+
+                        {/* Submit Buttons */}
                         <div className="flex justify-end gap-4">
                             <Button
                                 type="button"
