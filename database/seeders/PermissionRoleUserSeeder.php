@@ -18,7 +18,7 @@ class PermissionRoleUserSeeder extends Seeder
             // global
             'global access',
 
-            // global
+            // pulse
             'pulse access',
 
             // customer
@@ -38,6 +38,34 @@ class PermissionRoleUserSeeder extends Seeder
             'role create',
             'role edit',
             'role delete',
+
+            // accommodation
+            'accommodation show',
+            'accommodation create',
+            'accommodation edit',
+            'accommodation delete',
+
+            // accommodation rate
+            'accommodation-rate show',
+            'accommodation-rate create',
+            'accommodation-rate edit',
+            'accommodation-rate delete',
+
+            // booking
+            'booking show',
+            'booking create',
+            'booking edit',
+            'booking delete',
+            'booking confirm',
+            'booking checkin',
+            'booking checkout',
+            'booking cancel',
+
+            // payment
+            'payment show',
+            'payment create',
+            'payment edit',
+            'payment delete',
         ];
 
         foreach ($permissions as $permission) {
@@ -80,7 +108,6 @@ class PermissionRoleUserSeeder extends Seeder
 
         $staffRole->givePermissionTo([
             'staff access',
-            'booking access'
         ]);
 
         // Create staff user
@@ -105,7 +132,6 @@ class PermissionRoleUserSeeder extends Seeder
 
         $customerRole->givePermissionTo([
             'customer access',
-            'booking access'
         ]);
 
         // Create customer user

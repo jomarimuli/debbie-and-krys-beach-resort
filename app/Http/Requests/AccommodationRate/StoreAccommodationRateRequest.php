@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Http\Requests\AccommodationRate;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreAccommodationRateRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return $this->user()->can('accommodation-rate create') || $this->user()->can('global access');
+    }
+
+    public function rules(): array
+    {
+        return [
+            'accommodation_id' => ['required', 'exists:accommodations,id'],
+            'booking_type' => ['required', 'in:day_tour,overnight'],
+            'rate' => ['required', 'numeric', 'min:0'],
+            'base_capacity' => ['nullable', 'integer', 'min:1'],
+            'additional_pax_rate' => ['nullable', 'numeric', 'min:0'],
+            'entrance_fee' => ['nullable', 'numeric', 'min:0'],
+            'child_entrance_fee' => ['nullable', 'numeric', 'min:0'],
+            'child_max_age' => ['nullable', 'integer', 'min:1', 'max:17'],
+            'includes_free_cottage' => ['boolean'],
+            'includes_free_entrance' => ['boolean'],
+            'effective_from' => ['nullable', 'date'],
+            'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
+            'is_active' => ['boolean'],
+        ];
+    }
+}

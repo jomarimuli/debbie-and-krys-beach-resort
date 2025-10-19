@@ -1,10 +1,31 @@
 // resources/js/types/index.ts
 import type { User, UserIndexData } from './user';
 import type { RoleIndexData } from './role';
+import type {
+    Accommodation,
+    AccommodationRate,
+    AccommodationIndexData,
+    AccommodationFormData,
+    AccommodationRateFormData
+} from './accommodation';
+import type {
+    Booking,
+    BookingAccommodation,
+    BookingEntranceFee,
+    BookingIndexData,
+    BookingFormData
+} from './booking';
+import type {
+    Payment,
+    PaymentFormData
+} from './payment';
 
 export * from './datatable';
 export * from './user';
 export * from './role';
+export * from './accommodation';
+export * from './booking';
+export * from './payment';
 
 // Common types
 export interface BreadcrumbItem {
@@ -68,11 +89,11 @@ export interface SharedData {
     quote: { message: string; author: string };
     auth: Auth;
     sidebarOpen: boolean;
+    flash?: Flash;
     [key: string]: unknown;
 }
 
 export interface PageProps extends SharedData {
-    flash?: Flash;
     [key: string]: unknown;
 }
 
@@ -89,3 +110,5 @@ export interface AppSidebarHeaderProps {
 // Page-specific props
 export type UserIndexProps = PageProps & UserIndexData;
 export type RoleIndexProps = PageProps & RoleIndexData;
+export type AccommodationIndexProps = PageProps & AccommodationIndexData;
+export type BookingIndexProps = PageProps & BookingIndexData;

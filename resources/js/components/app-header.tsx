@@ -33,6 +33,24 @@ const allNavItems: NavItem[] = [
         requiredPermissions: ['pulse access', 'global access'],
     },
     {
+        title: 'Accommodations',
+        href: '/accommodations',
+        icon: Hotel,
+        requiredPermissions: ['accommodation show', 'global access'],
+    },
+    {
+        title: 'Bookings',
+        href: '/bookings',
+        icon: Home,
+        requiredPermissions: ['booking show', 'global access'],
+    },
+    {
+        title: 'Payments',
+        href: '/payments',
+        icon: DollarSign,
+        requiredPermissions: ['payment show', 'global access'],
+    },
+    {
         title: 'Users',
         href: '/users',
         icon: Users,
