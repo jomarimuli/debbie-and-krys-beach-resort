@@ -16,6 +16,7 @@ class UpdateAccommodationRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'in:room,cottage'],
+            'size' => ['required', 'in:small,big'],
             'description' => ['nullable', 'string'],
             'is_air_conditioned' => ['boolean'],
             'images' => ['nullable', 'array', 'max:5'],

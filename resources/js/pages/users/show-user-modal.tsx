@@ -6,7 +6,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, ShieldCheck, User, Mail, Calendar, Shield as ShieldIcon, Lock, Phone } from 'lucide-react';
+import { Shield, ShieldCheck, User, Mail, Calendar, Shield as ShieldIcon, Lock, Phone, MapPin } from 'lucide-react';
 import { UserData } from '@/types';
 
 interface ShowUserModalProps {
@@ -53,6 +53,14 @@ export default function ShowUserModal({
                         <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
                             <Phone className="w-4 h-4 text-gray-500" />
                             <span className="text-sm">{user.phone || 'Not provided'}</span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Address</label>
+                        <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                            <MapPin className="w-4 h-4 text-gray-500" />
+                            <span className="text-sm">{user.address || 'Not provided'}</span>
                         </div>
                     </div>
 

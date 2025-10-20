@@ -70,6 +70,7 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
                                     id="guest_phone"
                                     value={data.guest_phone}
                                     onChange={(e) => setData('guest_phone', e.target.value)}
+                                    placeholder="09xxxxxxxxx"
                                 />
                                 {errors.guest_phone && <p className="text-sm text-destructive">{errors.guest_phone}</p>}
                             </div>

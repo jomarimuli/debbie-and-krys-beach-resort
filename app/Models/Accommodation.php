@@ -14,6 +14,7 @@ class Accommodation extends Model
     protected $fillable = [
         'name',
         'type',
+        'size',
         'description',
         'is_air_conditioned',
         'images',

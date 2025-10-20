@@ -6,6 +6,7 @@ export interface Accommodation {
     id: number;
     name: string;
     type: 'room' | 'cottage';
+    size: 'small' | 'big';
     description: string | null;
     is_air_conditioned: boolean;
     images: string[] | null;
@@ -48,6 +49,7 @@ export interface AccommodationIndexData {
 export interface AccommodationFormData {
     name: string;
     type: 'room' | 'cottage';
+    size: 'small' | 'big';
     description?: string;
     is_air_conditioned: boolean;
     images?: File[];

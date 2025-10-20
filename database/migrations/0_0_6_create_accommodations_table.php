@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name'); // "Big Room (Airconditioned)", "Small Cottage"
             $table->enum('type', ['room', 'cottage']); // Can add more types later
+            $table->enum('size', ['small', 'big']); // Can add more sizes later
             $table->text('description')->nullable();
             $table->boolean('is_air_conditioned')->default(false);
             $table->json('images')->nullable();

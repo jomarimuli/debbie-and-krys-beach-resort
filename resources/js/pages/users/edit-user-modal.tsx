@@ -42,6 +42,7 @@ export default function EditUserModal({
         name: '',
         email: '',
         phone: '',
+        address: '',
         password: '',
         password_confirmation: '',
         status: 'active',
@@ -56,6 +57,7 @@ export default function EditUserModal({
                 name: user.name,
                 email: user.email,
                 phone: user.phone || '',
+                address: user.address || '',
                 password: '',
                 password_confirmation: '',
                 status: user.status,
@@ -171,12 +173,27 @@ export default function EditUserModal({
                             type="tel"
                             value={data.phone}
                             onChange={(e) => setData('phone', e.target.value)}
-                            placeholder="Enter phone number"
+                            placeholder="09xxxxxxxxx"
                             className={errors.phone ? 'border-red-500' : ''}
                             disabled={user?.id === 1}
                         />
                         {errors.phone && (
                             <p className="text-sm text-red-500">{errors.phone}</p>
+                        )}
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="address">Address</Label>
+                        <Input
+                            id="address"
+                            value={data.address}
+                            onChange={(e) => setData('address', e.target.value)}
+                            placeholder="City, Province"
+                            className={errors.address ? 'border-red-500' : ''}
+                            disabled={user?.id === 1}
+                        />
+                        {errors.address && (
+                            <p className="text-sm text-red-500">{errors.address}</p>
                         )}
                     </div>
 

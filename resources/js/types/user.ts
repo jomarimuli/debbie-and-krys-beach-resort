@@ -5,6 +5,7 @@ export interface User {
     name: string;
     email: string;
     phone?: string;
+    address?: string;
     avatar?: string;
     email_verified_at: string | null;
     password_changed_at: string | null;
@@ -34,6 +35,7 @@ export interface UserFormData {
     name: string;
     email: string;
     phone?: string;
+    address?: string;
     password: string;
     password_confirmation: string;
     status: string;

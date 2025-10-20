@@ -14,6 +14,7 @@ class AccommodationSeeder extends Seeder
         $bigRoom = Accommodation::create([
             'name' => 'Big Room',
             'type' => 'room',
+            'size' => 'big',
             'description' => 'Spacious room',
             'is_air_conditioned' => true,
             'min_capacity' => 6,
@@ -41,6 +42,7 @@ class AccommodationSeeder extends Seeder
         $smallRoom = Accommodation::create([
             'name' => 'Small Room',
             'type' => 'room',
+            'size' => 'small',
             'description' => 'Cozy room',
             'is_air_conditioned' => true,
             'min_capacity' => 4,
@@ -68,6 +70,7 @@ class AccommodationSeeder extends Seeder
     $bigCottage = Accommodation::create([
         'name' => 'Big Cottage',
         'type' => 'cottage',
+        'size' => 'big',
         'description' => 'Large cottage for groups',
         'is_air_conditioned' => false,
         'min_capacity' => 10,
@@ -111,6 +114,7 @@ class AccommodationSeeder extends Seeder
         $smallCottage = Accommodation::create([
             'name' => 'Small Cottage',
             'type' => 'cottage',
+            'size' => 'small',
             'description' => 'Compact cottage for small groups',
             'is_air_conditioned' => false,
             'min_capacity' => 8,

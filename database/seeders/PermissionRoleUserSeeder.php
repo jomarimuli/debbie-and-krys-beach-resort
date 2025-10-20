@@ -91,6 +91,7 @@ class PermissionRoleUserSeeder extends Seeder
             [
                 'name' => 'admin',
                 'phone' => '09278210836',
+                'address' => null,
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
                 'password_changed_at' => now(),
@@ -116,6 +117,7 @@ class PermissionRoleUserSeeder extends Seeder
             [
                 'name' => 'staff',
                 'phone' => null,
+                'address' => null,
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
                 'status' => 'active',
@@ -140,6 +142,7 @@ class PermissionRoleUserSeeder extends Seeder
             [
                 'name' => 'customer',
                 'phone' => null,
+                'address' => null,
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
                 'status' => 'active',

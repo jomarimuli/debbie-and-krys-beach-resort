@@ -13,6 +13,7 @@ class AccommodationResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'type' => $this->type,
+            'size' => $this->size,
             'description' => $this->description,
             'is_air_conditioned' => $this->is_air_conditioned,
             'images' => $this->images,

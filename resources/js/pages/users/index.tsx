@@ -76,6 +76,14 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
             width: '150px',
         },
         {
+            key: 'address',
+            label: 'Address',
+            sortable: true,
+            searchable: true,
+            filterable: false,
+            width: '200px',
+        },
+        {
             key: 'status_display',
             label: 'Status',
             sortable: true,
@@ -115,6 +123,7 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
         data: users.data.map(user => ({
             ...user,
             phone: user.phone || <span className="text-gray-400 text-sm">Not provided</span>,
+            address: user.address || <span className="text-gray-400 text-sm">Not provided</span>,
             status_display: (
                 <Badge
                     variant={user.status === 'active' ? 'default' : 'secondary'}
@@ -175,6 +184,7 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
         name: user.name,
         email: user.email,
         phone: user.phone || 'N/A',
+        address: user.address || 'N/A',
         status: user.status_label,
         email_verified: user.email_verified,
         roles: user.roles_text,
