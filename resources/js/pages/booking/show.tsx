@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { type Booking, type PageProps } from '@/types';
 import { Link, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, CheckCircle, LogIn, LogOut, XCircle, DollarSign } from 'lucide-react';
+import { ArrowLeft, Edit, CheckCircle, LogIn, LogOut, XCircle, Banknote } from 'lucide-react';
 import { format } from 'date-fns';
 import {
     Table,
@@ -275,7 +275,7 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                             <CardTitle>Payments</CardTitle>
                             <Link href={`/payments/create?booking_id=${booking.id}`}>
                                 <Button size="sm">
-                                    <DollarSign className="mr-2 h-4 w-4" />
+                                    <Banknote className="mr-2 h-4 w-4" />
                                     Add Payment
                                 </Button>
                             </Link>

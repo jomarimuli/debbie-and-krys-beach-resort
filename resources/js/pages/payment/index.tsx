@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { type PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Plus, DollarSign, Eye, Edit, Trash2, ImageIcon } from 'lucide-react';
+import { Plus, Banknote, Eye, Edit, Trash2, ImageIcon } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import {
@@ -162,7 +162,7 @@ export default function Index({ payments }: PaymentIndexProps) {
 
                     {payments.data.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-12">
-                            <DollarSign className="h-12 w-12 text-muted-foreground" />
+                            <Banknote className="h-12 w-12 text-muted-foreground" />
                             <h3 className="mt-4 text-lg font-semibold">No payments found</h3>
                             <p className="text-muted-foreground">Record your first payment to get started.</p>
                             <Link href="/payments/create" className="mt-4">

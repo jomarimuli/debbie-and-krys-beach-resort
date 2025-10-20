@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { type PageProps, type AccommodationRate } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Plus, DollarSign, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, Coins, Eye, Edit, Trash2 } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import {
@@ -142,7 +142,7 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
 
                     {rates.data.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-12">
-                            <DollarSign className="h-12 w-12 text-muted-foreground" />
+                            <Coins className="h-12 w-12 text-muted-foreground" />
                             <h3 className="mt-4 text-lg font-semibold">No rates found</h3>
                             <p className="text-muted-foreground">Add pricing rates for your accommodations.</p>
                             <Link href="/accommodation-rates/create" className="mt-4">

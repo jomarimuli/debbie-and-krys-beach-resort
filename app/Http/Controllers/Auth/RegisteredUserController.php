@@ -46,6 +46,7 @@ class RegisteredUserController extends Controller
             'phone' => $request->phone,
             'address' => $request->address,
             'password' => Hash::make($request->password),
+            'password_changed_at' => now(),
             'status' => 'active',
         ]);
 

@@ -5,7 +5,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Home, DollarSign } from 'lucide-react';
+import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import { GithubUpdatesModal } from '@/components/github-updates-modal';
@@ -33,19 +33,19 @@ const allNavItems: NavItem[] = [
     {
         title: 'Rates',
         href: '/accommodation-rates',
-        icon: DollarSign,
+        icon: Coins,
         requiredPermissions: ['accommodation-rate show', 'global access'],
     },
     {
         title: 'Bookings',
         href: '/bookings',
-        icon: Home,
+        icon: Ticket,
         requiredPermissions: ['booking show', 'global access'],
     },
     {
         title: 'Payments',
         href: '/payments',
-        icon: DollarSign,
+        icon: Banknote,
         requiredPermissions: ['payment show', 'global access'],
     },
     {
