@@ -26,14 +26,14 @@ class AccommodationController extends Controller
             ->orderBy('name')
             ->paginate(10);
 
-        return Inertia::render('Accommodation/Index', [
+        return Inertia::render('accommodation/index', [
             'accommodations' => $accommodations,
         ]);
     }
 
     public function create(): Response
     {
-        return Inertia::render('Accommodation/Create');
+        return Inertia::render('accommodation/create');
     }
 
     public function store(StoreAccommodationRequest $request): RedirectResponse
@@ -48,14 +48,14 @@ class AccommodationController extends Controller
     {
         $accommodation->load('rates');
 
-        return Inertia::render('Accommodation/Show', [
+        return Inertia::render('accommodation/show', [
             'accommodation' => $accommodation,
         ]);
     }
 
     public function edit(Accommodation $accommodation): Response
     {
-        return Inertia::render('Accommodation/Edit', [
+        return Inertia::render('accommodation/edit', [
             'accommodation' => $accommodation,
         ]);
     }

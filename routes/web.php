@@ -35,8 +35,7 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
     Route::resource('accommodations', AccommodationController::class);
 
     // Accommodation Rates
-    Route::resource('accommodation-rates', AccommodationRateController::class)
-        ->except('show');
+    Route::resource('accommodation-rates', AccommodationRateController::class);
 
     // Bookings
     Route::resource('bookings', BookingController::class);

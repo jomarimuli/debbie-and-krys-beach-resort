@@ -33,7 +33,7 @@ class BookingController extends Controller
             ->latest()
             ->paginate(10);
 
-        return Inertia::render('Booking/Index', [
+        return Inertia::render('booking/index', [
             'bookings' => $bookings,
         ]);
     }
@@ -42,7 +42,7 @@ class BookingController extends Controller
     {
         $accommodations = Accommodation::with('rates')->active()->orderBy('name')->get();
 
-        return Inertia::render('Booking/Create', [
+        return Inertia::render('booking/create', [
             'accommodations' => $accommodations,
         ]);
     }
@@ -150,14 +150,14 @@ class BookingController extends Controller
             'payments.receivedBy',
         ]);
 
-        return Inertia::render('Booking/Show', [
+        return Inertia::render('booking/show', [
             'booking' => $booking,
         ]);
     }
 
     public function edit(Booking $booking): Response
     {
-        return Inertia::render('Booking/Edit', [
+        return Inertia::render('booking/edit', [
             'booking' => $booking,
         ]);
     }

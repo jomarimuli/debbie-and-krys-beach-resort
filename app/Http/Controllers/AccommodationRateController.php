@@ -14,7 +14,7 @@ class AccommodationRateController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:accommodation-rate show|global access')->only('index');
+        $this->middleware('permission:accommodation-rate show|global access')->only(['index', 'show']);
         $this->middleware('permission:accommodation-rate create|global access')->only(['create', 'store']);
         $this->middleware('permission:accommodation-rate edit|global access')->only(['edit', 'update']);
         $this->middleware('permission:accommodation-rate delete|global access')->only('destroy');
@@ -26,7 +26,7 @@ class AccommodationRateController extends Controller
             ->latest()
             ->paginate(10);
 
-        return Inertia::render('AccommodationRate/Index', [
+        return Inertia::render('accommodation-rate/index', [
             'rates' => $rates,
         ]);
     }
@@ -35,7 +35,7 @@ class AccommodationRateController extends Controller
     {
         $accommodations = Accommodation::active()->orderBy('name')->get();
 
-        return Inertia::render('AccommodationRate/Create', [
+        return Inertia::render('accommodation-rate/create', [
             'accommodations' => $accommodations,
         ]);
     }
@@ -48,11 +48,22 @@ class AccommodationRateController extends Controller
             ->with('success', 'Accommodation rate created successfully.');
     }
 
+    public function show(AccommodationRate $accommodationRate): Response
+    {
+        $this->authorize('accommodation-rate show');
+
+        $accommodationRate->load('accommodation');
+
+        return Inertia::render('accommodation-rate/show', [
+            'rate' => $accommodationRate,
+        ]);
+    }
+
     public function edit(AccommodationRate $accommodationRate): Response
     {
         $accommodations = Accommodation::active()->orderBy('name')->get();
 
-        return Inertia::render('AccommodationRate/Edit', [
+        return Inertia::render('accommodation-rate/edit', [
             'rate' => $accommodationRate,
             'accommodations' => $accommodations,
         ]);

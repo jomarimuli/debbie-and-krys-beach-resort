@@ -27,7 +27,7 @@ class PaymentController extends Controller
             ->latest('payment_date')
             ->paginate(10);
 
-        return Inertia::render('Payment/Index', [
+        return Inertia::render('payment/index', [
             'payments' => $payments,
         ]);
     }
@@ -39,7 +39,7 @@ class PaymentController extends Controller
             ->orderBy('booking_number')
             ->get();
 
-        return Inertia::render('Payment/Create', [
+        return Inertia::render('payment/create', [
             'bookings' => $bookings,
         ]);
     }
@@ -72,14 +72,14 @@ class PaymentController extends Controller
     {
         $payment->load(['booking', 'receivedBy']);
 
-        return Inertia::render('Payment/Show', [
+        return Inertia::render('payment/show', [
             'payment' => $payment,
         ]);
     }
 
     public function edit(Payment $payment): Response
     {
-        return Inertia::render('Payment/Edit', [
+        return Inertia::render('payment/edit', [
             'payment' => $payment,
         ]);
     }

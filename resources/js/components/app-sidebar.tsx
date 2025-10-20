@@ -31,6 +31,12 @@ const allNavItems: NavItem[] = [
         requiredPermissions: ['accommodation show', 'global access'],
     },
     {
+        title: 'Rates',
+        href: '/accommodation-rates',
+        icon: DollarSign,
+        requiredPermissions: ['accommodation-rate show', 'global access'],
+    },
+    {
         title: 'Bookings',
         href: '/bookings',
         icon: Home,
