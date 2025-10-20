@@ -3,6 +3,7 @@
 namespace App\Http\Requests\AccommodationRate;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreAccommodationRateRequest extends FormRequest
 {
@@ -14,7 +15,13 @@ class StoreAccommodationRateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'accommodation_id' => ['required', 'exists:accommodations,id'],
+            'accommodation_id' => [
+                'required',
+                'exists:accommodations,id',
+                Rule::unique('accommodation_rates')
+                    ->where('accommodation_id', $this->accommodation_id)
+                    ->where('booking_type', $this->booking_type)
+            ],
             'booking_type' => ['required', 'in:day_tour,overnight'],
             'rate' => ['required', 'numeric', 'min:0'],
             'base_capacity' => ['nullable', 'integer', 'min:1'],
@@ -27,6 +34,13 @@ class StoreAccommodationRateRequest extends FormRequest
             'effective_from' => ['nullable', 'date'],
             'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
             'is_active' => ['boolean'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'accommodation_id.unique' => 'A rate for this accommodation and booking type already exists.',
         ];
     }
 }

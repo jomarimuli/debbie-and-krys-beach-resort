@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('booking_id')->constrained()->cascadeOnDelete();
-            $table->string('payment_number')->unique(); // PAY-2025-0001
+            $table->string('payment_number')->unique(); // PAY-202510-0001
             $table->decimal('amount', 10, 2);
             $table->enum('payment_method', ['cash', 'card', 'bank_transfer', 'gcash', 'other']);
             $table->string('reference_number')->nullable();
+            $table->string('reference_image')->nullable();
             $table->text('notes')->nullable();
             $table->foreignId('received_by')->nullable()->constrained('users');
             $table->timestamp('payment_date');

@@ -1,14 +1,16 @@
-// resources/js/pages/payment/show.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type Payment, type PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, Edit } from 'lucide-react';
+import { ArrowLeft, Edit, ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { useState } from 'react';
 
 export default function Show({ payment }: PageProps & { payment: Payment }) {
+    const [imageModalOpen, setImageModalOpen] = useState(false);
+
     return (
         <>
             <div className="flex items-center justify-between">
@@ -30,6 +32,29 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                     </Button>
                 </Link>
             </div>
+
+            {/* Reference Image Display */}
+            {payment.reference_image_url && (
+                <Card className="mt-6">
+                    <CardHeader>
+                        <CardTitle>Reference Image</CardTitle>
+                        <CardDescription>Proof of payment</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="relative inline-block">
+                            <img
+                                src={payment.reference_image_url}
+                                alt="Payment reference"
+                                className="w-full max-w-2xl h-96 object-cover rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
+                                onClick={() => setImageModalOpen(true)}
+                            />
+                            <p className="text-sm text-muted-foreground mt-2">
+                                Click image to view full size
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             <div className="mt-6 grid gap-6 md:grid-cols-2">
                 <Card>
@@ -134,6 +159,30 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                     </CardContent>
                 </Card>
             )}
+
+            {/* Image Modal */}
+            {imageModalOpen && payment.reference_image_url && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+                    onClick={() => setImageModalOpen(false)}
+                >
+                    <div className="relative max-w-7xl max-h-[90vh]">
+                        <img
+                            src={payment.reference_image_url}
+                            alt="Payment reference full size"
+                            className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                        />
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="absolute top-4 right-4"
+                            onClick={() => setImageModalOpen(false)}
+                        >
+                            Close
+                        </Button>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
@@ -143,9 +192,11 @@ Show.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
             { title: 'Payments', href: '/payments' },
-            { title: 'Details', href: '#' },
+            { title: 'Show', href: '#' },
         ]}
     >
-        {page}
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            {page}
+        </div>
     </AppLayout>
 );

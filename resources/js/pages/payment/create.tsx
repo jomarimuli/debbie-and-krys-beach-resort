@@ -1,4 +1,3 @@
-// resources/js/pages/payment/create.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,27 +6,51 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { FormEventHandler, useState } from 'react';
+import { ArrowLeft, Upload, X } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Booking, type PageProps } from '@/types';
 import { format } from 'date-fns';
 
 export default function Create({ bookings }: PageProps & { bookings: Booking[] }) {
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
     const { data, setData, post, processing, errors } = useForm({
         booking_id: '',
         amount: '',
         payment_method: 'cash' as 'cash' | 'card' | 'bank_transfer' | 'gcash' | 'other',
         reference_number: '',
+        reference_image: null as File | null,
         notes: '',
         payment_date: format(new Date(), 'yyyy-MM-dd'),
     });
 
     const selectedBooking = bookings.find((b) => b.id === parseInt(data.booking_id));
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setData('reference_image', file);
+
+            // Generate preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeImage = () => {
+        setData('reference_image', null);
+        setImagePreview(null);
+    };
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post('/payments');
+        post('/payments', {
+            forceFormData: true,
+        });
     };
 
     return (
@@ -152,6 +175,49 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                                 {errors.payment_date && <p className="text-sm text-destructive">{errors.payment_date}</p>}
                             </div>
 
+                            {/* Reference Image Upload */}
+                            <div className="space-y-2 md:col-span-2">
+                                <Label htmlFor="reference_image">Reference Image (Optional)</Label>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                    Upload proof of payment (JPEG, PNG, or WebP - Max 2MB)
+                                </p>
+                                {!imagePreview ? (
+                                    <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center">
+                                        <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                                        <Input
+                                            id="reference_image"
+                                            type="file"
+                                            accept="image/jpeg,image/jpg,image/png,image/webp"
+                                            onChange={handleImageChange}
+                                            className="hidden"
+                                        />
+                                        <Label htmlFor="reference_image" className="cursor-pointer">
+                                            <span className="text-sm text-primary hover:underline">
+                                                Click to upload
+                                            </span>
+                                        </Label>
+                                    </div>
+                                ) : (
+                                    <div className="relative">
+                                        <img
+                                            src={imagePreview}
+                                            alt="Reference preview"
+                                            className="w-full max-w-md h-48 object-cover rounded-lg border"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="icon"
+                                            className="absolute top-2 right-2 h-8 w-8"
+                                            onClick={removeImage}
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                )}
+                                {errors.reference_image && <p className="text-sm text-destructive">{errors.reference_image}</p>}
+                            </div>
+
                             <div className="space-y-2 md:col-span-2">
                                 <Label htmlFor="notes">Notes</Label>
                                 <Textarea
@@ -187,9 +253,11 @@ Create.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
             { title: 'Payments', href: '/payments' },
-            { title: 'Create', href: '/payments/create' },
+            { title: 'Create', href: '#' },
         ]}
     >
-        {page}
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            {page}
+        </div>
     </AppLayout>
 );

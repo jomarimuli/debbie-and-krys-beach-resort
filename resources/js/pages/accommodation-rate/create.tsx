@@ -241,9 +241,11 @@ Create.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
             { title: 'Accommodation Rates', href: '/accommodation-rates' },
-            { title: 'Create', href: '/accommodation-rates/create' },
+            { title: 'Create', href: '#' },
         ]}
     >
-        {page}
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            {page}
+        </div>
     </AppLayout>
 );

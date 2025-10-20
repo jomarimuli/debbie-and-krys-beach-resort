@@ -50,6 +50,8 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
 
     // Payments
     Route::resource('payments', PaymentController::class);
+    Route::get('/payments/{payment}/reference-image', [PaymentController::class, 'showReferenceImage'])
+        ->name('payment.reference-image');
 });
 
 require __DIR__.'/settings.php';

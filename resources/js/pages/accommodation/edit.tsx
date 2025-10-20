@@ -1,4 +1,3 @@
-// resources/js/pages/accommodation/edit.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,26 +7,70 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { FormEventHandler, useState } from 'react';
+import { ArrowLeft, X } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Accommodation, type PageProps } from '@/types';
 
 export default function Edit({ accommodation }: PageProps & { accommodation: Accommodation }) {
-    const { data, setData, put, processing, errors } = useForm({
+    const [existingImages, setExistingImages] = useState<string[]>(accommodation.images || []);
+    const [newImagePreviews, setNewImagePreviews] = useState<string[]>([]);
+
+    const { data, setData, post, processing, errors } = useForm({
         name: accommodation.name,
         type: accommodation.type,
         description: accommodation.description || '',
+        is_air_conditioned: accommodation.is_air_conditioned,
+        images: [] as File[],
+        existing_images: accommodation.images || [],
         min_capacity: accommodation.min_capacity?.toString() || '',
         max_capacity: accommodation.max_capacity?.toString() || '',
         quantity_available: accommodation.quantity_available.toString(),
         is_active: accommodation.is_active,
         sort_order: accommodation.sort_order.toString(),
+        _method: 'PUT',
     });
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+
+        const totalImages = existingImages.length + data.images.length + files.length;
+        if (totalImages > 5) {
+            alert('Maximum 5 images allowed');
+            return;
+        }
+
+        setData('images', [...data.images, ...files]);
+
+        // Generate previews
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setNewImagePreviews(prev => [...prev, reader.result as string]);
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const removeExistingImage = (index: number) => {
+        const newExisting = existingImages.filter((_, i) => i !== index);
+        setExistingImages(newExisting);
+        setData('existing_images', newExisting);
+    };
+
+    const removeNewImage = (index: number) => {
+        const newImages = data.images.filter((_, i) => i !== index);
+        const newPreviews = newImagePreviews.filter((_, i) => i !== index);
+
+        setData('images', newImages);
+        setNewImagePreviews(newPreviews);
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(`/accommodations/${accommodation.id}`);
+        post(`/accommodations/${accommodation.id}`, {
+            forceFormData: true,
+        });
     };
 
     return (
@@ -87,6 +130,90 @@ export default function Edit({ accommodation }: PageProps & { accommodation: Acc
                                 {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
                             </div>
 
+                            <div className="flex items-center space-x-2">
+                                <Switch
+                                    id="is_air_conditioned"
+                                    checked={data.is_air_conditioned}
+                                    onCheckedChange={(checked) => setData('is_air_conditioned', checked)}
+                                />
+                                <Label htmlFor="is_air_conditioned">Air Conditioned</Label>
+                            </div>
+                        </div>
+
+                        {/* Image Management Section */}
+                        <div className="space-y-4">
+                            <div>
+                                <Label>Current Images</Label>
+                                {existingImages.length > 0 ? (
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
+                                        {existingImages.map((imagePath, index) => (
+                                            <div key={index} className="relative group">
+                                                <img
+                                                    src={`/storage/${imagePath}`}
+                                                    alt={`Current ${index + 1}`}
+                                                    className="w-full h-32 object-cover rounded-lg border"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="destructive"
+                                                    size="icon"
+                                                    className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={() => removeExistingImage(index)}
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground mt-2">No images uploaded</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label htmlFor="images">Add New Images (Max 5 total)</Label>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                    Upload images in JPEG, PNG, or WebP format
+                                </p>
+                                <Input
+                                    id="images"
+                                    type="file"
+                                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                                    multiple
+                                    onChange={handleImageChange}
+                                    disabled={existingImages.length + data.images.length >= 5}
+                                />
+                                {errors.images && <p className="text-sm text-destructive">{errors.images}</p>}
+                            </div>
+
+                            {newImagePreviews.length > 0 && (
+                                <div>
+                                    <Label>New Images (Not saved yet)</Label>
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-2">
+                                        {newImagePreviews.map((preview, index) => (
+                                            <div key={index} className="relative group">
+                                                <img
+                                                    src={preview}
+                                                    alt={`New ${index + 1}`}
+                                                    className="w-full h-32 object-cover rounded-lg border"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="destructive"
+                                                    size="icon"
+                                                    className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    onClick={() => removeNewImage(index)}
+                                                >
+                                                    <X className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2">
                             <div className="space-y-2">
                                 <Label htmlFor="min_capacity">Min Capacity (pax)</Label>
                                 <Input
@@ -170,6 +297,8 @@ Edit.layout = (page: React.ReactNode) => (
             { title: 'Edit', href: '#' },
         ]}
     >
-        {page}
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+                {page}
+        </div>
     </AppLayout>
 );

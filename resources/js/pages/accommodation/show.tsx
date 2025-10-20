@@ -1,4 +1,3 @@
-// resources/js/pages/accommodation/show.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,8 +13,13 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useState } from 'react';
 
 export default function Show({ accommodation }: PageProps & { accommodation: Accommodation }) {
+    const [selectedImage, setSelectedImage] = useState<string | null>(
+        accommodation.image_urls?.[0] || null
+    );
+
     return (
         <>
             <div className="flex items-center justify-between">
@@ -38,6 +42,54 @@ export default function Show({ accommodation }: PageProps & { accommodation: Acc
                 </Link>
             </div>
 
+            {/* Image Gallery */}
+            {accommodation.image_urls && accommodation.image_urls.length > 0 && (
+                <Card className="mt-6">
+                    <CardHeader>
+                        <CardTitle>Images</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {/* Main Image */}
+                        <div className="w-full h-96 bg-muted rounded-lg overflow-hidden">
+                            {selectedImage ? (
+                                <img
+                                    src={selectedImage}
+                                    alt={accommodation.name}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                    <Hotel className="h-16 w-16 text-muted-foreground" />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Thumbnail Gallery */}
+                        {accommodation.image_urls.length > 1 && (
+                            <div className="grid grid-cols-5 gap-2">
+                                {accommodation.image_urls.map((url, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => setSelectedImage(url)}
+                                        className={`relative h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                                            selectedImage === url
+                                                ? 'border-primary'
+                                                : 'border-transparent hover:border-muted-foreground'
+                                        }`}
+                                    >
+                                        <img
+                                            src={url}
+                                            alt={`${accommodation.name} ${index + 1}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
+
             <div className="mt-6 grid gap-6 md:grid-cols-2">
                 <Card>
                     <CardHeader>
@@ -52,6 +104,12 @@ export default function Show({ accommodation }: PageProps & { accommodation: Acc
                             <p className="text-sm text-muted-foreground">Type</p>
                             <Badge variant="outline" className="capitalize">
                                 {accommodation.type}
+                            </Badge>
+                        </div>
+                        <div>
+                            <p className="text-sm text-muted-foreground">Air Conditioned</p>
+                            <Badge variant={accommodation.is_air_conditioned ? 'default' : 'secondary'}>
+                                {accommodation.is_air_conditioned ? 'Yes' : 'No'}
                             </Badge>
                         </div>
                         <div>
@@ -147,7 +205,7 @@ Show.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
             { title: 'Accommodations', href: '/accommodations' },
-            { title: 'Details', href: '#' },
+            { title: 'Show', href: '#' },
         ]}
     >
         {page}

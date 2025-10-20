@@ -19,6 +19,7 @@ export default function Create({ accommodations }: PageProps & { accommodations:
         guest_name: '',
         guest_email: '',
         guest_phone: '',
+        guest_address: '',
         check_in_date: '',
         check_out_date: '',
         total_adults: '1',
@@ -122,7 +123,7 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="guest_phone">Phone Number *</Label>
+                                <Label htmlFor="guest_phone">Phone Number</Label>
                                 <Input
                                     id="guest_phone"
                                     value={data.guest_phone}
@@ -142,6 +143,17 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                     placeholder="guest@example.com"
                                 />
                                 {errors.guest_email && <p className="text-sm text-destructive">{errors.guest_email}</p>}
+                            </div>
+
+                            <div className="space-y-2 md:col-span-3">
+                                <Label htmlFor="guest_address">Address</Label>
+                                <Input
+                                    id="guest_address"
+                                    value={data.guest_address}
+                                    onChange={(e) => setData('guest_address', e.target.value)}
+                                    placeholder="City, Province"
+                                />
+                                {errors.guest_address && <p className="text-sm text-destructive">{errors.guest_address}</p>}
                             </div>
                         </div>
                     </CardContent>
@@ -309,9 +321,11 @@ Create.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
             { title: 'Bookings', href: '/bookings' },
-            { title: 'Create', href: '/bookings/create' },
+            { title: 'Create', href: '#' },
         ]}
     >
-        {page}
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            {page}
+        </div>
     </AppLayout>
 );

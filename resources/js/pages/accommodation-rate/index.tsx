@@ -84,7 +84,14 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                             {rates.data.map((rate) => (
                                 <TableRow key={rate.id}>
                                     <TableCell className="font-medium">
-                                        {rate.accommodation?.name}
+                                        <div className="flex items-center gap-2">
+                                            {rate.accommodation?.name}
+                                            {rate.accommodation?.is_air_conditioned && (
+                                                <Badge variant="secondary" className="text-xs">
+                                                    A/C
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         <Badge variant="outline" className="capitalize">
@@ -171,9 +178,11 @@ Index.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
-            { title: 'Accommodation Rates', href: '/accommodation-rates' },
+            { title: 'Accommodation Rates', href: '#' },
         ]}
     >
-        {page}
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            {page}
+        </div>
     </AppLayout>
 );

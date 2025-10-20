@@ -18,8 +18,17 @@ class StorePaymentRequest extends FormRequest
             'amount' => ['required', 'numeric', 'min:0.01'],
             'payment_method' => ['required', 'in:cash,card,bank_transfer,gcash,other'],
             'reference_number' => ['nullable', 'string', 'max:255'],
+            'reference_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp'],
             'notes' => ['nullable', 'string'],
             'payment_date' => ['required', 'date'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'reference_image.image' => 'The file must be an image.',
+            'reference_image.mimes' => 'Image must be jpeg, jpg, png, or webp.',
         ];
     }
 

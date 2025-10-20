@@ -18,6 +18,7 @@ class Booking extends Model
         'guest_name',
         'guest_email',
         'guest_phone',
+        'guest_address',
         'check_in_date',
         'check_out_date',
         'total_adults',
@@ -109,7 +110,7 @@ class Booking extends Model
 
     public static function generateBookingNumber(): string
     {
-        $yearMonth = now()->format('Ym'); // 202510
+        $yearMonth = now()->format('Ym');
         $latest = self::where('booking_number', 'like', "BK-{$yearMonth}-%")
             ->latest('id')
             ->first();
@@ -117,6 +118,5 @@ class Booking extends Model
         $number = $latest ? intval(substr($latest->booking_number, -4)) + 1 : 1;
 
         return 'BK-' . $yearMonth . '-' . str_pad($number, 4, '0', STR_PAD_LEFT);
-        // Result: BK-202510-0001
     }
 }

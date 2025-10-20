@@ -16,6 +16,8 @@ class PaymentResource extends JsonResource
             'amount' => $this->amount,
             'payment_method' => $this->payment_method,
             'reference_number' => $this->reference_number,
+            'reference_image' => $this->reference_image,
+            'reference_image_url' => $this->reference_image_url,
             'notes' => $this->notes,
             'received_by' => $this->received_by,
             'payment_date' => $this->payment_date?->toISOString(),

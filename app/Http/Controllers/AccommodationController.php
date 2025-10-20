@@ -5,12 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Accommodation;
 use App\Http\Requests\Accommodation\StoreAccommodationRequest;
 use App\Http\Requests\Accommodation\UpdateAccommodationRequest;
+use App\Traits\HandlesImageUpload;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AccommodationController extends Controller
 {
+    use HandlesImageUpload;
+
     public function __construct()
     {
         $this->middleware('permission:accommodation show|global access')->only(['index', 'show']);
@@ -38,10 +42,26 @@ class AccommodationController extends Controller
 
     public function store(StoreAccommodationRequest $request): RedirectResponse
     {
-        Accommodation::create($request->validated());
+        DB::beginTransaction();
 
-        return redirect()->route('accommodations.index')
-            ->with('success', 'Accommodation created successfully.');
+        try {
+            $data = $request->validated();
+
+            // Handle image uploads - specify 'accommodations' subfolder
+            if ($request->hasFile('images')) {
+                $data['images'] = $this->uploadImages($request->file('images'), 'accommodations');
+            }
+
+            Accommodation::create($data);
+
+            DB::commit();
+
+            return redirect()->route('accommodations.index')
+                ->with('success', 'Accommodation created successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function show(Accommodation $accommodation): Response
@@ -62,17 +82,57 @@ class AccommodationController extends Controller
 
     public function update(UpdateAccommodationRequest $request, Accommodation $accommodation): RedirectResponse
     {
-        $accommodation->update($request->validated());
+        DB::beginTransaction();
+        try {
+            $data = $request->validated();
 
-        return redirect()->route('accommodations.index')
-            ->with('success', 'Accommodation updated successfully.');
+            $existingImages = $request->input('existing_images', []);
+            $imagesToDelete = array_diff($accommodation->images ?? [], $existingImages);
+
+            // Delete removed images
+            if (!empty($imagesToDelete)) {
+                $this->deleteImages($imagesToDelete);
+            }
+
+            // Upload new images - specify 'accommodations' subfolder
+            $newImages = [];
+            if ($request->hasFile('images')) {
+                $newImages = $this->uploadImages($request->file('images'), 'accommodations');
+            }
+
+            // Merge existing and new images
+            $data['images'] = array_merge($existingImages, $newImages);
+
+            $accommodation->update($data);
+
+            DB::commit();
+
+            return redirect()->route('accommodations.index')
+                ->with('success', 'Accommodation updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function destroy(Accommodation $accommodation): RedirectResponse
     {
-        $accommodation->delete();
+        DB::beginTransaction();
+        try {
+            // Delete all images
+            if ($accommodation->images) {
+                $this->deleteImages($accommodation->images);
+            }
 
-        return redirect()->route('accommodations.index')
-            ->with('success', 'Accommodation deleted successfully.');
+            $accommodation->delete();
+
+            DB::commit();
+
+            return redirect()->route('accommodations.index')
+                ->with('success', 'Accommodation deleted successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', $e->getMessage());
+        }
     }
 }

@@ -1,4 +1,3 @@
-// resources/js/pages/accommodation/create.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,15 +7,19 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { FormEventHandler, useState } from 'react';
+import { ArrowLeft, X, ImageIcon } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 
 export default function Create() {
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         type: 'room' as 'room' | 'cottage',
         description: '',
+        is_air_conditioned: false,
+        images: [] as File[],
         min_capacity: '',
         max_capacity: '',
         quantity_available: '1',
@@ -24,9 +27,39 @@ export default function Create() {
         sort_order: '0',
     });
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+
+        if (files.length + data.images.length > 5) {
+            alert('Maximum 5 images allowed');
+            return;
+        }
+
+        setData('images', [...data.images, ...files]);
+
+        // Generate previews
+        files.forEach(file => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreviews(prev => [...prev, reader.result as string]);
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const removeImage = (index: number) => {
+        const newImages = data.images.filter((_, i) => i !== index);
+        const newPreviews = imagePreviews.filter((_, i) => i !== index);
+
+        setData('images', newImages);
+        setImagePreviews(newPreviews);
+    };
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post('/accommodations');
+        post('/accommodations', {
+            forceFormData: true,
+        });
     };
 
     return (
@@ -57,7 +90,7 @@ export default function Create() {
                                     id="name"
                                     value={data.name}
                                     onChange={(e) => setData('name', e.target.value)}
-                                    placeholder="e.g., Big Room (Airconditioned)"
+                                    placeholder="e.g., Big Room"
                                 />
                                 {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
                             </div>
@@ -88,6 +121,59 @@ export default function Create() {
                                 {errors.description && <p className="text-sm text-destructive">{errors.description}</p>}
                             </div>
 
+                            <div className="flex items-center space-x-2">
+                                <Switch
+                                    id="is_air_conditioned"
+                                    checked={data.is_air_conditioned}
+                                    onCheckedChange={(checked) => setData('is_air_conditioned', checked)}
+                                />
+                                <Label htmlFor="is_air_conditioned">Air Conditioned</Label>
+                            </div>
+                        </div>
+
+                        {/* Image Upload Section */}
+                        <div className="space-y-4">
+                            <div>
+                                <Label htmlFor="images">Images (Max 5)</Label>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                    Upload images in JPEG, PNG, or WebP format
+                                </p>
+                                <Input
+                                    id="images"
+                                    type="file"
+                                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                                    multiple
+                                    onChange={handleImageChange}
+                                    disabled={data.images.length >= 5}
+                                />
+                                {errors.images && <p className="text-sm text-destructive">{errors.images}</p>}
+                            </div>
+
+                            {imagePreviews.length > 0 && (
+                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                    {imagePreviews.map((preview, index) => (
+                                        <div key={index} className="relative group">
+                                            <img
+                                                src={preview}
+                                                alt={`Preview ${index + 1}`}
+                                                className="w-full h-32 object-cover rounded-lg border"
+                                            />
+                                            <Button
+                                                type="button"
+                                                variant="destructive"
+                                                size="icon"
+                                                className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                onClick={() => removeImage(index)}
+                                            >
+                                                <X className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="grid gap-6 md:grid-cols-2">
                             <div className="space-y-2">
                                 <Label htmlFor="min_capacity">Min Capacity (pax)</Label>
                                 <Input
@@ -170,9 +256,11 @@ Create.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
             { title: 'Accommodations', href: '/accommodations' },
-            { title: 'Create', href: '/accommodations/create' },
+            { title: 'Create', href: '#' },
         ]}
     >
-        {page}
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            {page}
+        </div>
     </AppLayout>
 );

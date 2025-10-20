@@ -12,9 +12,10 @@ class AccommodationSeeder extends Seeder
     {
         // Big Room (Airconditioned)
         $bigRoom = Accommodation::create([
-            'name' => 'Big Room (Airconditioned)',
+            'name' => 'Big Room',
             'type' => 'room',
-            'description' => 'Spacious air-conditioned room',
+            'description' => 'Spacious room',
+            'is_air_conditioned' => true,
             'min_capacity' => 6,
             'max_capacity' => null,
             'quantity_available' => 5,
@@ -38,9 +39,10 @@ class AccommodationSeeder extends Seeder
 
         // Small Room (Airconditioned)
         $smallRoom = Accommodation::create([
-            'name' => 'Small Room (Airconditioned)',
+            'name' => 'Small Room',
             'type' => 'room',
-            'description' => 'Cozy air-conditioned room',
+            'description' => 'Cozy room',
+            'is_air_conditioned' => true,
             'min_capacity' => 4,
             'max_capacity' => null,
             'quantity_available' => 8,
@@ -63,16 +65,17 @@ class AccommodationSeeder extends Seeder
         ]);
 
         // Big Cottage
-        $bigCottage = Accommodation::create([
-            'name' => 'Big Cottage',
-            'type' => 'cottage',
-            'description' => 'Large cottage for groups',
-            'min_capacity' => 10,
-            'max_capacity' => 15,
-            'quantity_available' => 10,
-            'is_active' => true,
-            'sort_order' => 3,
-        ]);
+    $bigCottage = Accommodation::create([
+        'name' => 'Big Cottage',
+        'type' => 'cottage',
+        'description' => 'Large cottage for groups',
+        'is_air_conditioned' => false,
+        'min_capacity' => 10,
+        'max_capacity' => 15,
+        'quantity_available' => 10,
+        'is_active' => true,
+        'sort_order' => 3,
+    ]);
 
         // Big Cottage - Day Tour
         AccommodationRate::create([
@@ -109,6 +112,7 @@ class AccommodationSeeder extends Seeder
             'name' => 'Small Cottage',
             'type' => 'cottage',
             'description' => 'Compact cottage for small groups',
+            'is_air_conditioned' => false,
             'min_capacity' => 8,
             'max_capacity' => 10,
             'quantity_available' => 15,

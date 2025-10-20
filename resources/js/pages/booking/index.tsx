@@ -100,7 +100,12 @@ export default function Index({ bookings }: BookingIndexProps) {
                                     <TableCell>
                                         <div>
                                             <p className="font-medium">{booking.guest_name}</p>
-                                            <p className="text-sm text-muted-foreground">{booking.guest_phone}</p>
+                                            {booking.guest_phone && (
+                                                <p className="text-sm text-muted-foreground">{booking.guest_phone}</p>
+                                            )}
+                                            {booking.guest_address && (
+                                                <p className="text-xs text-muted-foreground">{booking.guest_address}</p>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
@@ -189,9 +194,11 @@ Index.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
-            { title: 'Bookings', href: '/bookings' },
+            { title: 'Bookings', href: '#' },
         ]}
     >
-        {page}
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            {page}
+        </div>
     </AppLayout>
 );

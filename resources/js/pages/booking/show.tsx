@@ -125,11 +125,15 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">Phone</p>
-                            <p className="font-medium">{booking.guest_phone}</p>
+                            <p className="font-medium">{booking.guest_phone || 'N/A'}</p>
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">Email</p>
                             <p className="font-medium">{booking.guest_email || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-sm text-muted-foreground">Address</p>
+                            <p className="font-medium">{booking.guest_address || 'N/A'}</p>
                         </div>
                         <div>
                             <p className="text-sm text-muted-foreground">Total Guests</p>
@@ -318,9 +322,11 @@ Show.layout = (page: React.ReactNode) => (
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
             { title: 'Bookings', href: '/bookings' },
-            { title: 'Details', href: '#' },
+            { title: 'Show', href: '#' },
         ]}
     >
-        {page}
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            {page}
+        </div>
     </AppLayout>
 );

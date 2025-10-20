@@ -17,7 +17,8 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
     const { data, setData, put, processing, errors } = useForm({
         guest_name: booking.guest_name,
         guest_email: booking.guest_email || '',
-        guest_phone: booking.guest_phone,
+        guest_phone: booking.guest_phone || '',
+        guest_address: booking.guest_address || '',
         check_in_date: format(new Date(booking.check_in_date), 'yyyy-MM-dd'),
         check_out_date: booking.check_out_date ? format(new Date(booking.check_out_date), 'yyyy-MM-dd') : '',
         total_adults: booking.total_adults.toString(),
@@ -64,7 +65,7 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="guest_phone">Phone Number *</Label>
+                                <Label htmlFor="guest_phone">Phone Number</Label>
                                 <Input
                                     id="guest_phone"
                                     value={data.guest_phone}
@@ -82,6 +83,17 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
                                     onChange={(e) => setData('guest_email', e.target.value)}
                                 />
                                 {errors.guest_email && <p className="text-sm text-destructive">{errors.guest_email}</p>}
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="guest_address">Address</Label>
+                                <Input
+                                    id="guest_address"
+                                    value={data.guest_address}
+                                    onChange={(e) => setData('guest_address', e.target.value)}
+                                    placeholder="City, Province"
+                                />
+                                {errors.guest_address && <p className="text-sm text-destructive">{errors.guest_address}</p>}
                             </div>
 
                             <div className="space-y-2">
@@ -186,6 +198,8 @@ Edit.layout = (page: React.ReactNode) => (
             { title: 'Edit', href: '#' },
         ]}
     >
-        {page}
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            {page}
+        </div>
     </AppLayout>
 );

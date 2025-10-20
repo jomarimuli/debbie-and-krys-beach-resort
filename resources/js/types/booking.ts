@@ -11,7 +11,8 @@ export interface Booking {
     user_id: number | null;
     guest_name: string;
     guest_email: string | null;
-    guest_phone: string;
+    guest_phone: string | null;
+    guest_address: string | null;
     check_in_date: string;
     check_out_date: string | null;
     total_adults: number;
@@ -93,7 +94,8 @@ export interface BookingFormData {
     user_id?: number;
     guest_name: string;
     guest_email?: string;
-    guest_phone: string;
+    guest_phone?: string;
+    guest_address?: string;
     check_in_date: string;
     check_out_date?: string;
     total_adults: number;

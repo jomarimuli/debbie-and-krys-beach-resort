@@ -18,6 +18,7 @@ class BookingResource extends JsonResource
             'guest_name' => $this->guest_name,
             'guest_email' => $this->guest_email,
             'guest_phone' => $this->guest_phone,
+            'guest_address' => $this->guest_address,
             'check_in_date' => $this->check_in_date?->toISOString(),
             'check_out_date' => $this->check_out_date?->toISOString(),
             'total_adults' => $this->total_adults,

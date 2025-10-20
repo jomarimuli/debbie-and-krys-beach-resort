@@ -17,8 +17,18 @@ class UpdatePaymentRequest extends FormRequest
             'amount' => ['required', 'numeric', 'min:0.01'],
             'payment_method' => ['required', 'in:cash,card,bank_transfer,gcash,other'],
             'reference_number' => ['nullable', 'string', 'max:255'],
+            'reference_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp'],
+            'remove_reference_image' => ['boolean'],
             'notes' => ['nullable', 'string'],
             'payment_date' => ['required', 'date'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'reference_image.image' => 'The file must be an image.',
+            'reference_image.mimes' => 'Image must be jpeg, jpg, png, or webp.',
         ];
     }
 
@@ -28,7 +38,6 @@ class UpdatePaymentRequest extends FormRequest
             $payment = $this->route('payment');
             $booking = $payment->booking;
 
-            // Calculate balance excluding current payment
             $otherPayments = $booking->payments()->where('id', '!=', $payment->id)->sum('amount');
             $newBalance = $booking->total_amount - $otherPayments - $this->amount;
 

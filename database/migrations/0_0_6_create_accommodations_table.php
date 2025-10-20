@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('name'); // "Big Room (Airconditioned)", "Small Cottage"
             $table->enum('type', ['room', 'cottage']); // Can add more types later
             $table->text('description')->nullable();
+            $table->boolean('is_air_conditioned')->default(false);
+            $table->json('images')->nullable();
             $table->integer('min_capacity')->nullable(); // 8 pax
             $table->integer('max_capacity')->nullable(); // 15 pax
             $table->integer('quantity_available')->default(1); // How many units exist

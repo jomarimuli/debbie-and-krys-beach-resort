@@ -28,7 +28,7 @@ return new class extends Migration
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->index(['accommodation_id', 'booking_type']);
+            $table->unique(['accommodation_id', 'booking_type']);
         });
     }
 

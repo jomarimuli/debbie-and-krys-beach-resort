@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
-            $table->string('booking_number')->unique(); // BK-2025-0001
+            $table->string('booking_number')->unique(); // BK-202510-0001
             $table->enum('source', ['guest', 'registered', 'walkin']);
             $table->enum('booking_type', ['day_tour', 'overnight']);
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
@@ -21,7 +21,8 @@ return new class extends Migration
             // Guest information
             $table->string('guest_name');
             $table->string('guest_email')->nullable();
-            $table->string('guest_phone');
+            $table->string('guest_phone')->nullable();
+            $table->string('guest_address')->nullable();
 
             // Booking details
             $table->date('check_in_date');

@@ -1,11 +1,10 @@
-// resources/js/pages/payment/index.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Plus, DollarSign, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, DollarSign, Eye, Edit, Trash2, ImageIcon } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import {
@@ -35,6 +34,7 @@ interface Payment {
     amount: string;
     payment_method: string;
     reference_number: string | null;
+    reference_image: string | null;
     payment_date: string;
     booking?: {
         booking_number: string;
@@ -107,7 +107,14 @@ export default function Index({ payments }: PaymentIndexProps) {
                             {payments.data.map((payment) => (
                                 <TableRow key={payment.id}>
                                     <TableCell className="font-medium">
-                                        {payment.payment_number}
+                                        <div className="flex items-center gap-2">
+                                            {payment.payment_number}
+                                            {payment.reference_image && (
+                                                <span title="Has reference image">
+                                                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                                                </span>
+                                            )}
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         <Link
@@ -174,7 +181,7 @@ export default function Index({ payments }: PaymentIndexProps) {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the payment record.
+                            This action cannot be undone. This will permanently delete the payment record and any associated reference image.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -191,9 +198,11 @@ Index.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
-            { title: 'Payments', href: '/payments' },
+            { title: 'Payments', href: '#' },
         ]}
     >
-        {page}
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            {page}
+        </div>
     </AppLayout>
 );

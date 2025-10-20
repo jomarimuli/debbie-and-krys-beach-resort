@@ -6,16 +6,21 @@ use App\Models\Payment;
 use App\Models\Booking;
 use App\Http\Requests\Payment\StorePaymentRequest;
 use App\Http\Requests\Payment\UpdatePaymentRequest;
+use App\Traits\HandlesImageUpload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PaymentController extends Controller
 {
+    use HandlesImageUpload;
+
     public function __construct()
     {
-        $this->middleware('permission:payment show|global access')->only(['index', 'show']);
+        $this->middleware('permission:payment show|global access')->only(['index', 'show', 'showReferenceImage']);
         $this->middleware('permission:payment create|global access')->only(['create', 'store']);
         $this->middleware('permission:payment edit|global access')->only(['edit', 'update']);
         $this->middleware('permission:payment delete|global access')->only('destroy');
@@ -48,8 +53,18 @@ class PaymentController extends Controller
     {
         DB::beginTransaction();
         try {
+            $data = $request->validated();
+
+            // Handle reference image upload to private storage
+            if ($request->hasFile('reference_image')) {
+                $data['reference_image'] = $this->uploadImageToPrivate(
+                    $request->file('reference_image'),
+                    'payments'
+                );
+            }
+
             $payment = Payment::create([
-                ...$request->validated(),
+                ...$data,
                 'received_by' => auth()->id(),
             ]);
 
@@ -88,7 +103,29 @@ class PaymentController extends Controller
     {
         DB::beginTransaction();
         try {
-            $payment->update($request->validated());
+            $data = $request->validated();
+
+            // Handle reference image update
+            if ($request->hasFile('reference_image')) {
+                // Delete old image
+                if ($payment->reference_image) {
+                    $this->deleteImageFromPrivate($payment->reference_image);
+                }
+
+                // Upload new image
+                $data['reference_image'] = $this->uploadImageToPrivate(
+                    $request->file('reference_image'),
+                    'payments'
+                );
+            } elseif ($request->input('remove_reference_image')) {
+                // Remove image if requested
+                if ($payment->reference_image) {
+                    $this->deleteImageFromPrivate($payment->reference_image);
+                }
+                $data['reference_image'] = null;
+            }
+
+            $payment->update($data);
 
             $booking = $payment->booking;
             $booking->update([
@@ -110,6 +147,12 @@ class PaymentController extends Controller
         DB::beginTransaction();
         try {
             $booking = $payment->booking;
+
+            // Delete reference image
+            if ($payment->reference_image) {
+                $this->deleteImageFromPrivate($payment->reference_image);
+            }
+
             $payment->delete();
 
             $booking->update([
@@ -124,5 +167,36 @@ class PaymentController extends Controller
             DB::rollBack();
             return back()->with('error', $e->getMessage());
         }
+    }
+
+    // Serve private image
+    public function showReferenceImage(Payment $payment): StreamedResponse
+    {
+        if (!$payment->reference_image || !Storage::disk('local')->exists($payment->reference_image)) {
+            abort(404);
+        }
+
+        return Storage::disk('local')->response($payment->reference_image);
+    }
+
+    // Add helper methods for private storage
+    protected function uploadImageToPrivate($file, string $folder): string
+    {
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $extension = $file->getClientOriginalExtension();
+        $sanitizedName = \Illuminate\Support\Str::slug($originalName);
+        $timestamp = now()->timestamp;
+        $filename = "{$sanitizedName}_{$timestamp}.{$extension}";
+
+        return $file->storeAs($folder, $filename, 'local');
+    }
+
+    protected function deleteImageFromPrivate(?string $path): bool
+    {
+        if ($path && Storage::disk('local')->exists($path)) {
+            return Storage::disk('local')->delete($path);
+        }
+
+        return false;
     }
 }

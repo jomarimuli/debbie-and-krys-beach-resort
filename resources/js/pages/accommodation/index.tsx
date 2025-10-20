@@ -1,4 +1,3 @@
-// resources/js/pages/accommodation/index.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,6 +63,7 @@ export default function Index({ accommodations }: AccommodationIndexProps) {
                     <Table>
                         <TableHeader>
                             <TableRow>
+                                <TableHead>Image</TableHead>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Type</TableHead>
                                 <TableHead>Capacity</TableHead>
@@ -75,10 +75,27 @@ export default function Index({ accommodations }: AccommodationIndexProps) {
                         <TableBody>
                             {accommodations.data.map((accommodation) => (
                                 <TableRow key={accommodation.id}>
+                                    <TableCell>
+                                        {accommodation.first_image_url ? (
+                                            <img
+                                                src={accommodation.first_image_url}
+                                                alt={accommodation.name}
+                                                className="w-16 h-16 object-cover rounded-lg"
+                                            />
+                                        ) : (
+                                            <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
+                                                <Hotel className="h-6 w-6 text-muted-foreground" />
+                                            </div>
+                                        )}
+                                    </TableCell>
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-2">
-                                            <Hotel className="h-4 w-4 text-muted-foreground" />
                                             {accommodation.name}
+                                            {accommodation.is_air_conditioned && (
+                                                <Badge variant="secondary" className="text-xs">
+                                                    A/C
+                                                </Badge>
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
@@ -146,7 +163,7 @@ export default function Index({ accommodations }: AccommodationIndexProps) {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the accommodation.
+                            This action cannot be undone. This will permanently delete the accommodation and all its images.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -163,9 +180,11 @@ Index.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
-            { title: 'Accommodations', href: '/accommodations' },
+            { title: 'Accommodations', href: '#' },
         ]}
     >
-        {page}
+        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+            {page}
+        </div>
     </AppLayout>
 );

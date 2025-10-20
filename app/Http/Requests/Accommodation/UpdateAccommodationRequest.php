@@ -17,11 +17,25 @@ class UpdateAccommodationRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'in:room,cottage'],
             'description' => ['nullable', 'string'],
+            'is_air_conditioned' => ['boolean'],
+            'images' => ['nullable', 'array', 'max:5'],
+            'images.*' => ['image', 'mimes:jpeg,jpg,png,webp'],
+            'existing_images' => ['nullable', 'array'],
+            'existing_images.*' => ['string'],
             'min_capacity' => ['nullable', 'integer', 'min:1'],
             'max_capacity' => ['nullable', 'integer', 'min:1', 'gte:min_capacity'],
             'quantity_available' => ['required', 'integer', 'min:1'],
             'is_active' => ['boolean'],
             'sort_order' => ['integer', 'min:0'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'images.max' => 'You can upload maximum 5 images.',
+            'images.*.image' => 'Each file must be an image.',
+            'images.*.mimes' => 'Images must be jpeg, jpg, png, or webp.',
         ];
     }
 }

@@ -16,7 +16,8 @@ class UpdateBookingRequest extends FormRequest
         return [
             'guest_name' => ['required', 'string', 'max:255'],
             'guest_email' => ['nullable', 'email', 'max:255'],
-            'guest_phone' => ['required', 'string', 'max:20'],
+            'guest_phone' => ['nullable', 'string', 'max:20'],
+            'guest_address' => ['nullable', 'string', 'max:500'],
             'check_in_date' => ['required', 'date'],
             'check_out_date' => ['nullable', 'date', 'after:check_in_date'],
             'total_adults' => ['required', 'integer', 'min:1'],

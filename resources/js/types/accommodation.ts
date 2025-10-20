@@ -7,6 +7,10 @@ export interface Accommodation {
     name: string;
     type: 'room' | 'cottage';
     description: string | null;
+    is_air_conditioned: boolean;
+    images: string[] | null;
+    image_urls: string[];
+    first_image_url: string | null;
     min_capacity: number | null;
     max_capacity: number | null;
     quantity_available: number;
@@ -45,12 +49,14 @@ export interface AccommodationFormData {
     name: string;
     type: 'room' | 'cottage';
     description?: string;
+    is_air_conditioned: boolean;
+    images?: File[];
+    existing_images?: string[];
     min_capacity?: number;
     max_capacity?: number;
     quantity_available: number;
     is_active: boolean;
 }
-
 export interface AccommodationRateFormData {
     accommodation_id: number;
     booking_type: 'day_tour' | 'overnight';
