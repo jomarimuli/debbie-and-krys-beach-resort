@@ -28,6 +28,8 @@ class AccommodationRate extends Model
         'additional_pax_rate' => 'decimal:2',
         'entrance_fee' => 'decimal:2',
         'child_entrance_fee' => 'decimal:2',
+        'base_capacity' => 'integer',
+        'child_max_age' => 'integer',
         'includes_free_cottage' => 'boolean',
         'includes_free_entrance' => 'boolean',
         'effective_from' => 'date',
@@ -35,11 +37,13 @@ class AccommodationRate extends Model
         'is_active' => 'boolean',
     ];
 
+    // Relationships
     public function accommodation(): BelongsTo
     {
         return $this->belongsTo(Accommodation::class);
     }
 
+    // Scopes
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
@@ -50,10 +54,10 @@ class AccommodationRate extends Model
         $date = $date ?? now();
         return $query->where(function ($q) use ($date) {
             $q->whereNull('effective_from')
-            ->orWhere('effective_from', '<=', $date);
+                ->orWhere('effective_from', '<=', $date);
         })->where(function ($q) use ($date) {
             $q->whereNull('effective_to')
-            ->orWhere('effective_to', '>=', $date);
+                ->orWhere('effective_to', '>=', $date);
         });
     }
 }

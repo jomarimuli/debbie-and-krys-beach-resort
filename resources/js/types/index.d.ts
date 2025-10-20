@@ -1,25 +1,6 @@
 // resources/js/types/index.ts
-import type { User, UserIndexData } from './user';
-import type { RoleIndexData } from './role';
-import type {
-    Accommodation,
-    AccommodationRate,
-    AccommodationIndexData,
-    AccommodationFormData,
-    AccommodationRateFormData
-} from './accommodation';
-import type {
-    Booking,
-    BookingAccommodation,
-    BookingEntranceFee,
-    BookingIndexData,
-    BookingFormData
-} from './booking';
-import type {
-    Payment,
-    PaymentFormData
-} from './payment';
 
+// Re-export all types from sub-modules
 export * from './datatable';
 export * from './user';
 export * from './role';

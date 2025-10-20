@@ -16,10 +16,12 @@ class BookingEntranceFee extends Model
     ];
 
     protected $casts = [
+        'quantity' => 'integer',
         'rate' => 'decimal:2',
         'subtotal' => 'decimal:2',
     ];
 
+    // Relationships
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

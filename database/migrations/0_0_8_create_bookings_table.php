@@ -33,7 +33,7 @@ return new class extends Migration
             // Totals
             $table->decimal('accommodation_total', 10, 2)->default(0);
             $table->decimal('entrance_fee_total', 10, 2)->default(0);
-            $table->decimal('total_amount', 10, 2);
+            $table->decimal('total_amount', 10, 2)->default(0);
             $table->decimal('paid_amount', 10, 2)->default(0);
 
             // Status

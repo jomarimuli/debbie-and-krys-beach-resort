@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Booking extends Model
 {
@@ -35,12 +36,17 @@ class Booking extends Model
     protected $casts = [
         'check_in_date' => 'date',
         'check_out_date' => 'date',
+        'total_adults' => 'integer',
+        'total_children' => 'integer',
         'accommodation_total' => 'decimal:2',
         'entrance_fee_total' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
     ];
 
+    protected $appends = ['balance', 'is_fully_paid', 'total_guests'];
+
+    // Relationships
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -66,21 +72,29 @@ class Booking extends Model
         return $this->hasMany(Payment::class);
     }
 
-    public function getBalanceAttribute(): float
+    // Accessors
+    protected function balance(): Attribute
     {
-        return $this->total_amount - $this->paid_amount;
+        return Attribute::make(
+            get: fn() => $this->total_amount - $this->paid_amount,
+        );
     }
 
-    public function getIsFullyPaidAttribute(): bool
+    protected function isFullyPaid(): Attribute
     {
-        return $this->balance <= 0;
+        return Attribute::make(
+            get: fn() => $this->balance <= 0,
+        );
     }
 
-    public function getTotalGuestsAttribute(): int
+    protected function totalGuests(): Attribute
     {
-        return $this->total_adults + $this->total_children;
+        return Attribute::make(
+            get: fn() => $this->total_adults + $this->total_children,
+        );
     }
 
+    // Scopes
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
@@ -97,6 +111,7 @@ class Booking extends Model
             ->where('check_in_date', '>=', now()->toDateString());
     }
 
+    // Boot
     protected static function boot()
     {
         parent::boot();
@@ -108,6 +123,7 @@ class Booking extends Model
         });
     }
 
+    // Static Methods
     public static function generateBookingNumber(): string
     {
         $yearMonth = now()->format('Ym');

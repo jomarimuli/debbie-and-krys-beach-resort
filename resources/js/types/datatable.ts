@@ -1,3 +1,4 @@
+// resources/js/types/datatable.ts
 export interface DataTableColumn {
     key: string;
     label: string;

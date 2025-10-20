@@ -30,6 +30,7 @@ class Payment extends Model
 
     protected $appends = ['reference_image_url'];
 
+    // Relationships
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
@@ -40,19 +41,19 @@ class Payment extends Model
         return $this->belongsTo(User::class, 'received_by');
     }
 
-    // Get full URL for reference image (private storage)
+    // Accessors
     public function getReferenceImageUrlAttribute(): ?string
     {
         if (!$this->reference_image) {
             return null;
         }
 
-        // Generate temporary URL for private file (valid for 60 minutes)
         return Storage::disk('local')->exists($this->reference_image)
             ? route('payment.reference-image', $this->id)
             : null;
     }
 
+    // Boot
     protected static function boot()
     {
         parent::boot();
@@ -64,13 +65,13 @@ class Payment extends Model
         });
 
         static::deleting(function ($payment) {
-            // Delete reference image when payment is deleted
             if ($payment->reference_image && Storage::disk('local')->exists($payment->reference_image)) {
                 Storage::disk('local')->delete($payment->reference_image);
             }
         });
     }
 
+    // Static Methods
     public static function generatePaymentNumber(): string
     {
         $yearMonth = now()->format('Ym');

@@ -2,6 +2,7 @@
 import type { PaginatedData } from './datatable';
 import type { User } from './user';
 import type { Accommodation } from './accommodation';
+import type { Payment } from './payment';
 
 export interface Booking {
     id: number;
@@ -60,22 +61,6 @@ export interface BookingEntranceFee {
     subtotal: string;
     created_at: string;
     updated_at: string;
-}
-
-export interface Payment {
-    id: number;
-    booking_id: number;
-    payment_number: string;
-    amount: string;
-    payment_method: 'cash' | 'card' | 'bank_transfer' | 'gcash' | 'other';
-    reference_number: string | null;
-    notes: string | null;
-    received_by: number | null;
-    payment_date: string;
-    created_at: string;
-    updated_at: string;
-    booking?: Booking;
-    received_by_user?: User;
 }
 
 export interface BookingIndexData {

@@ -35,19 +35,21 @@ class Accommodation extends Model
         'sort_order' => 'integer',
     ];
 
-    // Add this to always append these attributes
     protected $appends = ['image_urls', 'first_image_url'];
 
+    // Relationships
     public function rates(): HasMany
     {
         return $this->hasMany(AccommodationRate::class);
     }
 
+    // Scopes
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
+    // Methods
     public function getRateForBookingType(string $bookingType)
     {
         return $this->rates()
@@ -56,15 +58,14 @@ class Accommodation extends Model
             ->first();
     }
 
+    // Accessors
     public function getImageUrlsAttribute(): array
     {
         if (!$this->images) {
             return [];
         }
 
-        return array_map(function ($path) {
-            return asset('storage/' . $path);
-        }, $this->images);
+        return array_map(fn($path) => asset('storage/' . $path), $this->images);
     }
 
     public function getFirstImageUrlAttribute(): ?string
