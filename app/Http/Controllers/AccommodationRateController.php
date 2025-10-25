@@ -50,8 +50,6 @@ class AccommodationRateController extends Controller
 
     public function show(AccommodationRate $accommodationRate): Response
     {
-        $this->authorize('accommodation-rate show');
-
         $accommodationRate->load('accommodation');
 
         return Inertia::render('accommodation-rate/show', [

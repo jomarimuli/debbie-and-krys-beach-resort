@@ -42,9 +42,9 @@ return new class extends Migration
 
             $table->foreignId('created_by')->nullable()->constrained('users');
             $table->timestamps();
-            $table->softDeletes();
 
-            $table->index(['check_in_date', 'status']);
+            $table->index(['check_in_date', 'check_out_date', 'status'], 'idx_booking_dates_status');
+            $table->index('booking_number', 'idx_booking_number');
         });
     }
 

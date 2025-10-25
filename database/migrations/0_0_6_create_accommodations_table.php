@@ -21,11 +21,13 @@ return new class extends Migration
             $table->json('images')->nullable();
             $table->integer('min_capacity')->nullable(); // 8 pax
             $table->integer('max_capacity')->nullable(); // 15 pax
-            $table->integer('quantity_available')->default(1); // How many units exist
             $table->boolean('is_active')->default(true);
             $table->integer('sort_order')->default(0);
             $table->timestamps();
-            $table->softDeletes();
+
+            $table->index(['is_active', 'sort_order'], 'idx_accom_active_sort');
+            $table->index('type', 'idx_accom_type');
+            $table->index('size', 'idx_accom_size');
         });
     }
 

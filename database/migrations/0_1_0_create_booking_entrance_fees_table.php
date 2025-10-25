@@ -19,6 +19,8 @@ return new class extends Migration
             $table->decimal('rate', 10, 2);
             $table->decimal('subtotal', 10, 2);
             $table->timestamps();
+
+            $table->index('booking_id', 'idx_entrance_booking_id');
         });
     }
 

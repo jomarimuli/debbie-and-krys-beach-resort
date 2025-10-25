@@ -13,13 +13,19 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, Menu, Search, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote } from 'lucide-react';
+import { LayoutGrid, Users, Shield, Menu, Search, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 import { GithubUpdatesModal } from '@/components/github-updates-modal';
 
 const allNavItems: NavItem[] = [
+    {
+        title: 'Home',
+        href: '/',
+        icon: Home,
+        requiredPermissions: [],
+    },
     {
         title: 'Dashboard',
         href: '/dashboard',
@@ -55,6 +61,24 @@ const allNavItems: NavItem[] = [
         href: '/payments',
         icon: Banknote,
         requiredPermissions: ['payment show', 'global access'],
+    },
+    {
+        title: 'Feedbacks',
+        href: '/feedbacks',
+        icon: MessageSquare,
+        requiredPermissions: ['feedback show', 'global access'],
+    },
+    {
+        title: 'Gallery',
+        href: '/galleries',
+        icon: ImageIcon,
+        requiredPermissions: ['gallery show', 'global access'],
+    },
+    {
+        title: 'Announcements',
+        href: '/announcements',
+        icon: Megaphone,
+        requiredPermissions: ['announcement show', 'global access'],
     },
     {
         title: 'Users',
@@ -190,7 +214,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                 {item.title}
                                             </Link>
                                         )}
-                                        {page.url === item.href && (
+                                        {(item.href === '/' ? page.url === '/' : page.url.startsWith(item.href)) && (
                                             <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black"></div>
                                         )}
                                     </NavigationMenuItem>

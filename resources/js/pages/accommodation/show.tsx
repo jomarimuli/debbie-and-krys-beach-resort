@@ -1,19 +1,13 @@
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type Accommodation, type PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Edit, Hotel } from 'lucide-react';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useState } from 'react';
+import accommodations from '@/routes/accommodations';
 
 export default function Show({ accommodation }: PageProps & { accommodation: Accommodation }) {
     const [selectedImage, setSelectedImage] = useState<string | null>(
@@ -21,36 +15,34 @@ export default function Show({ accommodation }: PageProps & { accommodation: Acc
     );
 
     return (
-        <>
+        <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/accommodations">
-                        <Button variant="ghost" size="icon">
+                <div className="flex items-center gap-3">
+                    <Link href={accommodations.index.url()}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">{accommodation.name}</h1>
-                        <p className="text-muted-foreground">Accommodation details</p>
+                        <h1 className="text-xl font-semibold">{accommodation.name}</h1>
+                        <p className="text-sm text-muted-foreground">Accommodation details</p>
                     </div>
                 </div>
-                <Link href={`/accommodations/${accommodation.id}/edit`}>
-                    <Button>
-                        <Edit className="mr-2 h-4 w-4" />
+                <Link href={accommodations.edit.url({ accommodation: accommodation.id })}>
+                    <Button size="sm">
+                        <Edit className="mr-1.5 h-3.5 w-3.5" />
                         Edit
                     </Button>
                 </Link>
             </div>
 
-            {/* Image Gallery */}
             {accommodation.image_urls && accommodation.image_urls.length > 0 && (
-                <Card className="mt-6">
-                    <CardHeader>
-                        <CardTitle>Images</CardTitle>
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Images</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                        {/* Main Image */}
-                        <div className="w-full h-96 bg-muted rounded-lg overflow-hidden">
+                    <CardContent className="space-y-3">
+                        <div className="w-full h-80 bg-muted rounded overflow-hidden">
                             {selectedImage ? (
                                 <img
                                     src={selectedImage}
@@ -59,19 +51,18 @@ export default function Show({ accommodation }: PageProps & { accommodation: Acc
                                 />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center">
-                                    <Hotel className="h-16 w-16 text-muted-foreground" />
+                                    <Hotel className="h-12 w-12 text-muted-foreground" />
                                 </div>
                             )}
                         </div>
 
-                        {/* Thumbnail Gallery */}
                         {accommodation.image_urls.length > 1 && (
-                            <div className="grid grid-cols-5 gap-2">
+                            <div className="grid grid-cols-6 gap-2">
                                 {accommodation.image_urls.map((url, index) => (
                                     <button
                                         key={index}
                                         onClick={() => setSelectedImage(url)}
-                                        className={`relative h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                                        className={`relative h-16 rounded overflow-hidden border-2 transition-all ${
                                             selectedImage === url
                                                 ? 'border-primary'
                                                 : 'border-transparent hover:border-muted-foreground'
@@ -90,35 +81,41 @@ export default function Show({ accommodation }: PageProps & { accommodation: Acc
                 </Card>
             )}
 
-            <div className="mt-6 grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-2">
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Basic Information</CardTitle>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Basic Information</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-3">
                         <div>
-                            <p className="text-sm text-muted-foreground">Name</p>
-                            <p className="font-medium">{accommodation.name}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Name</p>
+                            <p className="text-sm font-medium">{accommodation.name}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">Type</p>
-                            <Badge variant="outline" className="capitalize">
+                            <p className="text-xs text-muted-foreground mb-0.5">Type</p>
+                            <Badge variant="outline" className="capitalize text-xs">
                                 {accommodation.type}
                             </Badge>
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">Air Conditioned</p>
-                            <Badge variant={accommodation.is_air_conditioned ? 'default' : 'secondary'}>
+                            <p className="text-xs text-muted-foreground mb-0.5">Size</p>
+                            <Badge variant="outline" className="capitalize text-xs">
+                                {accommodation.size}
+                            </Badge>
+                        </div>
+                        <div>
+                            <p className="text-xs text-muted-foreground mb-0.5">Air Conditioned</p>
+                            <Badge variant={accommodation.is_air_conditioned ? 'default' : 'secondary'} className="text-xs">
                                 {accommodation.is_air_conditioned ? 'Yes' : 'No'}
                             </Badge>
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">Description</p>
-                            <p className="font-medium">{accommodation.description || 'N/A'}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Description</p>
+                            <p className="text-sm">{accommodation.description || 'N/A'}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">Status</p>
-                            <Badge variant={accommodation.is_active ? 'default' : 'secondary'}>
+                            <p className="text-xs text-muted-foreground mb-0.5">Status</p>
+                            <Badge variant={accommodation.is_active ? 'default' : 'secondary'} className="text-xs">
                                 {accommodation.is_active ? 'Active' : 'Inactive'}
                             </Badge>
                         </div>
@@ -126,44 +123,41 @@ export default function Show({ accommodation }: PageProps & { accommodation: Acc
                 </Card>
 
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Capacity & Availability</CardTitle>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Capacity</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-3">
                         <div>
-                            <p className="text-sm text-muted-foreground">Min Capacity</p>
-                            <p className="font-medium">{accommodation.min_capacity ? `${accommodation.min_capacity} pax` : 'N/A'}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Min Capacity</p>
+                            <p className="text-sm font-medium">{accommodation.min_capacity ? `${accommodation.min_capacity} pax` : 'N/A'}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">Max Capacity</p>
-                            <p className="font-medium">{accommodation.max_capacity ? `${accommodation.max_capacity} pax` : 'N/A'}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Max Capacity</p>
+                            <p className="text-sm font-medium">{accommodation.max_capacity ? `${accommodation.max_capacity} pax` : 'N/A'}</p>
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">Quantity Available</p>
-                            <p className="font-medium">{accommodation.quantity_available}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Sort Order</p>
-                            <p className="font-medium">{accommodation.sort_order}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Sort Order</p>
+                            <p className="text-sm font-medium">{accommodation.sort_order}</p>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
             {accommodation.rates && accommodation.rates.length > 0 && (
-                <Card className="mt-6">
-                    <CardHeader>
-                        <CardTitle>Pricing Rates</CardTitle>
-                        <CardDescription>{accommodation.rates.length} rate(s) configured</CardDescription>
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">
+                            Pricing Rates ({accommodation.rates.length})
+                        </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-0">
                         <Table>
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Booking Type</TableHead>
                                     <TableHead>Rate</TableHead>
                                     <TableHead>Base Capacity</TableHead>
-                                    <TableHead>Additional Pax Rate</TableHead>
+                                    <TableHead>Additional Pax</TableHead>
                                     <TableHead>Status</TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -171,21 +165,21 @@ export default function Show({ accommodation }: PageProps & { accommodation: Acc
                                 {accommodation.rates.map((rate) => (
                                     <TableRow key={rate.id}>
                                         <TableCell>
-                                            <Badge variant="outline" className="capitalize">
+                                            <Badge variant="outline" className="capitalize text-xs">
                                                 {rate.booking_type.replace('_', ' ')}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="font-medium">
+                                        <TableCell className="font-medium text-sm">
                                             ₱{parseFloat(rate.rate).toLocaleString()}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-sm">
                                             {rate.base_capacity ? `${rate.base_capacity} pax` : 'N/A'}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-sm">
                                             {rate.additional_pax_rate ? `₱${parseFloat(rate.additional_pax_rate).toLocaleString()}` : 'N/A'}
                                         </TableCell>
                                         <TableCell>
-                                            <Badge variant={rate.is_active ? 'default' : 'secondary'}>
+                                            <Badge variant={rate.is_active ? 'default' : 'secondary'} className="text-xs">
                                                 {rate.is_active ? 'Active' : 'Inactive'}
                                             </Badge>
                                         </TableCell>
@@ -196,7 +190,7 @@ export default function Show({ accommodation }: PageProps & { accommodation: Acc
                     </CardContent>
                 </Card>
             )}
-        </>
+        </div>
     );
 }
 
@@ -208,6 +202,8 @@ Show.layout = (page: React.ReactNode) => (
             { title: 'Show', href: '#' },
         ]}
     >
-        {page}
+        <div className="p-4">
+            {page}
+        </div>
     </AppLayout>
 );

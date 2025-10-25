@@ -125,7 +125,7 @@ export default function Register() {
                             autoFocus
                             tabIndex={1}
                             autoComplete="name"
-                            placeholder="Full name"
+                            placeholder="Surname, Given Name"
                         />
                         <InputError message={errors.name} className="mt-2" />
                     </div>

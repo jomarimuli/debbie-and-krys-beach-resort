@@ -37,7 +37,6 @@ export default function ForgotPassword({ status }: { status?: string }) {
                             onChange={(e) => setData('email', e.target.value)}
                             autoComplete="off"
                             autoFocus
-                            placeholder="email@example.com"
                         />
                         <InputError message={errors.email} />
                     </div>

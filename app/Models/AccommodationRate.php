@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AccommodationRate extends Model
 {
+    protected $table = 'accommodation_rates';
+
     protected $fillable = [
         'accommodation_id',
         'booking_type',
@@ -18,8 +20,6 @@ class AccommodationRate extends Model
         'child_max_age',
         'includes_free_cottage',
         'includes_free_entrance',
-        'effective_from',
-        'effective_to',
         'is_active',
     ];
 
@@ -32,8 +32,6 @@ class AccommodationRate extends Model
         'child_max_age' => 'integer',
         'includes_free_cottage' => 'boolean',
         'includes_free_entrance' => 'boolean',
-        'effective_from' => 'date',
-        'effective_to' => 'date',
         'is_active' => 'boolean',
     ];
 
@@ -47,17 +45,5 @@ class AccommodationRate extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    public function scopeEffective($query, $date = null)
-    {
-        $date = $date ?? now();
-        return $query->where(function ($q) use ($date) {
-            $q->whereNull('effective_from')
-                ->orWhere('effective_from', '<=', $date);
-        })->where(function ($q) use ($date) {
-            $q->whereNull('effective_to')
-                ->orWhere('effective_to', '>=', $date);
-        });
     }
 }

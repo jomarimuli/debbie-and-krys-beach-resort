@@ -23,12 +23,14 @@ return new class extends Migration
             $table->integer('child_max_age')->nullable(); // 5 years old
             $table->boolean('includes_free_cottage')->default(false);
             $table->boolean('includes_free_entrance')->default(false);
-            $table->date('effective_from')->nullable();
-            $table->date('effective_to')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
             $table->unique(['accommodation_id', 'booking_type']);
+
+            $table->index(['accommodation_id'], 'idx_rates_accom_id');
+            $table->index(['booking_type'], 'idx_rates_booking_type');
+            $table->index(['is_active'], 'idx_rates_active');
         });
     }
 

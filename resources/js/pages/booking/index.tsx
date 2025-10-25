@@ -1,21 +1,13 @@
-// resources/js/pages/booking/index.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { type BookingIndexProps } from '@/types';
+import { type BookingIndexProps, type Booking } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Plus, Ticket, Eye, Edit, Trash2 } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -27,13 +19,14 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
+import bookings from '@/routes/bookings';
 
-export default function Index({ bookings }: BookingIndexProps) {
+export default function Index({ bookings: bookingData }: BookingIndexProps) {
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
         if (deleteId) {
-            router.delete(`/bookings/${deleteId}`, {
+            router.delete(bookings.destroy.url({ booking: deleteId }), {
                 onSuccess: () => setDeleteId(null),
             });
         }
@@ -49,35 +42,34 @@ export default function Index({ bookings }: BookingIndexProps) {
         };
 
         return (
-            <Badge variant={variants[status] || 'outline'} className="capitalize">
+            <Badge variant={variants[status] || 'outline'} className="capitalize text-xs">
                 {status.replace('_', ' ')}
             </Badge>
         );
     };
 
     return (
-        <>
+        <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Bookings</h1>
-                    <p className="text-muted-foreground">Manage guest reservations</p>
+                    <h1 className="text-xl font-semibold">Bookings</h1>
+                    <p className="text-sm text-muted-foreground">Manage guest reservations</p>
                 </div>
-                <Link href="/bookings/create">
-                    <Button>
-                        <Plus className="mr-2 h-4 w-4" />
+                <Link href={bookings.create.url()}>
+                    <Button size="sm">
+                        <Plus className="mr-1.5 h-3.5 w-3.5" />
                         New Booking
                     </Button>
                 </Link>
             </div>
 
-            <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle>All Bookings</CardTitle>
-                    <CardDescription>
-                        Total: {bookings.total} bookings
-                    </CardDescription>
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-medium">
+                        All Bookings ({bookingData.total})
+                    </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -88,41 +80,38 @@ export default function Index({ bookings }: BookingIndexProps) {
                                 <TableHead>Guests</TableHead>
                                 <TableHead>Amount</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead className="w-32 text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {bookings.data.map((booking) => (
+                            {bookingData.data.map((booking: Booking) => (
                                 <TableRow key={booking.id}>
-                                    <TableCell className="font-medium">
+                                    <TableCell className="font-medium text-sm">
                                         {booking.booking_number}
                                     </TableCell>
                                     <TableCell>
                                         <div>
-                                            <p className="font-medium">{booking.guest_name}</p>
+                                            <p className="font-medium text-sm">{booking.guest_name}</p>
                                             {booking.guest_phone && (
-                                                <p className="text-sm text-muted-foreground">{booking.guest_phone}</p>
-                                            )}
-                                            {booking.guest_address && (
-                                                <p className="text-xs text-muted-foreground">{booking.guest_address}</p>
+                                                <p className="text-xs text-muted-foreground">{booking.guest_phone}</p>
                                             )}
                                         </div>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-sm">
                                         {format(new Date(booking.check_in_date), 'MMM dd, yyyy')}
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" className="capitalize">
+                                        <Badge variant="outline" className="capitalize text-xs">
                                             {booking.booking_type.replace('_', ' ')}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell>{booking.total_guests}</TableCell>
+                                    <TableCell className="text-sm">{booking.total_guests}</TableCell>
                                     <TableCell>
                                         <div>
-                                            <p className="font-medium">₱{parseFloat(booking.total_amount).toLocaleString()}</p>
+                                            <p className="font-medium text-sm">₱{parseFloat(booking.total_amount).toLocaleString()}</p>
                                             {parseFloat(booking.balance) > 0 && (
-                                                <p className="text-sm text-muted-foreground">
-                                                    Balance: ₱{parseFloat(booking.balance).toLocaleString()}
+                                                <p className="text-xs text-muted-foreground">
+                                                    Bal: ₱{parseFloat(booking.balance).toLocaleString()}
                                                 </p>
                                             )}
                                         </div>
@@ -131,23 +120,24 @@ export default function Index({ bookings }: BookingIndexProps) {
                                         {getStatusBadge(booking.status)}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Link href={`/bookings/${booking.id}`}>
-                                                <Button variant="ghost" size="icon">
-                                                    <Eye className="h-4 w-4" />
+                                        <div className="flex justify-end gap-1">
+                                            <Link href={bookings.show.url({ booking: booking.id })}>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <Eye className="h-3.5 w-3.5" />
                                                 </Button>
                                             </Link>
-                                            <Link href={`/bookings/${booking.id}/edit`}>
-                                                <Button variant="ghost" size="icon">
-                                                    <Edit className="h-4 w-4" />
+                                            <Link href={bookings.edit.url({ booking: booking.id })}>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <Edit className="h-3.5 w-3.5" />
                                                 </Button>
                                             </Link>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
+                                                className="h-8 w-8"
                                                 onClick={() => setDeleteId(booking.id)}
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash2 className="h-3.5 w-3.5" />
                                             </Button>
                                         </div>
                                     </TableCell>
@@ -156,14 +146,14 @@ export default function Index({ bookings }: BookingIndexProps) {
                         </TableBody>
                     </Table>
 
-                    {bookings.data.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-12">
-                            <Ticket className="h-12 w-12 text-muted-foreground" />
-                            <h3 className="mt-4 text-lg font-semibold">No bookings found</h3>
-                            <p className="text-muted-foreground">Create your first booking to get started.</p>
-                            <Link href="/bookings/create" className="mt-4">
-                                <Button>
-                                    <Plus className="mr-2 h-4 w-4" />
+                    {bookingData.data.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-16">
+                            <Ticket className="h-10 w-10 text-muted-foreground mb-3" />
+                            <h3 className="text-base font-medium mb-1">No bookings found</h3>
+                            <p className="text-sm text-muted-foreground mb-4">Create your first booking to get started.</p>
+                            <Link href={bookings.create.url()}>
+                                <Button size="sm">
+                                    <Plus className="mr-1.5 h-3.5 w-3.5" />
                                     New Booking
                                 </Button>
                             </Link>
@@ -175,9 +165,9 @@ export default function Index({ bookings }: BookingIndexProps) {
             <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogTitle>Delete booking?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the booking and all related data.
+                            This will permanently delete the booking and all related data. This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -186,7 +176,7 @@ export default function Index({ bookings }: BookingIndexProps) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </>
+        </div>
     );
 }
 
@@ -197,7 +187,7 @@ Index.layout = (page: React.ReactNode) => (
             { title: 'Bookings', href: '#' },
         ]}
     >
-        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+        <div className="p-4">
             {page}
         </div>
     </AppLayout>

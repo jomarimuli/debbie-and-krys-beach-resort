@@ -19,7 +19,6 @@ class AccommodationSeeder extends Seeder
             'is_air_conditioned' => true,
             'min_capacity' => 6,
             'max_capacity' => null,
-            'quantity_available' => 5,
             'is_active' => true,
             'sort_order' => 1,
         ]);
@@ -47,7 +46,6 @@ class AccommodationSeeder extends Seeder
             'is_air_conditioned' => true,
             'min_capacity' => 4,
             'max_capacity' => null,
-            'quantity_available' => 8,
             'is_active' => true,
             'sort_order' => 2,
         ]);
@@ -75,7 +73,6 @@ class AccommodationSeeder extends Seeder
         'is_air_conditioned' => false,
         'min_capacity' => 10,
         'max_capacity' => 15,
-        'quantity_available' => 10,
         'is_active' => true,
         'sort_order' => 3,
     ]);
@@ -119,7 +116,6 @@ class AccommodationSeeder extends Seeder
             'is_air_conditioned' => false,
             'min_capacity' => 8,
             'max_capacity' => 10,
-            'quantity_available' => 15,
             'is_active' => true,
             'sort_order' => 4,
         ]);

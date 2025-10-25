@@ -1,4 +1,4 @@
-// resources/js/types/payment.ts
+import type { PaginatedData } from './datatable';
 import type { User } from './user';
 import type { Booking } from './booking';
 
@@ -19,12 +19,17 @@ export interface Payment {
     booking?: Booking;
     received_by_user?: User;
 }
+
+export interface PaymentIndexData {
+    payments: PaginatedData<Payment>;
+}
+
 export interface PaymentFormData {
-    booking_id: number;
-    amount: number;
+    booking_id: string;
+    amount: string;
     payment_method: 'cash' | 'card' | 'bank_transfer' | 'gcash' | 'other';
     reference_number?: string;
-    reference_image?: File;
+    reference_image?: File | null;
     remove_reference_image?: boolean;
     notes?: string;
     payment_date: string;

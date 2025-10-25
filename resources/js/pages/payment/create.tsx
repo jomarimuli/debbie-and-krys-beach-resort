@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +11,7 @@ import { ArrowLeft, Upload, X } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Booking, type PageProps } from '@/types';
 import { format } from 'date-fns';
+import payments from '@/routes/payments';
 
 export default function Create({ bookings }: PageProps & { bookings: Booking[] }) {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -32,7 +33,6 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
         if (file) {
             setData('reference_image', file);
 
-            // Generate preview
             const reader = new FileReader();
             reader.onloadend = () => {
                 setImagePreview(reader.result as string);
@@ -48,82 +48,79 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post('/payments', {
+        post(payments.store.url(), {
             forceFormData: true,
         });
     };
 
     return (
-        <>
-            <div className="flex items-center gap-4">
-                <Link href="/payments">
-                    <Button variant="ghost" size="icon">
+        <div className="space-y-4">
+            <div className="flex items-center gap-3">
+                <Link href={payments.index.url()}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Record Payment</h1>
-                    <p className="text-muted-foreground">Add a new payment record</p>
+                    <h1 className="text-xl font-semibold">Record Payment</h1>
+                    <p className="text-sm text-muted-foreground">Add a new payment record</p>
                 </div>
             </div>
 
-            <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle>Payment Details</CardTitle>
-                    <CardDescription>Enter payment information</CardDescription>
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-medium">Payment Details</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={submit} className="space-y-6">
-                        <div className="grid gap-6 md:grid-cols-2">
-                            <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor="booking_id">Booking *</Label>
-                                <Select value={data.booking_id} onValueChange={(value) => setData('booking_id', value)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select booking" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {bookings.map((booking) => (
-                                            <SelectItem key={booking.id} value={booking.id.toString()}>
-                                                {booking.booking_number} - {booking.guest_name} (Balance: ₱
-                                                {parseFloat(booking.balance).toLocaleString()})
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                {errors.booking_id && <p className="text-sm text-destructive">{errors.booking_id}</p>}
-                            </div>
+                    <form onSubmit={submit} className="space-y-5">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="booking_id" className="text-sm cursor-text select-text">Booking</Label>
+                            <Select value={data.booking_id} onValueChange={(value) => setData('booking_id', value)}>
+                                <SelectTrigger className="h-9">
+                                    <SelectValue placeholder="Select booking" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {bookings.map((booking) => (
+                                        <SelectItem key={booking.id} value={booking.id.toString()}>
+                                            {booking.booking_number} - {booking.guest_name} (Balance: ₱
+                                            {parseFloat(booking.balance).toLocaleString()})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {errors.booking_id && <p className="text-xs text-destructive">{errors.booking_id}</p>}
+                        </div>
 
-                            {selectedBooking && (
-                                <div className="md:col-span-2 rounded-lg border p-4 bg-muted/50">
-                                    <div className="grid gap-2 text-sm">
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Guest:</span>
-                                            <span className="font-medium">{selectedBooking.guest_name}</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Total Amount:</span>
-                                            <span className="font-medium">
-                                                ₱{parseFloat(selectedBooking.total_amount).toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Paid Amount:</span>
-                                            <span className="font-medium text-green-600">
-                                                ₱{parseFloat(selectedBooking.paid_amount).toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between border-t pt-2">
-                                            <span className="font-semibold">Remaining Balance:</span>
-                                            <span className="font-semibold text-red-600">
-                                                ₱{parseFloat(selectedBooking.balance).toLocaleString()}
-                                            </span>
-                                        </div>
-                                    </div>
+                        {selectedBooking && (
+                            <div className="rounded border p-3 bg-muted/30 space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Guest:</span>
+                                    <span className="font-medium">{selectedBooking.guest_name}</span>
                                 </div>
-                            )}
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Total:</span>
+                                    <span className="font-medium">
+                                        ₱{parseFloat(selectedBooking.total_amount).toLocaleString()}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Paid:</span>
+                                    <span className="font-medium text-green-600">
+                                        ₱{parseFloat(selectedBooking.paid_amount).toLocaleString()}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between text-sm border-t pt-2">
+                                    <span className="font-semibold">Balance:</span>
+                                    <span className="font-semibold text-red-600">
+                                        ₱{parseFloat(selectedBooking.balance).toLocaleString()}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
 
-                            <div className="space-y-2">
-                                <Label htmlFor="amount">Amount *</Label>
+                        <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="amount" className="text-sm cursor-text select-text">Amount</Label>
                                 <Input
                                     id="amount"
                                     type="number"
@@ -131,15 +128,15 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                                     min="0.01"
                                     value={data.amount}
                                     onChange={(e) => setData('amount', e.target.value)}
-                                    placeholder="0.00"
+                                    className="h-9"
                                 />
-                                {errors.amount && <p className="text-sm text-destructive">{errors.amount}</p>}
+                                {errors.amount && <p className="text-xs text-destructive">{errors.amount}</p>}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="payment_method">Payment Method *</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="payment_method" className="text-sm cursor-text select-text">Payment Method</Label>
                                 <Select value={data.payment_method} onValueChange={(value: any) => setData('payment_method', value)}>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-9">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -150,93 +147,90 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                                         <SelectItem value="other">Other</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                {errors.payment_method && <p className="text-sm text-destructive">{errors.payment_method}</p>}
+                                {errors.payment_method && <p className="text-xs text-destructive">{errors.payment_method}</p>}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="reference_number">Reference Number</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="reference_number" className="text-sm cursor-text select-text">Reference Number</Label>
                                 <Input
                                     id="reference_number"
                                     value={data.reference_number}
                                     onChange={(e) => setData('reference_number', e.target.value)}
-                                    placeholder="Transaction reference"
+                                    className="h-9"
                                 />
-                                {errors.reference_number && <p className="text-sm text-destructive">{errors.reference_number}</p>}
+                                {errors.reference_number && <p className="text-xs text-destructive">{errors.reference_number}</p>}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="payment_date">Payment Date *</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="payment_date" className="text-sm cursor-text select-text">Payment Date</Label>
                                 <Input
                                     id="payment_date"
                                     type="date"
                                     value={data.payment_date}
                                     onChange={(e) => setData('payment_date', e.target.value)}
+                                    className="h-9"
                                 />
-                                {errors.payment_date && <p className="text-sm text-destructive">{errors.payment_date}</p>}
-                            </div>
-
-                            {/* Reference Image Upload */}
-                            <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor="reference_image">Reference Image (Optional)</Label>
-                                <p className="text-sm text-muted-foreground mb-2">
-                                    Upload proof of payment (JPEG, PNG, or WebP - Max 2MB)
-                                </p>
-                                {!imagePreview ? (
-                                    <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center">
-                                        <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                                        <Input
-                                            id="reference_image"
-                                            type="file"
-                                            accept="image/jpeg,image/jpg,image/png,image/webp"
-                                            onChange={handleImageChange}
-                                            className="hidden"
-                                        />
-                                        <Label htmlFor="reference_image" className="cursor-pointer">
-                                            <span className="text-sm text-primary hover:underline">
-                                                Click to upload
-                                            </span>
-                                        </Label>
-                                    </div>
-                                ) : (
-                                    <div className="relative">
-                                        <img
-                                            src={imagePreview}
-                                            alt="Reference preview"
-                                            className="w-full max-w-md h-48 object-cover rounded-lg border"
-                                        />
-                                        <Button
-                                            type="button"
-                                            variant="destructive"
-                                            size="icon"
-                                            className="absolute top-2 right-2 h-8 w-8"
-                                            onClick={removeImage}
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                )}
-                                {errors.reference_image && <p className="text-sm text-destructive">{errors.reference_image}</p>}
-                            </div>
-
-                            <div className="space-y-2 md:col-span-2">
-                                <Label htmlFor="notes">Notes</Label>
-                                <Textarea
-                                    id="notes"
-                                    value={data.notes}
-                                    onChange={(e) => setData('notes', e.target.value)}
-                                    placeholder="Additional payment notes..."
-                                    rows={3}
-                                />
-                                {errors.notes && <p className="text-sm text-destructive">{errors.notes}</p>}
+                                {errors.payment_date && <p className="text-xs text-destructive">{errors.payment_date}</p>}
                             </div>
                         </div>
 
-                        <div className="flex gap-4">
-                            <Button type="submit" disabled={processing}>
+                        <div className="space-y-2">
+                            <Label htmlFor="reference_image" className="text-sm cursor-text select-text">Reference Image</Label>
+                            {!imagePreview ? (
+                                <div className="border-2 border-dashed rounded p-4 text-center">
+                                    <Upload className="h-6 w-6 mx-auto text-muted-foreground mb-1" />
+                                    <Input
+                                        id="reference_image"
+                                        type="file"
+                                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                                        onChange={handleImageChange}
+                                        className="hidden"
+                                    />
+                                    <Label htmlFor="reference_image" className="cursor-pointer">
+                                        <span className="text-xs text-primary hover:underline">
+                                            Click to upload
+                                        </span>
+                                    </Label>
+                                </div>
+                            ) : (
+                                <div className="relative inline-block">
+                                    <img
+                                        src={imagePreview}
+                                        alt="Reference preview"
+                                        className="w-full max-w-sm h-32 object-cover rounded border"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="icon"
+                                        className="absolute top-1 right-1 h-6 w-6"
+                                        onClick={removeImage}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </Button>
+                                </div>
+                            )}
+                            {errors.reference_image && <p className="text-xs text-destructive">{errors.reference_image}</p>}
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label htmlFor="notes" className="text-sm cursor-text select-text">Notes</Label>
+                            <Textarea
+                                id="notes"
+                                value={data.notes}
+                                onChange={(e) => setData('notes', e.target.value)}
+                                rows={2}
+                                className="resize-none"
+                            />
+                            {errors.notes && <p className="text-xs text-destructive">{errors.notes}</p>}
+                        </div>
+
+                        <div className="flex gap-2 pt-2">
+                            <Button type="submit" disabled={processing} size="sm">
                                 Record Payment
                             </Button>
-                            <Link href="/payments">
-                                <Button type="button" variant="outline">
+                            <Link href={payments.index.url()}>
+                                <Button type="button" variant="outline" size="sm">
                                     Cancel
                                 </Button>
                             </Link>
@@ -244,7 +238,7 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                     </form>
                 </CardContent>
             </Card>
-        </>
+        </div>
     );
 }
 
@@ -256,7 +250,7 @@ Create.layout = (page: React.ReactNode) => (
             { title: 'Create', href: '#' },
         ]}
     >
-        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+        <div className="p-4">
             {page}
         </div>
     </AppLayout>

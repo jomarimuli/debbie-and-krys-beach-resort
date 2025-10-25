@@ -1,21 +1,13 @@
-// resources/js/pages/accommodation-rate/index.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { type PageProps, type AccommodationRate } from '@/types';
+import { type AccommodationRateIndexProps, type AccommodationRate } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Plus, Coins, Eye, Edit, Trash2 } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -26,48 +18,41 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-
-interface AccommodationRateIndexProps extends PageProps {
-    rates: {
-        data: AccommodationRate[];
-        total: number;
-    };
-}
+import accommodationRates from '@/routes/accommodation-rates';
 
 export default function Index({ rates }: AccommodationRateIndexProps) {
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
         if (deleteId) {
-            router.delete(`/accommodation-rates/${deleteId}`, {
+            router.delete(accommodationRates.destroy.url({ accommodation_rate: deleteId }), {
                 onSuccess: () => setDeleteId(null),
             });
         }
     };
 
     return (
-        <>
+        <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Accommodation Rates</h1>
-                    <p className="text-muted-foreground">Manage pricing for rooms and cottages</p>
+                    <h1 className="text-xl font-semibold">Accommodation Rates</h1>
+                    <p className="text-sm text-muted-foreground">Manage pricing for rooms and cottages</p>
                 </div>
-                <Link href="/accommodation-rates/create">
-                    <Button>
-                        <Plus className="mr-2 h-4 w-4" />
+                <Link href={accommodationRates.create.url()}>
+                    <Button size="sm">
+                        <Plus className="mr-1.5 h-3.5 w-3.5" />
                         Add Rate
                     </Button>
                 </Link>
             </div>
 
-            <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle>All Rates</CardTitle>
-                    <CardDescription>
-                        Total: {rates.total} rates configured
-                    </CardDescription>
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-medium">
+                        All Rates ({rates.total})
+                    </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -77,61 +62,65 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                                 <TableHead>Base Capacity</TableHead>
                                 <TableHead>Additional Pax</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead className="w-32 text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {rates.data.map((rate) => (
+                            {rates.data.map((rate: AccommodationRate) => (
                                 <TableRow key={rate.id}>
                                     <TableCell className="font-medium">
-                                        <div className="flex items-center gap-2">
-                                            {rate.accommodation?.name}
+                                        <div className="flex items-center gap-1.5">
+                                            <span>{rate.accommodation?.name}</span>
                                             {rate.accommodation?.is_air_conditioned && (
-                                                <Badge variant="secondary" className="text-xs">
+                                                <Badge variant="secondary" className="text-xs px-1.5 py-0">
                                                     A/C
                                                 </Badge>
                                             )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" className="capitalize">
+                                        <Badge variant="outline" className="capitalize text-xs">
                                             {rate.booking_type.replace('_', ' ')}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="font-medium">
+                                    <TableCell className="font-medium text-sm">
                                         ₱{parseFloat(rate.rate).toLocaleString()}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-sm">
                                         {rate.base_capacity ? `${rate.base_capacity} pax` : 'N/A'}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-sm">
                                         {rate.additional_pax_rate
                                             ? `₱${parseFloat(rate.additional_pax_rate).toLocaleString()}`
                                             : 'N/A'}
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant={rate.is_active ? 'default' : 'secondary'}>
+                                        <Badge
+                                            variant={rate.is_active ? 'default' : 'secondary'}
+                                            className="text-xs"
+                                        >
                                             {rate.is_active ? 'Active' : 'Inactive'}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Link href={`/accommodation-rates/${rate.id}`}>
-                                                <Button variant="ghost" size="icon">
-                                                    <Eye className="h-4 w-4" />
+                                        <div className="flex justify-end gap-1">
+                                            <Link href={accommodationRates.show.url({ accommodation_rate: rate.id })}>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <Eye className="h-3.5 w-3.5" />
                                                 </Button>
                                             </Link>
-                                            <Link href={`/accommodation-rates/${rate.id}/edit`}>
-                                                <Button variant="ghost" size="icon">
-                                                    <Edit className="h-4 w-4" />
+                                            <Link href={accommodationRates.edit.url({ accommodation_rate: rate.id })}>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <Edit className="h-3.5 w-3.5" />
                                                 </Button>
                                             </Link>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
+                                                className="h-8 w-8"
                                                 onClick={() => setDeleteId(rate.id)}
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash2 className="h-3.5 w-3.5" />
                                             </Button>
                                         </div>
                                     </TableCell>
@@ -141,13 +130,13 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                     </Table>
 
                     {rates.data.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-12">
-                            <Coins className="h-12 w-12 text-muted-foreground" />
-                            <h3 className="mt-4 text-lg font-semibold">No rates found</h3>
-                            <p className="text-muted-foreground">Add pricing rates for your accommodations.</p>
-                            <Link href="/accommodation-rates/create" className="mt-4">
-                                <Button>
-                                    <Plus className="mr-2 h-4 w-4" />
+                        <div className="flex flex-col items-center justify-center py-16">
+                            <Coins className="h-10 w-10 text-muted-foreground mb-3" />
+                            <h3 className="text-base font-medium mb-1">No rates found</h3>
+                            <p className="text-sm text-muted-foreground mb-4">Add pricing rates for your accommodations.</p>
+                            <Link href={accommodationRates.create.url()}>
+                                <Button size="sm">
+                                    <Plus className="mr-1.5 h-3.5 w-3.5" />
                                     Add Rate
                                 </Button>
                             </Link>
@@ -159,9 +148,9 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
             <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogTitle>Delete rate?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the rate.
+                            This will permanently delete the rate. This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -170,7 +159,7 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </>
+        </div>
     );
 }
 
@@ -181,7 +170,7 @@ Index.layout = (page: React.ReactNode) => (
             { title: 'Accommodation Rates', href: '#' },
         ]}
     >
-        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+        <div className="p-4">
             {page}
         </div>
     </AppLayout>

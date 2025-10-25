@@ -1,8 +1,8 @@
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { type AccommodationIndexProps } from '@/types';
+import { type AccommodationIndexProps, type Accommodation } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Plus, Hotel, Edit, Trash2, Eye } from 'lucide-react';
 import { router } from '@inertiajs/react';
@@ -25,115 +25,123 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import * as accommodations from '@/routes/accommodations';
 
-export default function Index({ accommodations }: AccommodationIndexProps) {
+export default function Index({ accommodations: accommodationData }: AccommodationIndexProps) {
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
         if (deleteId) {
-            router.delete(`/accommodations/${deleteId}`, {
+            router.delete(accommodations.destroy.url({ accommodation: deleteId }), {
                 onSuccess: () => setDeleteId(null),
             });
         }
     };
 
     return (
-        <>
+        <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Accommodations</h1>
-                    <p className="text-muted-foreground">Manage rooms and cottages</p>
+                    <h1 className="text-xl font-semibold">Accommodations</h1>
+                    <p className="text-sm text-muted-foreground">Manage rooms and cottages</p>
                 </div>
-                <Link href="/accommodations/create">
-                    <Button>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Accommodation
+                <Link href={accommodations.create.url()}>
+                    <Button size="sm">
+                        <Plus className="mr-1.5 h-3.5 w-3.5" />
+                        Add
                     </Button>
                 </Link>
             </div>
 
-            <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle>All Accommodations</CardTitle>
-                    <CardDescription>
-                        Total: {accommodations.total} accommodations
-                    </CardDescription>
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-medium">
+                        All Accommodations ({accommodationData.total})
+                    </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>Image</TableHead>
+                                <TableHead className="w-20">Image</TableHead>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Type</TableHead>
+                                <TableHead>Size</TableHead>
                                 <TableHead>Capacity</TableHead>
-                                <TableHead>Available</TableHead>
                                 <TableHead>Status</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead className="w-32 text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {accommodations.data.map((accommodation) => (
+                            {accommodationData.data.map((accommodation: Accommodation) => (
                                 <TableRow key={accommodation.id}>
                                     <TableCell>
                                         {accommodation.first_image_url ? (
                                             <img
                                                 src={accommodation.first_image_url}
                                                 alt={accommodation.name}
-                                                className="w-16 h-16 object-cover rounded-lg"
+                                                className="w-14 h-14 object-cover rounded"
                                             />
                                         ) : (
-                                            <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center">
-                                                <Hotel className="h-6 w-6 text-muted-foreground" />
+                                            <div className="w-14 h-14 bg-muted rounded flex items-center justify-center">
+                                                <Hotel className="h-5 w-5 text-muted-foreground" />
                                             </div>
                                         )}
                                     </TableCell>
                                     <TableCell className="font-medium">
-                                        <div className="flex items-center gap-2">
-                                            {accommodation.name}
+                                        <div className="flex items-center gap-1.5">
+                                            <span>{accommodation.name}</span>
                                             {accommodation.is_air_conditioned && (
-                                                <Badge variant="secondary" className="text-xs">
+                                                <Badge variant="secondary" className="text-xs px-1.5 py-0">
                                                     A/C
                                                 </Badge>
                                             )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" className="capitalize">
+                                        <Badge variant="outline" className="capitalize text-xs">
                                             {accommodation.type}
                                         </Badge>
                                     </TableCell>
                                     <TableCell>
+                                        <Badge variant="outline" className="capitalize text-xs">
+                                            {accommodation.size}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-sm">
                                         {accommodation.min_capacity && accommodation.max_capacity
                                             ? `${accommodation.min_capacity}-${accommodation.max_capacity} pax`
                                             : accommodation.min_capacity
                                                 ? `${accommodation.min_capacity}+ pax`
                                                 : 'Flexible'}
                                     </TableCell>
-                                    <TableCell>{accommodation.quantity_available}</TableCell>
                                     <TableCell>
-                                        <Badge variant={accommodation.is_active ? 'default' : 'secondary'}>
+                                        <Badge
+                                            variant={accommodation.is_active ? 'default' : 'secondary'}
+                                            className="text-xs"
+                                        >
                                             {accommodation.is_active ? 'Active' : 'Inactive'}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Link href={`/accommodations/${accommodation.id}`}>
-                                                <Button variant="ghost" size="icon">
-                                                    <Eye className="h-4 w-4" />
+                                        <div className="flex justify-end gap-1">
+                                            <Link href={accommodations.show.url({ accommodation: accommodation.id })}>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <Eye className="h-3.5 w-3.5" />
                                                 </Button>
                                             </Link>
-                                            <Link href={`/accommodations/${accommodation.id}/edit`}>
-                                                <Button variant="ghost" size="icon">
-                                                    <Edit className="h-4 w-4" />
+                                            <Link href={accommodations.edit.url({ accommodation: accommodation.id })}>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <Edit className="h-3.5 w-3.5" />
                                                 </Button>
                                             </Link>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
+                                                className="h-8 w-8"
                                                 onClick={() => setDeleteId(accommodation.id)}
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash2 className="h-3.5 w-3.5" />
                                             </Button>
                                         </div>
                                     </TableCell>
@@ -142,14 +150,14 @@ export default function Index({ accommodations }: AccommodationIndexProps) {
                         </TableBody>
                     </Table>
 
-                    {accommodations.data.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-12">
-                            <Hotel className="h-12 w-12 text-muted-foreground" />
-                            <h3 className="mt-4 text-lg font-semibold">No accommodations found</h3>
-                            <p className="text-muted-foreground">Get started by adding your first accommodation.</p>
-                            <Link href="/accommodations/create" className="mt-4">
-                                <Button>
-                                    <Plus className="mr-2 h-4 w-4" />
+                    {accommodationData.data.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-16">
+                            <Hotel className="h-10 w-10 text-muted-foreground mb-3" />
+                            <h3 className="text-base font-medium mb-1">No accommodations found</h3>
+                            <p className="text-sm text-muted-foreground mb-4">Get started by adding your first accommodation.</p>
+                            <Link href={accommodations.create.url()}>
+                                <Button size="sm">
+                                    <Plus className="mr-1.5 h-3.5 w-3.5" />
                                     Add Accommodation
                                 </Button>
                             </Link>
@@ -161,9 +169,9 @@ export default function Index({ accommodations }: AccommodationIndexProps) {
             <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogTitle>Delete accommodation?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the accommodation and all its images.
+                            This will permanently delete the accommodation and all its images. This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -172,7 +180,7 @@ export default function Index({ accommodations }: AccommodationIndexProps) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </>
+        </div>
     );
 }
 
@@ -183,7 +191,7 @@ Index.layout = (page: React.ReactNode) => (
             { title: 'Accommodations', href: '#' },
         ]}
     >
-        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+        <div className="p-4">
             {page}
         </div>
     </AppLayout>

@@ -1,7 +1,6 @@
-// resources/js/pages/booking/edit.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,6 +11,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Booking, type PageProps } from '@/types';
 import { format } from 'date-fns';
+import bookings from '@/routes/bookings';
 
 export default function Edit({ booking }: PageProps & { booking: Booking }) {
     const { data, setData, put, processing, errors } = useForm({
@@ -29,126 +29,131 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        put(`/bookings/${booking.id}`);
+        put(bookings.update.url({ booking: booking.id }));
     };
 
     return (
-        <>
-            <div className="flex items-center gap-4">
-                <Link href={`/bookings/${booking.id}`}>
-                    <Button variant="ghost" size="icon">
+        <div className="space-y-4">
+            <div className="flex items-center gap-3">
+                <Link href={bookings.show.url({ booking: booking.id })}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Edit Booking</h1>
-                    <p className="text-muted-foreground">{booking.booking_number}</p>
+                    <h1 className="text-xl font-semibold">Edit Booking</h1>
+                    <p className="text-sm text-muted-foreground">{booking.booking_number}</p>
                 </div>
             </div>
 
-            <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle>Booking Details</CardTitle>
-                    <CardDescription>Update booking information</CardDescription>
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-medium">Booking Details</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <form onSubmit={submit} className="space-y-6">
-                        <div className="grid gap-6 md:grid-cols-3">
-                            <div className="space-y-2">
-                                <Label htmlFor="guest_name">Guest Name *</Label>
+                    <form onSubmit={submit} className="space-y-5">
+                        <div className="grid gap-4 md:grid-cols-3">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="guest_name" className="text-sm cursor-text select-text">Guest Name</Label>
                                 <Input
                                     id="guest_name"
                                     value={data.guest_name}
                                     onChange={(e) => setData('guest_name', e.target.value)}
+                                    className="h-9"
                                 />
-                                {errors.guest_name && <p className="text-sm text-destructive">{errors.guest_name}</p>}
+                                {errors.guest_name && <p className="text-xs text-destructive">{errors.guest_name}</p>}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="guest_phone">Phone Number</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="guest_phone" className="text-sm cursor-text select-text">Phone Number</Label>
                                 <Input
                                     id="guest_phone"
                                     value={data.guest_phone}
                                     onChange={(e) => setData('guest_phone', e.target.value)}
-                                    placeholder="09xxxxxxxxx"
+                                    className="h-9"
                                 />
-                                {errors.guest_phone && <p className="text-sm text-destructive">{errors.guest_phone}</p>}
+                                {errors.guest_phone && <p className="text-xs text-destructive">{errors.guest_phone}</p>}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="guest_email">Email</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="guest_email" className="text-sm cursor-text select-text">Email</Label>
                                 <Input
                                     id="guest_email"
                                     type="email"
                                     value={data.guest_email}
                                     onChange={(e) => setData('guest_email', e.target.value)}
+                                    className="h-9"
                                 />
-                                {errors.guest_email && <p className="text-sm text-destructive">{errors.guest_email}</p>}
+                                {errors.guest_email && <p className="text-xs text-destructive">{errors.guest_email}</p>}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="guest_address">Address</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="guest_address" className="text-sm cursor-text select-text">Address</Label>
                                 <Input
                                     id="guest_address"
                                     value={data.guest_address}
                                     onChange={(e) => setData('guest_address', e.target.value)}
-                                    placeholder="City, Province"
+                                    className="h-9"
                                 />
-                                {errors.guest_address && <p className="text-sm text-destructive">{errors.guest_address}</p>}
+                                {errors.guest_address && <p className="text-xs text-destructive">{errors.guest_address}</p>}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="check_in_date">Check-in Date *</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="check_in_date" className="text-sm cursor-text select-text">Check-in Date</Label>
                                 <Input
                                     id="check_in_date"
                                     type="date"
                                     value={data.check_in_date}
                                     onChange={(e) => setData('check_in_date', e.target.value)}
+                                    className="h-9"
                                 />
-                                {errors.check_in_date && <p className="text-sm text-destructive">{errors.check_in_date}</p>}
+                                {errors.check_in_date && <p className="text-xs text-destructive">{errors.check_in_date}</p>}
                             </div>
 
                             {booking.booking_type === 'overnight' && (
-                                <div className="space-y-2">
-                                    <Label htmlFor="check_out_date">Check-out Date</Label>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="check_out_date" className="text-sm cursor-text select-text">Check-out Date</Label>
                                     <Input
                                         id="check_out_date"
                                         type="date"
                                         value={data.check_out_date}
                                         onChange={(e) => setData('check_out_date', e.target.value)}
+                                        className="h-9"
                                     />
-                                    {errors.check_out_date && <p className="text-sm text-destructive">{errors.check_out_date}</p>}
+                                    {errors.check_out_date && <p className="text-xs text-destructive">{errors.check_out_date}</p>}
                                 </div>
                             )}
 
-                            <div className="space-y-2">
-                                <Label htmlFor="total_adults">Adults *</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="total_adults" className="text-sm cursor-text select-text">Adults</Label>
                                 <Input
                                     id="total_adults"
                                     type="number"
                                     min="1"
                                     value={data.total_adults}
                                     onChange={(e) => setData('total_adults', e.target.value)}
+                                    className="h-9"
                                 />
-                                {errors.total_adults && <p className="text-sm text-destructive">{errors.total_adults}</p>}
+                                {errors.total_adults && <p className="text-xs text-destructive">{errors.total_adults}</p>}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="total_children">Children</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="total_children" className="text-sm cursor-text select-text">Children</Label>
                                 <Input
                                     id="total_children"
                                     type="number"
                                     min="0"
                                     value={data.total_children}
                                     onChange={(e) => setData('total_children', e.target.value)}
+                                    className="h-9"
                                 />
-                                {errors.total_children && <p className="text-sm text-destructive">{errors.total_children}</p>}
+                                {errors.total_children && <p className="text-xs text-destructive">{errors.total_children}</p>}
                             </div>
 
-                            <div className="space-y-2">
-                                <Label htmlFor="status">Status *</Label>
+                            <div className="space-y-1.5">
+                                <Label htmlFor="status" className="text-sm cursor-text select-text">Status</Label>
                                 <Select value={data.status} onValueChange={(value: any) => setData('status', value)}>
-                                    <SelectTrigger>
+                                    <SelectTrigger className="h-9">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -159,27 +164,28 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
                                         <SelectItem value="cancelled">Cancelled</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                {errors.status && <p className="text-sm text-destructive">{errors.status}</p>}
+                                {errors.status && <p className="text-xs text-destructive">{errors.status}</p>}
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="notes">Notes</Label>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="notes" className="text-sm cursor-text select-text">Notes</Label>
                             <Textarea
                                 id="notes"
                                 value={data.notes}
                                 onChange={(e) => setData('notes', e.target.value)}
-                                rows={3}
+                                rows={2}
+                                className="resize-none"
                             />
-                            {errors.notes && <p className="text-sm text-destructive">{errors.notes}</p>}
+                            {errors.notes && <p className="text-xs text-destructive">{errors.notes}</p>}
                         </div>
 
-                        <div className="flex gap-4">
-                            <Button type="submit" disabled={processing}>
+                        <div className="flex gap-2 pt-2">
+                            <Button type="submit" disabled={processing} size="sm">
                                 Update Booking
                             </Button>
-                            <Link href={`/bookings/${booking.id}`}>
-                                <Button type="button" variant="outline">
+                            <Link href={bookings.show.url({ booking: booking.id })}>
+                                <Button type="button" variant="outline" size="sm">
                                     Cancel
                                 </Button>
                             </Link>
@@ -187,7 +193,7 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
                     </form>
                 </CardContent>
             </Card>
-        </>
+        </div>
     );
 }
 
@@ -199,7 +205,7 @@ Edit.layout = (page: React.ReactNode) => (
             { title: 'Edit', href: '#' },
         ]}
     >
-        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+        <div className="p-4">
             {page}
         </div>
     </AppLayout>

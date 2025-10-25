@@ -141,7 +141,6 @@ export default function EditUserModal({
                             id="name"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
-                            placeholder="Enter full name"
                             className={errors.name ? 'border-red-500' : ''}
                             disabled={user?.id === 1}
                         />
@@ -157,7 +156,6 @@ export default function EditUserModal({
                             type="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="Enter email address"
                             className={errors.email ? 'border-red-500' : ''}
                             disabled={user?.id === 1}
                         />
@@ -173,7 +171,6 @@ export default function EditUserModal({
                             type="tel"
                             value={data.phone}
                             onChange={(e) => setData('phone', e.target.value)}
-                            placeholder="09xxxxxxxxx"
                             className={errors.phone ? 'border-red-500' : ''}
                             disabled={user?.id === 1}
                         />
@@ -188,7 +185,6 @@ export default function EditUserModal({
                             id="address"
                             value={data.address}
                             onChange={(e) => setData('address', e.target.value)}
-                            placeholder="City, Province"
                             className={errors.address ? 'border-red-500' : ''}
                             disabled={user?.id === 1}
                         />
@@ -206,7 +202,6 @@ export default function EditUserModal({
                             id="password"
                             value={data.password}
                             onChange={(e) => handlePasswordChange(e.target.value)}
-                            placeholder="Enter new password"
                             className={errors.password ? 'border-red-500' : ''}
                             disabled={user?.id === 1}
                         />
@@ -227,7 +222,6 @@ export default function EditUserModal({
                                 id="password_confirmation"
                                 value={data.password_confirmation}
                                 onChange={(e) => setData('password_confirmation', e.target.value)}
-                                placeholder="Confirm new password"
                                 className={errors.password_confirmation ? 'border-red-500' : ''}
                                 disabled={user?.id === 1}
                             />
@@ -251,7 +245,7 @@ export default function EditUserModal({
                             disabled={user?.id === 1}
                         >
                             <SelectTrigger className={errors.status ? 'border-red-500' : ''}>
-                                <SelectValue placeholder="Select status" />
+                                <SelectValue placeholder="Select..." />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="active">Active</SelectItem>

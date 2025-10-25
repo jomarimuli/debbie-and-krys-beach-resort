@@ -66,6 +66,25 @@ class PermissionRoleUserSeeder extends Seeder
             'payment create',
             'payment edit',
             'payment delete',
+
+            // feedback
+            'feedback show',
+            'feedback create',
+            'feedback edit',
+            'feedback delete',
+            'feedback approve',
+
+            // gallery
+            'gallery show',
+            'gallery create',
+            'gallery edit',
+            'gallery delete',
+
+            // announcement
+            'announcement show',
+            'announcement create',
+            'announcement edit',
+            'announcement delete',
         ];
 
         foreach ($permissions as $permission) {

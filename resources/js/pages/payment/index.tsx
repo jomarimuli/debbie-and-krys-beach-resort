@@ -1,20 +1,13 @@
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { type PageProps } from '@/types';
+import { type PaymentIndexProps, type Payment } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Plus, Banknote, Eye, Edit, Trash2, ImageIcon } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -26,35 +19,15 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
+import payments from '@/routes/payments';
+import bookings from '@/routes/bookings';
 
-interface Payment {
-    id: number;
-    payment_number: string;
-    booking_id: number;
-    amount: string;
-    payment_method: string;
-    reference_number: string | null;
-    reference_image: string | null;
-    payment_date: string;
-    booking?: {
-        booking_number: string;
-        guest_name: string;
-    };
-}
-
-interface PaymentIndexProps extends PageProps {
-    payments: {
-        data: Payment[];
-        total: number;
-    };
-}
-
-export default function Index({ payments }: PaymentIndexProps) {
+export default function Index({ payments: paymentData }: PaymentIndexProps) {
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
         if (deleteId) {
-            router.delete(`/payments/${deleteId}`, {
+            router.delete(payments.destroy.url({ payment: deleteId }), {
                 onSuccess: () => setDeleteId(null),
             });
         }
@@ -62,35 +35,34 @@ export default function Index({ payments }: PaymentIndexProps) {
 
     const getPaymentMethodBadge = (method: string) => {
         return (
-            <Badge variant="outline" className="capitalize">
+            <Badge variant="outline" className="capitalize text-xs">
                 {method.replace('_', ' ')}
             </Badge>
         );
     };
 
     return (
-        <>
+        <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Payments</h1>
-                    <p className="text-muted-foreground">Manage booking payments</p>
+                    <h1 className="text-xl font-semibold">Payments</h1>
+                    <p className="text-sm text-muted-foreground">Manage booking payments</p>
                 </div>
-                <Link href="/payments/create">
-                    <Button>
-                        <Plus className="mr-2 h-4 w-4" />
+                <Link href={payments.create.url()}>
+                    <Button size="sm">
+                        <Plus className="mr-1.5 h-3.5 w-3.5" />
                         Record Payment
                     </Button>
                 </Link>
             </div>
 
-            <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle>All Payments</CardTitle>
-                    <CardDescription>
-                        Total: {payments.total} payments
-                    </CardDescription>
+            <Card>
+                <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-medium">
+                        All Payments ({paymentData.total})
+                    </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="p-0">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -100,58 +72,57 @@ export default function Index({ payments }: PaymentIndexProps) {
                                 <TableHead>Amount</TableHead>
                                 <TableHead>Method</TableHead>
                                 <TableHead>Date</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead className="w-32 text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {payments.data.map((payment) => (
+                            {paymentData.data.map((payment: Payment) => (
                                 <TableRow key={payment.id}>
                                     <TableCell className="font-medium">
-                                        <div className="flex items-center gap-2">
-                                            {payment.payment_number}
+                                        <div className="flex items-center gap-1.5">
+                                            <span>{payment.payment_number}</span>
                                             {payment.reference_image && (
-                                                <span title="Has reference image">
-                                                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                                                </span>
+                                                <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
                                             )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
                                         <Link
-                                            href={`/bookings/${payment.booking_id}`}
-                                            className="text-blue-600 hover:underline"
+                                            href={bookings.show.url({ booking: payment.booking_id })}
+                                            className="text-primary hover:underline text-sm"
                                         >
                                             {payment.booking?.booking_number}
                                         </Link>
                                     </TableCell>
-                                    <TableCell>{payment.booking?.guest_name}</TableCell>
-                                    <TableCell className="font-medium">
+                                    <TableCell className="text-sm">{payment.booking?.guest_name}</TableCell>
+                                    <TableCell className="font-medium text-sm">
                                         ₱{parseFloat(payment.amount).toLocaleString()}
                                     </TableCell>
                                     <TableCell>
                                         {getPaymentMethodBadge(payment.payment_method)}
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-sm">
                                         {format(new Date(payment.payment_date), 'MMM dd, yyyy')}
                                     </TableCell>
                                     <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2">
-                                            <Link href={`/payments/${payment.id}`}>
-                                                <Button variant="ghost" size="icon">
-                                                    <Eye className="h-4 w-4" />
+                                        <div className="flex justify-end gap-1">
+                                            <Link href={payments.show.url({ payment: payment.id })}>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <Eye className="h-3.5 w-3.5" />
                                                 </Button>
                                             </Link>
-                                            <Link href={`/payments/${payment.id}/edit`}>
-                                                <Button variant="ghost" size="icon">
-                                                    <Edit className="h-4 w-4" />
+                                            <Link href={payments.edit.url({ payment: payment.id })}>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                    <Edit className="h-3.5 w-3.5" />
                                                 </Button>
                                             </Link>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
+                                                className="h-8 w-8"
                                                 onClick={() => setDeleteId(payment.id)}
                                             >
-                                                <Trash2 className="h-4 w-4" />
+                                                <Trash2 className="h-3.5 w-3.5" />
                                             </Button>
                                         </div>
                                     </TableCell>
@@ -160,14 +131,14 @@ export default function Index({ payments }: PaymentIndexProps) {
                         </TableBody>
                     </Table>
 
-                    {payments.data.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-12">
-                            <Banknote className="h-12 w-12 text-muted-foreground" />
-                            <h3 className="mt-4 text-lg font-semibold">No payments found</h3>
-                            <p className="text-muted-foreground">Record your first payment to get started.</p>
-                            <Link href="/payments/create" className="mt-4">
-                                <Button>
-                                    <Plus className="mr-2 h-4 w-4" />
+                    {paymentData.data.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-16">
+                            <Banknote className="h-10 w-10 text-muted-foreground mb-3" />
+                            <h3 className="text-base font-medium mb-1">No payments found</h3>
+                            <p className="text-sm text-muted-foreground mb-4">Record your first payment to get started.</p>
+                            <Link href={payments.create.url()}>
+                                <Button size="sm">
+                                    <Plus className="mr-1.5 h-3.5 w-3.5" />
                                     Record Payment
                                 </Button>
                             </Link>
@@ -179,9 +150,9 @@ export default function Index({ payments }: PaymentIndexProps) {
             <AlertDialog open={deleteId !== null} onOpenChange={() => setDeleteId(null)}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogTitle>Delete payment?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete the payment record and any associated reference image.
+                            This will permanently delete the payment record and any associated reference image. This action cannot be undone.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -190,7 +161,7 @@ export default function Index({ payments }: PaymentIndexProps) {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-        </>
+        </div>
     );
 }
 
@@ -201,7 +172,7 @@ Index.layout = (page: React.ReactNode) => (
             { title: 'Payments', href: '#' },
         ]}
     >
-        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+        <div className="p-4">
             {page}
         </div>
     </AppLayout>

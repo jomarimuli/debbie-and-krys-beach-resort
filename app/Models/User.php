@@ -11,6 +11,8 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use Notifiable, HasRoles;
 
+    protected $table = 'users';
+
     protected $fillable = [
         'google_id',
         'avatar',

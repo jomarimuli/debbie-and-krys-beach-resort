@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BookingEntranceFee extends Model
 {
+    protected $table = 'booking_entrance_fees';
+
     protected $fillable = [
         'booking_id',
         'type',

@@ -23,9 +23,8 @@ return new class extends Migration
             $table->foreignId('received_by')->nullable()->constrained('users');
             $table->timestamp('payment_date');
             $table->timestamps();
-            $table->softDeletes();
 
-            $table->index('booking_id');
+            $table->index('booking_id', 'idx_payment_booking_id');
         });
     }
 

@@ -2,14 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Accommodation extends Model
 {
-    use HasFactory, SoftDeletes;
+    protected $table = 'accommodations';
 
     protected $fillable = [
         'name',
@@ -20,7 +18,6 @@ class Accommodation extends Model
         'images',
         'min_capacity',
         'max_capacity',
-        'quantity_available',
         'is_active',
         'sort_order',
     ];
@@ -30,7 +27,6 @@ class Accommodation extends Model
         'images' => 'array',
         'min_capacity' => 'integer',
         'max_capacity' => 'integer',
-        'quantity_available' => 'integer',
         'is_active' => 'boolean',
         'sort_order' => 'integer',
     ];
@@ -41,6 +37,11 @@ class Accommodation extends Model
     public function rates(): HasMany
     {
         return $this->hasMany(AccommodationRate::class);
+    }
+
+    public function bookingAccommodations(): HasMany
+    {
+        return $this->hasMany(BookingAccommodation::class);
     }
 
     // Scopes
@@ -56,6 +57,30 @@ class Accommodation extends Model
             ->where('booking_type', $bookingType)
             ->where('is_active', true)
             ->first();
+    }
+
+    // Availability check
+    public function isAvailableForDates($checkIn, $checkOut): bool
+    {
+        if (!$this->is_active) {
+            return false;
+        }
+
+        $hasConflict = $this->bookingAccommodations()
+            ->whereHas('booking', function($query) use ($checkIn, $checkOut) {
+                $query->whereIn('status', ['confirmed', 'checked-in'])
+                    ->where(function($q) use ($checkIn, $checkOut) {
+                        $q->whereBetween('check_in_date', [$checkIn, $checkOut])
+                        ->orWhereBetween('check_out_date', [$checkIn, $checkOut])
+                        ->orWhere(function($sub) use ($checkIn, $checkOut) {
+                            $sub->where('check_in_date', '<=', $checkIn)
+                                ->where('check_out_date', '>=', $checkOut);
+                        });
+                    });
+            })
+            ->exists();
+
+        return !$hasConflict;
     }
 
     // Accessors

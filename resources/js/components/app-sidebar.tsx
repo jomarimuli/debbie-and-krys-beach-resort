@@ -5,12 +5,18 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote } from 'lucide-react';
+import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import { GithubUpdatesModal } from '@/components/github-updates-modal';
 
 const allNavItems: NavItem[] = [
+    {
+        title: 'Home',
+        href: '/',
+        icon: Home,
+        requiredPermissions: [],
+    },
     {
         title: 'Dashboard',
         href: '/dashboard',
@@ -47,6 +53,24 @@ const allNavItems: NavItem[] = [
         href: '/payments',
         icon: Banknote,
         requiredPermissions: ['payment show', 'global access'],
+    },
+    {
+        title: 'Feedbacks',
+        href: '/feedbacks',
+        icon: MessageSquare,
+        requiredPermissions: ['feedback show', 'global access'],
+    },
+    {
+        title: 'Gallery',
+        href: '/galleries',
+        icon: ImageIcon,
+        requiredPermissions: ['gallery show', 'global access'],
+    },
+    {
+        title: 'Announcements',
+        href: '/announcements',
+        icon: Megaphone,
+        requiredPermissions: ['announcement show', 'global access'],
     },
     {
         title: 'Users',

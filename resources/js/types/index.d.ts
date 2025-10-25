@@ -5,8 +5,12 @@ export * from './datatable';
 export * from './user';
 export * from './role';
 export * from './accommodation';
+export * from './accommodation-rate';
 export * from './booking';
 export * from './payment';
+export * from './feedback';
+export * from './gallery';
+export * from './announcement';
 
 // Common types
 export interface BreadcrumbItem {
@@ -88,8 +92,20 @@ export interface AppSidebarHeaderProps {
     onRefreshNotifications?: () => void;
 }
 
+export interface WelcomeProps extends PageProps {
+    latestAnnouncement: Announcement | null;
+    galleries: Gallery[];
+    accommodations: Accommodation[];
+    feedbacks: Feedback[];
+}
+
 // Page-specific props
 export type UserIndexProps = PageProps & UserIndexData;
 export type RoleIndexProps = PageProps & RoleIndexData;
 export type AccommodationIndexProps = PageProps & AccommodationIndexData;
+export type AccommodationRateIndexProps = PageProps & AccommodationRateIndexData;
 export type BookingIndexProps = PageProps & BookingIndexData;
+export type PaymentIndexProps = PageProps & PaymentIndexData;
+export type FeedbackIndexProps = PageProps & FeedbackIndexData;
+export type GalleryIndexProps = PageProps & GalleryIndexData;
+export type AnnouncementIndexProps = PageProps & AnnouncementIndexData;

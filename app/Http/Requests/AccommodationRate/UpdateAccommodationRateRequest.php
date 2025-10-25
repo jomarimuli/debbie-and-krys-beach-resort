@@ -32,8 +32,6 @@ class UpdateAccommodationRateRequest extends FormRequest
             'child_max_age' => ['nullable', 'integer', 'min:1', 'max:17'],
             'includes_free_cottage' => ['boolean'],
             'includes_free_entrance' => ['boolean'],
-            'effective_from' => ['nullable', 'date'],
-            'effective_to' => ['nullable', 'date', 'after_or_equal:effective_from'],
             'is_active' => ['boolean'],
         ];
     }

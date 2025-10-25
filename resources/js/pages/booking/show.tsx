@@ -1,20 +1,14 @@
-// resources/js/pages/booking/show.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type Booking, type PageProps } from '@/types';
-import { Link, router } from '@inertiajs/react';
-import { ArrowLeft, Edit, CheckCircle, LogIn, LogOut, XCircle, Banknote } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { ArrowLeft, Edit, CheckCircle, LogIn, LogOut, XCircle, Plus } from 'lucide-react';
 import { format } from 'date-fns';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { router } from '@inertiajs/react';
+import bookings from '@/routes/bookings';
+import payments from '@/routes/payments';
 
 export default function Show({ booking }: PageProps & { booking: Booking }) {
     const getStatusBadge = (status: string) => {
@@ -27,293 +21,250 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
         };
 
         return (
-            <Badge variant={variants[status] || 'outline'} className="capitalize">
+            <Badge variant={variants[status] || 'outline'} className="capitalize text-xs">
                 {status.replace('_', ' ')}
             </Badge>
         );
     };
 
     const handleStatusChange = (action: string) => {
-        router.post(`/bookings/${booking.id}/${action}`);
+        const routes: Record<string, string> = {
+            confirm: bookings.confirm.url({ booking: booking.id }),
+            checkIn: bookings.checkIn.url({ booking: booking.id }),
+            checkOut: bookings.checkOut.url({ booking: booking.id }),
+            cancel: bookings.cancel.url({ booking: booking.id }),
+        };
+
+        if (routes[action]) {
+            router.post(routes[action]);
+        }
     };
 
     return (
-        <>
+        <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/bookings">
-                        <Button variant="ghost" size="icon">
+                <div className="flex items-center gap-3">
+                    <Link href={bookings.index.url()}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight">{booking.booking_number}</h1>
-                        <p className="text-muted-foreground">{booking.guest_name}</p>
+                        <h1 className="text-xl font-semibold">{booking.booking_number}</h1>
+                        <p className="text-sm text-muted-foreground">{booking.guest_name}</p>
                     </div>
                 </div>
                 <div className="flex gap-2">
                     {booking.status === 'pending' && (
-                        <Button onClick={() => handleStatusChange('confirm')} variant="default">
-                            <CheckCircle className="mr-2 h-4 w-4" />
+                        <Button size="sm" onClick={() => handleStatusChange('confirm')}>
+                            <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
                             Confirm
                         </Button>
                     )}
                     {booking.status === 'confirmed' && (
-                        <Button onClick={() => handleStatusChange('check-in')} variant="default">
-                            <LogIn className="mr-2 h-4 w-4" />
+                        <Button size="sm" onClick={() => handleStatusChange('checkIn')}>
+                            <LogIn className="h-3.5 w-3.5 mr-1.5" />
                             Check In
                         </Button>
                     )}
                     {booking.status === 'checked_in' && (
-                        <Button onClick={() => handleStatusChange('check-out')} variant="default">
-                            <LogOut className="mr-2 h-4 w-4" />
+                        <Button size="sm" onClick={() => handleStatusChange('checkOut')}>
+                            <LogOut className="h-3.5 w-3.5 mr-1.5" />
                             Check Out
                         </Button>
                     )}
-                    {['pending', 'confirmed'].includes(booking.status) && (
-                        <Button onClick={() => handleStatusChange('cancel')} variant="destructive">
-                            <XCircle className="mr-2 h-4 w-4" />
+                    {!['cancelled', 'checked_out'].includes(booking.status) && (
+                        <Button size="sm" variant="destructive" onClick={() => handleStatusChange('cancel')}>
+                            <XCircle className="h-3.5 w-3.5 mr-1.5" />
                             Cancel
                         </Button>
                     )}
-                    <Link href={`/bookings/${booking.id}/edit`}>
-                        <Button variant="outline">
-                            <Edit className="mr-2 h-4 w-4" />
+                    <Link href={bookings.edit.url({ booking: booking.id })}>
+                        <Button size="sm" variant="outline">
+                            <Edit className="h-3.5 w-3.5 mr-1.5" />
                             Edit
                         </Button>
                     </Link>
                 </div>
             </div>
 
-            <div className="mt-6 grid gap-6 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2">
+                {/* Guest Information */}
                 <Card>
-                    <CardHeader>
-                        <CardTitle>Booking Details</CardTitle>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Guest Information</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-3">
                         <div>
-                            <p className="text-sm text-muted-foreground">Booking Number</p>
-                            <p className="font-medium">{booking.booking_number}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Name</p>
+                            <p className="text-sm font-medium">{booking.guest_name}</p>
                         </div>
+                        {booking.guest_phone && (
+                            <div>
+                                <p className="text-xs text-muted-foreground mb-0.5">Phone</p>
+                                <p className="text-sm font-medium">{booking.guest_phone}</p>
+                            </div>
+                        )}
+                        {booking.guest_email && (
+                            <div>
+                                <p className="text-xs text-muted-foreground mb-0.5">Email</p>
+                                <p className="text-sm font-medium">{booking.guest_email}</p>
+                            </div>
+                        )}
+                        {booking.guest_address && (
+                            <div>
+                                <p className="text-xs text-muted-foreground mb-0.5">Address</p>
+                                <p className="text-sm font-medium">{booking.guest_address}</p>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+
+                {/* Booking Details */}
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Booking Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
                         <div>
-                            <p className="text-sm text-muted-foreground">Status</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Status</p>
                             {getStatusBadge(booking.status)}
                         </div>
                         <div>
-                            <p className="text-sm text-muted-foreground">Source</p>
-                            <Badge variant="outline" className="capitalize">
-                                {booking.source}
-                            </Badge>
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Booking Type</p>
-                            <Badge variant="outline" className="capitalize">
+                            <p className="text-xs text-muted-foreground mb-0.5">Type</p>
+                            <Badge variant="outline" className="capitalize text-xs">
                                 {booking.booking_type.replace('_', ' ')}
                             </Badge>
                         </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Guest Information</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
                         <div>
-                            <p className="text-sm text-muted-foreground">Name</p>
-                            <p className="font-medium">{booking.guest_name}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Phone</p>
-                            <p className="font-medium">{booking.guest_phone || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Email</p>
-                            <p className="font-medium">{booking.guest_email || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Address</p>
-                            <p className="font-medium">{booking.guest_address || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-sm text-muted-foreground">Total Guests</p>
-                            <p className="font-medium">
-                                {booking.total_adults} Adults, {booking.total_children} Children
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Check-in Details</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div>
-                            <p className="text-sm text-muted-foreground">Check-in Date</p>
-                            <p className="font-medium">
+                            <p className="text-xs text-muted-foreground mb-0.5">Check-in Date</p>
+                            <p className="text-sm font-medium">
                                 {format(new Date(booking.check_in_date), 'MMMM dd, yyyy')}
                             </p>
                         </div>
                         {booking.check_out_date && (
                             <div>
-                                <p className="text-sm text-muted-foreground">Check-out Date</p>
-                                <p className="font-medium">
+                                <p className="text-xs text-muted-foreground mb-0.5">Check-out Date</p>
+                                <p className="text-sm font-medium">
                                     {format(new Date(booking.check_out_date), 'MMMM dd, yyyy')}
                                 </p>
                             </div>
                         )}
+                        <div>
+                            <p className="text-xs text-muted-foreground mb-0.5">Guests</p>
+                            <p className="text-sm font-medium">
+                                {booking.total_adults} Adults, {booking.total_children} Children
+                            </p>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
 
-            <Card className="mt-6">
-                <CardHeader>
-                    <CardTitle>Accommodations</CardTitle>
-                    <CardDescription>Booked rooms and cottages</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Accommodation</TableHead>
-                                <TableHead>Quantity</TableHead>
-                                <TableHead>Guests</TableHead>
-                                <TableHead>Rate</TableHead>
-                                <TableHead>Additional Charge</TableHead>
-                                <TableHead className="text-right">Subtotal</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {booking.accommodations?.map((item) => (
-                                <TableRow key={item.id}>
-                                    <TableCell className="font-medium">
-                                        {item.accommodation?.name}
-                                    </TableCell>
-                                    <TableCell>{item.quantity}</TableCell>
-                                    <TableCell>{item.guests}</TableCell>
-                                    <TableCell>₱{parseFloat(item.rate).toLocaleString()}</TableCell>
-                                    <TableCell>
-                                        {parseFloat(item.additional_pax_charge) > 0
-                                            ? `₱${parseFloat(item.additional_pax_charge).toLocaleString()}`
-                                            : '-'}
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        ₱{parseFloat(item.subtotal).toLocaleString()}
-                                    </TableCell>
-                                </TableRow>
+            {/* Accommodations */}
+            {booking.accommodations && booking.accommodations.length > 0 && (
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Accommodations</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-2">
+                            {booking.accommodations.map((item) => (
+                                <div key={item.id} className="flex justify-between items-start p-2 border rounded text-sm">
+                                    <div>
+                                        <p className="font-medium">{item.accommodation?.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Qty: {item.quantity} × {item.guests} guests
+                                        </p>
+                                    </div>
+                                    <p className="font-medium">₱{parseFloat(item.subtotal).toLocaleString()}</p>
+                                </div>
                             ))}
-                        </TableBody>
-                    </Table>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
+
+            {/* Payment Summary */}
+            <Card>
+                <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                        <CardTitle className="text-base font-medium">Payment Summary</CardTitle>
+                        {parseFloat(booking.balance) > 0 && (
+                            <Link href={`${payments.create.url()}?booking_id=${booking.id}`}>
+                                <Button size="sm" variant="outline">
+                                    <Plus className="h-3.5 w-3.5 mr-1.5" />
+                                    Record Payment
+                                </Button>
+                            </Link>
+                        )}
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Accommodation Total</span>
+                        <span className="font-medium">₱{parseFloat(booking.accommodation_total).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Entrance Fee Total</span>
+                        <span className="font-medium">₱{parseFloat(booking.entrance_fee_total).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm border-t pt-2">
+                        <span className="font-semibold">Total Amount</span>
+                        <span className="font-semibold">₱{parseFloat(booking.total_amount).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">Paid Amount</span>
+                        <span className="font-medium text-green-600">₱{parseFloat(booking.paid_amount).toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm border-t pt-2">
+                        <span className="font-semibold">Balance</span>
+                        <span className={`font-semibold ${parseFloat(booking.balance) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                            ₱{parseFloat(booking.balance).toLocaleString()}
+                        </span>
+                    </div>
                 </CardContent>
             </Card>
 
-            {booking.entrance_fees && booking.entrance_fees.length > 0 && (
-                <Card className="mt-6">
-                    <CardHeader>
-                        <CardTitle>Entrance Fees</CardTitle>
+            {/* Payment History */}
+            {booking.payments && booking.payments.length > 0 && (
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Payment History</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Type</TableHead>
-                                    <TableHead>Quantity</TableHead>
-                                    <TableHead>Rate</TableHead>
-                                    <TableHead className="text-right">Subtotal</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {booking.entrance_fees.map((fee) => (
-                                    <TableRow key={fee.id}>
-                                        <TableCell className="capitalize font-medium">{fee.type}</TableCell>
-                                        <TableCell>{fee.quantity}</TableCell>
-                                        <TableCell>₱{parseFloat(fee.rate).toLocaleString()}</TableCell>
-                                        <TableCell className="text-right">
-                                            ₱{parseFloat(fee.subtotal).toLocaleString()}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                </Card>
-            )}
-
-            <div className="mt-6 grid gap-6 md:grid-cols-2">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Payment Summary</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="flex justify-between">
-                            <p className="text-muted-foreground">Accommodation Total</p>
-                            <p className="font-medium">₱{parseFloat(booking.accommodation_total).toLocaleString()}</p>
-                        </div>
-                        <div className="flex justify-between">
-                            <p className="text-muted-foreground">Entrance Fees</p>
-                            <p className="font-medium">₱{parseFloat(booking.entrance_fee_total).toLocaleString()}</p>
-                        </div>
-                        <div className="flex justify-between border-t pt-4">
-                            <p className="font-semibold">Total Amount</p>
-                            <p className="font-semibold">₱{parseFloat(booking.total_amount).toLocaleString()}</p>
-                        </div>
-                        <div className="flex justify-between">
-                            <p className="text-muted-foreground">Paid Amount</p>
-                            <p className="font-medium text-green-600">₱{parseFloat(booking.paid_amount).toLocaleString()}</p>
-                        </div>
-                        <div className="flex justify-between border-t pt-4">
-                            <p className="font-semibold">Balance</p>
-                            <p className="font-semibold text-red-600">₱{parseFloat(booking.balance).toLocaleString()}</p>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <CardTitle>Payments</CardTitle>
-                            <Link href={`/payments/create?booking_id=${booking.id}`}>
-                                <Button size="sm">
-                                    <Banknote className="mr-2 h-4 w-4" />
-                                    Add Payment
-                                </Button>
-                            </Link>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        {booking.payments && booking.payments.length > 0 ? (
-                            <div className="space-y-4">
-                                {booking.payments.map((payment) => (
-                                    <div key={payment.id} className="flex justify-between items-center border-b pb-3">
-                                        <div>
-                                            <p className="font-medium">{payment.payment_number}</p>
-                                            <p className="text-sm text-muted-foreground capitalize">
-                                                {payment.payment_method.replace('_', ' ')}
-                                            </p>
-                                        </div>
-                                        <p className="font-medium">₱{parseFloat(payment.amount).toLocaleString()}</p>
+                        <div className="space-y-2">
+                            {booking.payments.map((payment) => (
+                                <Link
+                                    key={payment.id}
+                                    href={payments.show.url({ payment: payment.id })}
+                                    className="flex justify-between items-center p-2 border rounded hover:bg-muted/50 transition-colors"
+                                >
+                                    <div className="text-sm">
+                                        <p className="font-medium">{payment.payment_number}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {format(new Date(payment.payment_date), 'MMM dd, yyyy')} · {payment.payment_method.replace('_', ' ')}
+                                        </p>
                                     </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">No payments recorded yet.</p>
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
-
-            {booking.notes && (
-                <Card className="mt-6">
-                    <CardHeader>
-                        <CardTitle>Notes</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground">{booking.notes}</p>
+                                    <p className="font-medium text-sm">₱{parseFloat(payment.amount).toLocaleString()}</p>
+                                </Link>
+                            ))}
+                        </div>
                     </CardContent>
                 </Card>
             )}
-        </>
+
+            {/* Notes */}
+            {booking.notes && (
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Notes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">{booking.notes}</p>
+                    </CardContent>
+                </Card>
+            )}
+        </div>
     );
 }
 
@@ -325,7 +276,7 @@ Show.layout = (page: React.ReactNode) => (
             { title: 'Show', href: '#' },
         ]}
     >
-        <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+        <div className="p-4">
             {page}
         </div>
     </AppLayout>

@@ -21,7 +21,7 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
 
-    const originalUsersMap = new Map(users.data.map(user => [user.id, user]));
+    const originalUsersMap = new Map<number, UserData>(users.data.map((user: UserData) => [user.id, user]));
 
     const handleShow = (user: UserData) => {
         setSelectedUser(originalUsersMap.get(user.id) || user);
@@ -120,7 +120,7 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
     // Transform data for display
     const transformedUsers = {
         ...users,
-        data: users.data.map(user => ({
+        data: users.data.map((user: UserData) => ({
             ...user,
             phone: user.phone || <span className="text-gray-400 text-sm">Not provided</span>,
             address: user.address || <span className="text-gray-400 text-sm">Not provided</span>,
@@ -150,7 +150,7 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
                 <div className="flex flex-wrap gap-1 max-w-md">
                     {user.roles.length > 0 ? (
                         <>
-                            {user.roles.slice(0, 2).map((role) => (
+                            {user.roles.slice(0, 2).map((role: string) => (
                                 <Badge
                                     key={role}
                                     variant={role === 'admin' ? 'destructive' : 'secondary'}
@@ -180,7 +180,7 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
         </Button>
     ) : null;
 
-    const rawUsersData = users.data.map(user => ({
+    const rawUsersData = users.data.map((user: UserData) => ({
         name: user.name,
         email: user.email,
         phone: user.phone || 'N/A',

@@ -22,6 +22,8 @@ return new class extends Migration
             $table->decimal('subtotal', 10, 2);
             $table->integer('free_entrance_used')->default(0); // Track free entrances
             $table->timestamps();
+
+            $table->index('accommodation_id', 'idx_booking_accom_id');
         });
     }
 

@@ -94,7 +94,6 @@ export default function EditRoleModal({
                             id="name"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
-                            placeholder="Enter role name"
                             className={errors.name ? 'border-red-500' : ''}
                         />
                         {errors.name && (

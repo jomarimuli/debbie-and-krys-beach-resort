@@ -10,10 +10,12 @@ use App\Http\Controllers\AccommodationController;
 use App\Http\Controllers\AccommodationRateController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\WelcomeController;
+use App\Http\Controllers\AnnouncementController;
 
-Route::get('/', function () {
-    return Inertia::render('welcome');
-})->name('home');
+Route::get('/', [WelcomeController::class, 'index'])->name('home');
 
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
@@ -52,6 +54,17 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
     Route::resource('payments', PaymentController::class);
     Route::get('/payments/{payment}/reference-image', [PaymentController::class, 'showReferenceImage'])
         ->name('payment.reference-image');
+
+    // Feedbacks
+    Route::resource('feedbacks', FeedbackController::class);
+    Route::post('feedbacks/{feedback}/approve', [FeedbackController::class, 'approve'])->name('feedbacks.approve');
+    Route::post('feedbacks/{feedback}/reject', [FeedbackController::class, 'reject'])->name('feedbacks.reject');
+
+    // Galleries
+    Route::resource('galleries', GalleryController::class);
+
+    // Announcements
+    Route::resource('announcements', AnnouncementController::class);
 });
 
 require __DIR__.'/settings.php';
