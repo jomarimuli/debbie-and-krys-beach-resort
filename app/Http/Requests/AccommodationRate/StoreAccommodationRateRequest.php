@@ -25,7 +25,7 @@ class StoreAccommodationRateRequest extends FormRequest
             'booking_type' => ['required', 'in:day_tour,overnight'],
             'rate' => ['required', 'numeric', 'min:0'],
             'additional_pax_rate' => ['nullable', 'numeric', 'min:0'],
-            'entrance_fee' => ['nullable', 'numeric', 'min:0'],
+            'adult_entrance_fee' => ['nullable', 'numeric', 'min:0'],
             'child_entrance_fee' => ['nullable', 'numeric', 'min:0'],
             'child_max_age' => ['nullable', 'integer', 'min:1', 'max:17'],
             'includes_free_cottage' => ['boolean'],

@@ -14,7 +14,7 @@ class Booking extends Model
         'booking_number',
         'source',
         'booking_type',
-        'user_id',
+        'created_by',
         'guest_name',
         'guest_email',
         'guest_phone',
@@ -45,9 +45,9 @@ class Booking extends Model
     protected $appends = ['balance', 'is_fully_paid', 'total_guests'];
 
     // Relationships
-    public function user(): BelongsTo
+    public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function accommodations(): HasMany

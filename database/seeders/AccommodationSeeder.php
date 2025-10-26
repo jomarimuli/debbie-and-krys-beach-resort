@@ -28,7 +28,7 @@ class AccommodationSeeder extends Seeder
             'booking_type' => 'day_tour',
             'rate' => 4500,
             'additional_pax_rate' => 150,
-            'entrance_fee' => null,
+            'adult_entrance_fee' => null,
             'child_entrance_fee' => null,
             'child_max_age' => null,
             'includes_free_cottage' => true,
@@ -54,7 +54,7 @@ class AccommodationSeeder extends Seeder
             'booking_type' => 'day_tour',
             'rate' => 3500,
             'additional_pax_rate' => 150,
-            'entrance_fee' => null,
+            'adult_entrance_fee' => null,
             'child_entrance_fee' => null,
             'child_max_age' => null,
             'includes_free_cottage' => true,
@@ -63,17 +63,17 @@ class AccommodationSeeder extends Seeder
         ]);
 
         // Big Cottage
-    $bigCottage = Accommodation::create([
-        'name' => 'Big Cottage',
-        'type' => 'cottage',
-        'size' => 'big',
-        'description' => 'Large cottage for groups',
-        'is_air_conditioned' => false,
-        'min_capacity' => 10,
-        'max_capacity' => 15,
-        'is_active' => true,
-        'sort_order' => 3,
-    ]);
+        $bigCottage = Accommodation::create([
+            'name' => 'Big Cottage',
+            'type' => 'cottage',
+            'size' => 'big',
+            'description' => 'Large cottage for groups',
+            'is_air_conditioned' => false,
+            'min_capacity' => 10,
+            'max_capacity' => 15,
+            'is_active' => true,
+            'sort_order' => 3,
+        ]);
 
         // Big Cottage - Day Tour
         AccommodationRate::create([
@@ -81,7 +81,7 @@ class AccommodationSeeder extends Seeder
             'booking_type' => 'day_tour',
             'rate' => 800,
             'additional_pax_rate' => null,
-            'entrance_fee' => 100,
+            'adult_entrance_fee' => 100,
             'child_entrance_fee' => 50,
             'child_max_age' => 5,
             'includes_free_cottage' => false,
@@ -95,7 +95,7 @@ class AccommodationSeeder extends Seeder
             'booking_type' => 'overnight',
             'rate' => 1000,
             'additional_pax_rate' => null,
-            'entrance_fee' => 150,
+            'adult_entrance_fee' => 150,
             'child_entrance_fee' => null,
             'child_max_age' => null,
             'includes_free_cottage' => false,
@@ -122,7 +122,7 @@ class AccommodationSeeder extends Seeder
             'booking_type' => 'day_tour',
             'rate' => 400,
             'additional_pax_rate' => null,
-            'entrance_fee' => 100,
+            'adult_entrance_fee' => 100,
             'child_entrance_fee' => 50,
             'child_max_age' => 5,
             'includes_free_cottage' => false,
@@ -136,7 +136,7 @@ class AccommodationSeeder extends Seeder
             'booking_type' => 'overnight',
             'rate' => 600,
             'additional_pax_rate' => null,
-            'entrance_fee' => 150,
+            'adult_entrance_fee' => 150,
             'child_entrance_fee' => null,
             'child_max_age' => null,
             'includes_free_cottage' => false,

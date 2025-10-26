@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('booking_number')->unique(); // BK-202510-0001
             $table->enum('source', ['guest', 'registered', 'walkin']);
             $table->enum('booking_type', ['day_tour', 'overnight']);
-            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
 
             // Guest information
             $table->string('guest_name');

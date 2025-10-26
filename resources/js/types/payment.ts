@@ -12,12 +12,11 @@ export interface Payment {
     reference_image: string | null;
     reference_image_url: string | null;
     notes: string | null;
-    received_by: number | null;
     payment_date: string;
     created_at: string;
     updated_at: string;
     booking?: Booking;
-    received_by_user?: User;
+    received_by?: User;
 }
 
 export interface PaymentIndexData {

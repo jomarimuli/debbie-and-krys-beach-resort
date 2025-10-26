@@ -25,7 +25,7 @@ export default function Edit({
         booking_type: rate.booking_type,
         rate: rate.rate,
         additional_pax_rate: rate.additional_pax_rate || '',
-        entrance_fee: rate.entrance_fee || '',
+        adult_entrance_fee: rate.adult_entrance_fee || '',
         child_entrance_fee: rate.child_entrance_fee || '',
         child_max_age: rate.child_max_age?.toString() || '5',
         includes_free_cottage: rate.includes_free_cottage,
@@ -119,17 +119,17 @@ export default function Edit({
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="entrance_fee" className="text-sm cursor-text select-text">Entrance Fee (₱)</Label>
+                                <Label htmlFor="adult_entrance_fee" className="text-sm cursor-text select-text">Adult Entrance Fee (₱)</Label>
                                 <Input
-                                    id="entrance_fee"
+                                    id="adult_entrance_fee"
                                     type="number"
                                     step="0.01"
                                     min="0"
-                                    value={data.entrance_fee}
-                                    onChange={(e) => setData('entrance_fee', e.target.value)}
+                                    value={data.adult_entrance_fee}
+                                    onChange={(e) => setData('adult_entrance_fee', e.target.value)}
                                     className="h-9"
                                 />
-                                {errors.entrance_fee && <p className="text-xs text-destructive">{errors.entrance_fee}</p>}
+                                {errors.adult_entrance_fee && <p className="text-xs text-destructive">{errors.adult_entrance_fee}</p>}
                             </div>
 
                             <div className="space-y-1.5">

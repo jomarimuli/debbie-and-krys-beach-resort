@@ -14,7 +14,7 @@ class AccommodationRate extends Model
         'booking_type',
         'rate',
         'additional_pax_rate',
-        'entrance_fee',
+        'adult_entrance_fee',
         'child_entrance_fee',
         'child_max_age',
         'includes_free_cottage',
@@ -25,7 +25,7 @@ class AccommodationRate extends Model
     protected $casts = [
         'rate' => 'decimal:2',
         'additional_pax_rate' => 'decimal:2',
-        'entrance_fee' => 'decimal:2',
+        'adult_entrance_fee' => 'decimal:2',
         'child_entrance_fee' => 'decimal:2',
         'child_max_age' => 'integer',
         'includes_free_cottage' => 'boolean',

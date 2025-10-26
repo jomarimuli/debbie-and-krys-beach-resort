@@ -111,13 +111,12 @@ export default function Welcome() {
                                 </Link>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            className="text-xs sm:text-sm text-[#2C3E50] hover:text-[#E55A2B] hover:bg-transparent flex items-center gap-2 px-2 sm:px-4"
+                                        <button
+                                            className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs sm:px-5 sm:text-sm font-medium text-white bg-[#E55A2B] border border-[#E55A2B] rounded-md hover:bg-[#D14D24] hover:border-[#D14D24] active:bg-[#B8421F] transition-all duration-200 shadow-md hover:shadow-lg"
                                         >
                                             <span className="max-w-[80px] sm:max-w-none truncate">{auth.user.name}</span>
                                             <ChevronDown className="h-4 w-4 flex-shrink-0" />
-                                        </Button>
+                                        </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-48">
                                         <DropdownMenuItem asChild>

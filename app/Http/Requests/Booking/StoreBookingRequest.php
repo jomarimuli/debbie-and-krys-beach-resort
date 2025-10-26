@@ -16,7 +16,7 @@ class StoreBookingRequest extends FormRequest
         return [
             'source' => ['required', 'in:guest,registered,walkin'],
             'booking_type' => ['required', 'in:day_tour,overnight'],
-            'user_id' => ['nullable', 'exists:users,id'],
+            'created_by' => ['nullable', 'exists:users,id'],
             'guest_name' => ['required', 'string', 'max:255'],
             'guest_email' => ['nullable', 'email', 'max:255'],
             'guest_phone' => ['nullable', 'string', 'max:20'],
@@ -41,5 +41,20 @@ class StoreBookingRequest extends FormRequest
             'accommodations.*.accommodation_rate_id.required' => 'Please select a rate for each accommodation.',
             'accommodations.*.accommodation_rate_id.exists' => 'The selected rate is invalid.',
         ];
+    }
+
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            $totalGuests = $this->total_adults + $this->total_children;
+            $accommodationGuests = collect($this->accommodations)->sum('guests');
+
+            if ($accommodationGuests !== $totalGuests) {
+                $validator->errors()->add(
+                    'accommodations',
+                    "Total accommodation guests ($accommodationGuests) must equal total party size ($totalGuests)"
+                );
+            }
+        });
     }
 }

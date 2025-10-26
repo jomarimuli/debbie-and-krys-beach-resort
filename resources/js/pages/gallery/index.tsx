@@ -50,13 +50,6 @@ export default function Index({ galleries: galleryData }: GalleryIndexProps) {
                     <CardContent className="flex flex-col items-center justify-center py-16">
                         <ImageIcon className="h-10 w-10 text-muted-foreground mb-3" />
                         <h3 className="text-base font-medium mb-1">No images found</h3>
-                        <p className="text-sm text-muted-foreground mb-4">Start building your gallery.</p>
-                        <Link href={galleries.create.url()}>
-                            <Button size="sm">
-                                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                                Add Image
-                            </Button>
-                        </Link>
                     </CardContent>
                 </Card>
             ) : (

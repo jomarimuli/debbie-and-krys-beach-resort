@@ -44,9 +44,9 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
     Route::post('bookings/{booking}/confirm', [BookingController::class, 'confirm'])
         ->name('bookings.confirm');
     Route::post('bookings/{booking}/check-in', [BookingController::class, 'checkIn'])
-        ->name('bookings.check-in');
+        ->name('bookings.checkIn');
     Route::post('bookings/{booking}/check-out', [BookingController::class, 'checkOut'])
-        ->name('bookings.check-out');
+        ->name('bookings.checkOut');
     Route::post('bookings/{booking}/cancel', [BookingController::class, 'cancel'])
         ->name('bookings.cancel');
 

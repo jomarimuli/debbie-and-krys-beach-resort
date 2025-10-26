@@ -135,13 +135,6 @@ export default function Index({ payments: paymentData }: PaymentIndexProps) {
                         <div className="flex flex-col items-center justify-center py-16">
                             <Banknote className="h-10 w-10 text-muted-foreground mb-3" />
                             <h3 className="text-base font-medium mb-1">No payments found</h3>
-                            <p className="text-sm text-muted-foreground mb-4">Record your first payment to get started.</p>
-                            <Link href={payments.create.url()}>
-                                <Button size="sm">
-                                    <Plus className="mr-1.5 h-3.5 w-3.5" />
-                                    Record Payment
-                                </Button>
-                            </Link>
                         </div>
                     )}
                 </CardContent>

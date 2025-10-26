@@ -35,7 +35,7 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-xl font-semibold">Accommodation Rates</h1>
+                    <h1 className="text-xl font-semibold">Rates</h1>
                     <p className="text-sm text-muted-foreground">Manage pricing for rooms and cottages</p>
                 </div>
                 <Link href={accommodationRates.create.url()}>
@@ -129,13 +129,6 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                         <div className="flex flex-col items-center justify-center py-16">
                             <Coins className="h-10 w-10 text-muted-foreground mb-3" />
                             <h3 className="text-base font-medium mb-1">No rates found</h3>
-                            <p className="text-sm text-muted-foreground mb-4">Add pricing rates for your accommodations.</p>
-                            <Link href={accommodationRates.create.url()}>
-                                <Button size="sm">
-                                    <Plus className="mr-1.5 h-3.5 w-3.5" />
-                                    Add Rate
-                                </Button>
-                            </Link>
                         </div>
                     )}
                 </CardContent>
@@ -163,7 +156,7 @@ Index.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
-            { title: 'Accommodation Rates', href: '#' },
+            { title: 'Rates', href: '#' },
         ]}
     >
         <div className="p-4">

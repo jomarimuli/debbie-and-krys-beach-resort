@@ -10,7 +10,6 @@ export interface Booking {
     booking_number: string;
     source: 'guest' | 'registered' | 'walkin';
     booking_type: 'day_tour' | 'overnight';
-    user_id: number | null;
     guest_name: string;
     guest_email: string | null;
     guest_phone: string | null;
@@ -30,8 +29,7 @@ export interface Booking {
     notes: string | null;
     created_at: string;
     updated_at: string;
-    user?: User;
-    created_by_user?: User;
+    created_by?: User;
     accommodations?: BookingAccommodation[];
     entrance_fees?: BookingEntranceFee[];
     payments?: Payment[];
@@ -77,7 +75,7 @@ export interface BookingIndexData {
 export interface BookingFormData {
     source: 'guest' | 'registered' | 'walkin';
     booking_type: 'day_tour' | 'overnight';
-    user_id?: number;
+    created_by?: number;
     guest_name: string;
     guest_email?: string;
     guest_phone?: string;

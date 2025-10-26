@@ -131,8 +131,8 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="walkin">Walk-in</SelectItem>
-                                        <SelectItem value="guest">Guest Booking</SelectItem>
-                                        <SelectItem value="registered">Registered User</SelectItem>
+                                        <SelectItem value="guest">Guest</SelectItem>
+                                        <SelectItem value="registered">Registered</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 {errors.source && <p className="text-xs text-destructive">{errors.source}</p>}
@@ -368,10 +368,10 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                                     <span className="font-medium">₱{parseFloat(selectedRate.additional_pax_rate).toLocaleString()}/head</span>
                                                 </div>
                                             )}
-                                            {selectedRate.entrance_fee && (
+                                            {selectedRate.adult_entrance_fee && (
                                                 <div className="flex justify-between">
                                                     <span>Entrance Fee (Adult):</span>
-                                                    <span className="font-medium">₱{parseFloat(selectedRate.entrance_fee).toLocaleString()}/head</span>
+                                                    <span className="font-medium">₱{parseFloat(selectedRate.adult_entrance_fee).toLocaleString()}/head</span>
                                                 </div>
                                             )}
                                             {selectedRate.child_entrance_fee && (

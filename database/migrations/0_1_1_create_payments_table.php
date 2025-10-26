@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('reference_number')->nullable();
             $table->string('reference_image')->nullable();
             $table->text('notes')->nullable();
-            $table->foreignId('received_by')->nullable()->constrained('users');
+            $table->foreignId('received_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('payment_date');
             $table->timestamps();
 

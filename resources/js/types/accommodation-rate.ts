@@ -7,7 +7,7 @@ export interface AccommodationRate {
     booking_type: 'day_tour' | 'overnight';
     rate: string;
     additional_pax_rate: string | null;
-    entrance_fee: string | null;
+    adult_entrance_fee: string | null;
     child_entrance_fee: string | null;
     child_max_age: number | null;
     includes_free_cottage: boolean;
@@ -27,7 +27,7 @@ export interface AccommodationRateFormData {
     booking_type: 'day_tour' | 'overnight';
     rate: string;
     additional_pax_rate?: string;
-    entrance_fee?: string;
+    adult_entrance_fee?: string;
     child_entrance_fee?: string;
     child_max_age?: string;
     includes_free_cottage: boolean;

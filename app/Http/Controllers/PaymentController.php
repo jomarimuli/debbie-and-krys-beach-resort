@@ -28,7 +28,7 @@ class PaymentController extends Controller
 
     public function index(): Response
     {
-        $payments = Payment::with(['booking', 'receivedBy'])
+        $payments = Payment::with(['booking'])
             ->latest('payment_date')
             ->paginate(10);
 

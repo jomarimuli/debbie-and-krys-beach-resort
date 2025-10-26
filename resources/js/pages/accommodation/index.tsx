@@ -154,13 +154,6 @@ export default function Index({ accommodations: accommodationData }: Accommodati
                         <div className="flex flex-col items-center justify-center py-16">
                             <Hotel className="h-10 w-10 text-muted-foreground mb-3" />
                             <h3 className="text-base font-medium mb-1">No accommodations found</h3>
-                            <p className="text-sm text-muted-foreground mb-4">Get started by adding your first accommodation.</p>
-                            <Link href={accommodations.create.url()}>
-                                <Button size="sm">
-                                    <Plus className="mr-1.5 h-3.5 w-3.5" />
-                                    Add Accommodation
-                                </Button>
-                            </Link>
                         </div>
                     )}
                 </CardContent>

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->enum('booking_type', ['day_tour', 'overnight']);
             $table->decimal('rate', 10, 2); // ₱4,500, ₱800, ₱1,000
             $table->decimal('additional_pax_rate', 10, 2)->nullable(); // ₱150 per head
-            $table->decimal('entrance_fee', 10, 2)->nullable(); // ₱100, ₱150 per head
+            $table->decimal('adult_entrance_fee', 10, 2)->nullable(); // ₱100, ₱150 per head
             $table->decimal('child_entrance_fee', 10, 2)->nullable(); // ₱50
             $table->integer('child_max_age')->nullable(); // 5 years old
             $table->boolean('includes_free_cottage')->default(false);

@@ -190,13 +190,6 @@ export default function Index({ feedbacks: feedbackData }: FeedbackIndexProps) {
                         <div className="flex flex-col items-center justify-center py-16">
                             <MessageSquare className="h-10 w-10 text-muted-foreground mb-3" />
                             <h3 className="text-base font-medium mb-1">No feedbacks found</h3>
-                            <p className="text-sm text-muted-foreground mb-4">Start collecting guest reviews.</p>
-                            <Link href={feedbacks.create.url()}>
-                                <Button size="sm">
-                                    <Plus className="mr-1.5 h-3.5 w-3.5" />
-                                    Add Feedback
-                                </Button>
-                            </Link>
                         </div>
                     )}
                 </CardContent>

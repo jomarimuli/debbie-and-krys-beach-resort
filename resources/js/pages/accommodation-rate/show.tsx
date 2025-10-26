@@ -76,10 +76,10 @@ export default function Show({ rate }: PageProps & { rate: AccommodationRate }) 
                             </p>
                         </div>
                         <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">Entrance Fee</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Adult Entrance Fee</p>
                             <p className="text-sm font-medium">
-                                {rate.entrance_fee
-                                    ? `₱${parseFloat(rate.entrance_fee).toLocaleString()}`
+                                {rate.adult_entrance_fee
+                                    ? `₱${parseFloat(rate.adult_entrance_fee).toLocaleString()}`
                                     : 'N/A'}
                             </p>
                         </div>

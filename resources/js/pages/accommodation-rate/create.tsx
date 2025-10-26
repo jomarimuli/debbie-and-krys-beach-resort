@@ -18,7 +18,7 @@ export default function Create({ accommodations }: PageProps & { accommodations:
         booking_type: 'day_tour' as 'day_tour' | 'overnight',
         rate: '',
         additional_pax_rate: '',
-        entrance_fee: '',
+        adult_entrance_fee: '',
         child_entrance_fee: '',
         child_max_age: '5',
         includes_free_cottage: false,
@@ -112,17 +112,17 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="entrance_fee" className="text-sm cursor-text select-text">Entrance Fee (₱)</Label>
+                                <Label htmlFor="adult_entrance_fee" className="text-sm cursor-text select-text">Adult Entrance Fee (₱)</Label>
                                 <Input
-                                    id="entrance_fee"
+                                    id="adult_entrance_fee"
                                     type="number"
                                     step="0.01"
                                     min="0"
-                                    value={data.entrance_fee}
-                                    onChange={(e) => setData('entrance_fee', e.target.value)}
+                                    value={data.adult_entrance_fee}
+                                    onChange={(e) => setData('adult_entrance_fee', e.target.value)}
                                     className="h-9"
                                 />
-                                {errors.entrance_fee && <p className="text-xs text-destructive">{errors.entrance_fee}</p>}
+                                {errors.adult_entrance_fee && <p className="text-xs text-destructive">{errors.adult_entrance_fee}</p>}
                             </div>
 
                             <div className="space-y-1.5">

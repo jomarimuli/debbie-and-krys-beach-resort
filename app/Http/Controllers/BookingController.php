@@ -30,7 +30,7 @@ class BookingController extends Controller
 
     public function index(): Response
     {
-        $bookings = Booking::with(['user', 'accommodations.accommodation'])
+        $bookings = Booking::with(['accommodations.accommodation'])
             ->latest()
             ->paginate(10);
 
@@ -98,13 +98,13 @@ class BookingController extends Controller
 
             $firstSelectedRate = AccommodationRate::find($request->accommodations[0]['accommodation_rate_id']);
 
-            if ($adultsNeedingEntrance > 0 && $firstSelectedRate?->entrance_fee) {
-                $adultFee = $adultsNeedingEntrance * $firstSelectedRate->entrance_fee;
+            if ($adultsNeedingEntrance > 0 && $firstSelectedRate?->adult_entrance_fee) {
+                $adultFee = $adultsNeedingEntrance * $firstSelectedRate->adult_entrance_fee;
                 BookingEntranceFee::create([
                     'booking_id' => $booking->id,
                     'type' => 'adult',
                     'quantity' => $adultsNeedingEntrance,
-                    'rate' => $firstSelectedRate->entrance_fee,
+                    'rate' => $firstSelectedRate->adult_entrance_fee,
                     'subtotal' => $adultFee,
                 ]);
                 $entranceFeeTotal += $adultFee;
@@ -141,8 +141,6 @@ class BookingController extends Controller
     public function show(Booking $booking): Response
     {
         $booking->load([
-            'user',
-            'accommodations.accommodation.rates',
             'accommodations.accommodationRate',
             'entranceFees',
             'payments',

@@ -140,7 +140,7 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                 </Card>
             )}
 
-            {payment.received_by_user && (
+            {payment.received_by && (
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base font-medium">Additional Information</CardTitle>
@@ -148,7 +148,7 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                     <CardContent className="space-y-3">
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Received By</p>
-                            <p className="text-sm font-medium">{payment.received_by_user.name}</p>
+                            <p className="text-sm font-medium">{payment.received_by.name}</p>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Recorded At</p>
