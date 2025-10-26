@@ -28,7 +28,7 @@ class StoreBookingRequest extends FormRequest
             'notes' => ['nullable', 'string'],
             'accommodations' => ['required', 'array', 'min:1'],
             'accommodations.*.accommodation_id' => ['required', 'exists:accommodations,id'],
-            'accommodations.*.quantity' => ['required', 'integer', 'min:1'],
+            'accommodations.*.accommodation_rate_id' => ['required', 'exists:accommodation_rates,id'],
             'accommodations.*.guests' => ['required', 'integer', 'min:1'],
         ];
     }
@@ -38,6 +38,8 @@ class StoreBookingRequest extends FormRequest
         return [
             'check_in_date.after_or_equal' => 'Check-in date cannot be in the past.',
             'accommodations.required' => 'Please select at least one accommodation.',
+            'accommodations.*.accommodation_rate_id.required' => 'Please select a rate for each accommodation.',
+            'accommodations.*.accommodation_rate_id.exists' => 'The selected rate is invalid.',
         ];
     }
 }

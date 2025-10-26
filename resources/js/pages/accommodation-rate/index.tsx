@@ -59,7 +59,6 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                                 <TableHead>Accommodation</TableHead>
                                 <TableHead>Booking Type</TableHead>
                                 <TableHead>Rate</TableHead>
-                                <TableHead>Base Capacity</TableHead>
                                 <TableHead>Additional Pax</TableHead>
                                 <TableHead>Status</TableHead>
                                 <TableHead className="w-32 text-right">Actions</TableHead>
@@ -85,9 +84,6 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                                     </TableCell>
                                     <TableCell className="font-medium text-sm">
                                         ₱{parseFloat(rate.rate).toLocaleString()}
-                                    </TableCell>
-                                    <TableCell className="text-sm">
-                                        {rate.base_capacity ? `${rate.base_capacity} pax` : 'N/A'}
                                     </TableCell>
                                     <TableCell className="text-sm">
                                         {rate.additional_pax_rate

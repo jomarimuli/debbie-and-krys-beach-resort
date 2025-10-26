@@ -105,7 +105,7 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                                         <ul className="mt-1 space-y-0.5">
                                             {selectedBooking.accommodations.map((acc) => (
                                                 <li key={acc.id} className="ml-2 text-xs">
-                                                    • {acc.accommodation?.name} (x{acc.quantity})
+                                                    • {acc.accommodation?.name}
                                                 </li>
                                             ))}
                                         </ul>

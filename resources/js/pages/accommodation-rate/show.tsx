@@ -68,12 +68,6 @@ export default function Show({ rate }: PageProps & { rate: AccommodationRate }) 
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">Base Capacity</p>
-                            <p className="text-sm font-medium">
-                                {rate.base_capacity ? `${rate.base_capacity} pax` : 'N/A'}
-                            </p>
-                        </div>
-                        <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Additional Pax Rate</p>
                             <p className="text-sm font-medium">
                                 {rate.additional_pax_rate

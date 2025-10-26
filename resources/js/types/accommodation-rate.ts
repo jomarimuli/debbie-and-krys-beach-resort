@@ -6,7 +6,6 @@ export interface AccommodationRate {
     accommodation_id: number;
     booking_type: 'day_tour' | 'overnight';
     rate: string;
-    base_capacity: number | null;
     additional_pax_rate: string | null;
     entrance_fee: string | null;
     child_entrance_fee: string | null;
@@ -27,7 +26,6 @@ export interface AccommodationRateFormData {
     accommodation_id: string;
     booking_type: 'day_tour' | 'overnight';
     rate: string;
-    base_capacity?: string;
     additional_pax_rate?: string;
     entrance_fee?: string;
     child_entrance_fee?: string;

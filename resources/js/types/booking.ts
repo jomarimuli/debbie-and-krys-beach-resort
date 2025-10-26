@@ -2,6 +2,7 @@
 import type { PaginatedData } from './datatable';
 import type { User } from './user';
 import type { Accommodation } from './accommodation';
+import type { AccommodationRate } from './accommodation-rate';
 import type { Payment } from './payment';
 
 export interface Booking {
@@ -27,7 +28,6 @@ export interface Booking {
     total_guests: number;
     status: 'pending' | 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled';
     notes: string | null;
-    created_by: number | null;
     created_at: string;
     updated_at: string;
     user?: User;
@@ -41,7 +41,7 @@ export interface BookingAccommodation {
     id: number;
     booking_id: number;
     accommodation_id: number;
-    quantity: number;
+    accommodation_rate_id: number;
     guests: number;
     rate: string;
     additional_pax_charge: string;
@@ -50,6 +50,7 @@ export interface BookingAccommodation {
     created_at: string;
     updated_at: string;
     accommodation?: Accommodation;
+    accommodation_rate?: AccommodationRate;
 }
 
 export interface BookingEntranceFee {
@@ -88,7 +89,7 @@ export interface BookingFormData {
     notes?: string;
     accommodations: {
         accommodation_id: number;
-        quantity: number;
+        accommodation_rate_id: number;
         guests: number;
     }[];
 }

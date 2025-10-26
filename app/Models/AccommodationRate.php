@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 class AccommodationRate extends Model
 {
@@ -13,7 +13,6 @@ class AccommodationRate extends Model
         'accommodation_id',
         'booking_type',
         'rate',
-        'base_capacity',
         'additional_pax_rate',
         'entrance_fee',
         'child_entrance_fee',
@@ -28,7 +27,6 @@ class AccommodationRate extends Model
         'additional_pax_rate' => 'decimal:2',
         'entrance_fee' => 'decimal:2',
         'child_entrance_fee' => 'decimal:2',
-        'base_capacity' => 'integer',
         'child_max_age' => 'integer',
         'includes_free_cottage' => 'boolean',
         'includes_free_entrance' => 'boolean',
@@ -39,6 +37,11 @@ class AccommodationRate extends Model
     public function accommodation(): BelongsTo
     {
         return $this->belongsTo(Accommodation::class);
+    }
+
+    public function bookingAccommodations(): HasMany
+    {
+        return $this->hasMany(BookingAccommodation::class);
     }
 
     // Scopes

@@ -40,7 +40,6 @@ return new class extends Migration
             $table->enum('status', ['pending', 'confirmed', 'checked_in', 'checked_out', 'cancelled'])->default('pending');
             $table->text('notes')->nullable();
 
-            $table->foreignId('created_by')->nullable()->constrained('users');
             $table->timestamps();
 
             $table->index(['check_in_date', 'check_out_date', 'status'], 'idx_booking_dates_status');

@@ -15,15 +15,17 @@ return new class extends Migration
             $table->id();
             $table->foreignId('booking_id')->constrained()->cascadeOnDelete();
             $table->foreignId('accommodation_id')->constrained();
-            $table->integer('quantity')->default(1);
+            $table->foreignId('accommodation_rate_id')->constrained()->restrictOnDelete();
             $table->integer('guests')->default(0); // Total guests for this accommodation
-            $table->decimal('rate', 10, 2);
+            $table->decimal('rate', 10, 2); // Snapshot of rate at booking time
             $table->decimal('additional_pax_charge', 10, 2)->default(0);
             $table->decimal('subtotal', 10, 2);
             $table->integer('free_entrance_used')->default(0); // Track free entrances
             $table->timestamps();
 
+            $table->index('booking_id', 'idx_booking_accom_booking_id');
             $table->index('accommodation_id', 'idx_booking_accom_id');
+            $table->index('accommodation_rate_id', 'idx_booking_accom_rate_id');
         });
     }
 

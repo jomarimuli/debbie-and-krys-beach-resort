@@ -173,8 +173,13 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                                     <div>
                                         <p className="font-medium">{item.accommodation?.name}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            Qty: {item.quantity} × {item.guests} guests
+                                            {item.guests} guests · {item.accommodation_rate?.booking_type.replace('_', ' ')}
                                         </p>
+                                        {parseFloat(item.additional_pax_charge) > 0 && (
+                                            <p className="text-xs text-muted-foreground">
+                                                Additional: ₱{parseFloat(item.additional_pax_charge).toLocaleString()}
+                                            </p>
+                                        )}
                                     </div>
                                     <p className="font-medium">₱{parseFloat(item.subtotal).toLocaleString()}</p>
                                 </div>

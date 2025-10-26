@@ -12,7 +12,7 @@ class BookingAccommodation extends Model
     protected $fillable = [
         'booking_id',
         'accommodation_id',
-        'quantity',
+        'accommodation_rate_id',
         'guests',
         'rate',
         'additional_pax_charge',
@@ -21,7 +21,6 @@ class BookingAccommodation extends Model
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
         'guests' => 'integer',
         'free_entrance_used' => 'integer',
         'rate' => 'decimal:2',
@@ -38,5 +37,10 @@ class BookingAccommodation extends Model
     public function accommodation(): BelongsTo
     {
         return $this->belongsTo(Accommodation::class);
+    }
+
+    public function accommodationRate(): BelongsTo
+    {
+        return $this->belongsTo(AccommodationRate::class);
     }
 }

@@ -25,7 +25,6 @@ class UpdateAccommodationRateRequest extends FormRequest
             ],
             'booking_type' => ['required', 'in:day_tour,overnight'],
             'rate' => ['required', 'numeric', 'min:0'],
-            'base_capacity' => ['nullable', 'integer', 'min:1'],
             'additional_pax_rate' => ['nullable', 'numeric', 'min:0'],
             'entrance_fee' => ['nullable', 'numeric', 'min:0'],
             'child_entrance_fee' => ['nullable', 'numeric', 'min:0'],

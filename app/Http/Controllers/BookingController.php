@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Accommodation;
+use App\Models\AccommodationRate;
 use App\Models\BookingAccommodation;
 use App\Models\BookingEntranceFee;
 use App\Http\Requests\Booking\StoreBookingRequest;
@@ -29,7 +30,7 @@ class BookingController extends Controller
 
     public function index(): Response
     {
-        $bookings = Booking::with(['user', 'createdBy', 'accommodations.accommodation'])
+        $bookings = Booking::with(['user', 'accommodations.accommodation'])
             ->latest()
             ->paginate(10);
 
@@ -53,7 +54,6 @@ class BookingController extends Controller
         try {
             $booking = Booking::create([
                 ...$request->except('accommodations'),
-                'created_by' => auth()->id(),
             ]);
 
             $accommodationTotal = 0;
@@ -62,17 +62,13 @@ class BookingController extends Controller
 
             foreach ($request->accommodations as $item) {
                 $accommodation = Accommodation::findOrFail($item['accommodation_id']);
-                $rate = $accommodation->getRateForBookingType($request->booking_type);
+                $rate = AccommodationRate::findOrFail($item['accommodation_rate_id']);
 
-                if (!$rate) {
-                    throw new \Exception("Rate not found for accommodation: {$accommodation->name}");
-                }
-
-                $subtotal = $rate->rate * $item['quantity'];
+                $subtotal = $rate->rate;
                 $additionalPaxCharge = 0;
 
-                if ($rate->base_capacity && $item['guests'] > $rate->base_capacity) {
-                    $additionalGuests = $item['guests'] - $rate->base_capacity;
+                if ($accommodation->min_capacity && $item['guests'] > $accommodation->min_capacity) {
+                    $additionalGuests = $item['guests'] - $accommodation->min_capacity;
                     $additionalPaxCharge = $additionalGuests * ($rate->additional_pax_rate ?? 0);
                     $subtotal += $additionalPaxCharge;
                 }
@@ -80,45 +76,47 @@ class BookingController extends Controller
                 BookingAccommodation::create([
                     'booking_id' => $booking->id,
                     'accommodation_id' => $accommodation->id,
-                    'quantity' => $item['quantity'],
+                    'accommodation_rate_id' => $rate->id,
                     'guests' => $item['guests'],
                     'rate' => $rate->rate,
                     'additional_pax_charge' => $additionalPaxCharge,
                     'subtotal' => $subtotal,
-                    'free_entrance_used' => $rate->includes_free_entrance ? $item['guests'] : 0,
+                    'free_entrance_used' => $rate->includes_free_entrance
+                    ? min($item['guests'], $accommodation->min_capacity ?? 0)
+                    : 0,
                 ]);
 
                 $accommodationTotal += $subtotal;
 
                 if ($rate->includes_free_entrance) {
-                    $totalFreeEntrances += $item['guests'];
+                    $totalFreeEntrances += min($item['guests'], $accommodation->min_capacity ?? 0);
                 }
             }
 
             $adultsNeedingEntrance = max(0, $request->total_adults - $totalFreeEntrances);
             $childrenNeedingEntrance = $request->total_children;
 
-            $defaultRate = Accommodation::with('rates')->first()?->rates->first();
+            $firstSelectedRate = AccommodationRate::find($request->accommodations[0]['accommodation_rate_id']);
 
-            if ($adultsNeedingEntrance > 0 && $defaultRate?->entrance_fee) {
-                $adultFee = $adultsNeedingEntrance * $defaultRate->entrance_fee;
+            if ($adultsNeedingEntrance > 0 && $firstSelectedRate?->entrance_fee) {
+                $adultFee = $adultsNeedingEntrance * $firstSelectedRate->entrance_fee;
                 BookingEntranceFee::create([
                     'booking_id' => $booking->id,
                     'type' => 'adult',
                     'quantity' => $adultsNeedingEntrance,
-                    'rate' => $defaultRate->entrance_fee,
+                    'rate' => $firstSelectedRate->entrance_fee,
                     'subtotal' => $adultFee,
                 ]);
                 $entranceFeeTotal += $adultFee;
             }
 
-            if ($childrenNeedingEntrance > 0 && $defaultRate?->child_entrance_fee) {
-                $childFee = $childrenNeedingEntrance * $defaultRate->child_entrance_fee;
+            if ($childrenNeedingEntrance > 0 && $firstSelectedRate?->child_entrance_fee) {
+                $childFee = $childrenNeedingEntrance * $firstSelectedRate->child_entrance_fee;
                 BookingEntranceFee::create([
                     'booking_id' => $booking->id,
                     'type' => 'child',
                     'quantity' => $childrenNeedingEntrance,
-                    'rate' => $defaultRate->child_entrance_fee,
+                    'rate' => $firstSelectedRate->child_entrance_fee,
                     'subtotal' => $childFee,
                 ]);
                 $entranceFeeTotal += $childFee;
@@ -144,10 +142,10 @@ class BookingController extends Controller
     {
         $booking->load([
             'user',
-            'createdBy',
             'accommodations.accommodation.rates',
+            'accommodations.accommodationRate',
             'entranceFees',
-            'payments.receivedBy',
+            'payments',
         ]);
 
         return Inertia::render('booking/show', [

@@ -156,7 +156,6 @@ export default function Show({ accommodation }: PageProps & { accommodation: Acc
                                 <TableRow>
                                     <TableHead>Booking Type</TableHead>
                                     <TableHead>Rate</TableHead>
-                                    <TableHead>Base Capacity</TableHead>
                                     <TableHead>Additional Pax</TableHead>
                                     <TableHead>Status</TableHead>
                                 </TableRow>
@@ -171,9 +170,6 @@ export default function Show({ accommodation }: PageProps & { accommodation: Acc
                                         </TableCell>
                                         <TableCell className="font-medium text-sm">
                                             ₱{parseFloat(rate.rate).toLocaleString()}
-                                        </TableCell>
-                                        <TableCell className="text-sm">
-                                            {rate.base_capacity ? `${rate.base_capacity} pax` : 'N/A'}
                                         </TableCell>
                                         <TableCell className="text-sm">
                                             {rate.additional_pax_rate ? `₱${parseFloat(rate.additional_pax_rate).toLocaleString()}` : 'N/A'}

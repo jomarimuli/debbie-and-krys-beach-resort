@@ -175,7 +175,7 @@ export default function Show({ feedback }: PageProps & { feedback: Feedback }) {
                                 <div className="space-y-1">
                                     {feedback.booking.accommodations.map((acc) => (
                                         <p key={acc.id} className="text-sm">
-                                            • {acc.accommodation?.name} (x{acc.quantity})
+                                            • {acc.accommodation?.name}
                                         </p>
                                     ))}
                                 </div>

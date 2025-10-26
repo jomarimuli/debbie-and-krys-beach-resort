@@ -24,7 +24,6 @@ export default function Edit({
         accommodation_id: rate.accommodation_id.toString(),
         booking_type: rate.booking_type,
         rate: rate.rate,
-        base_capacity: rate.base_capacity?.toString() || '',
         additional_pax_rate: rate.additional_pax_rate || '',
         entrance_fee: rate.entrance_fee || '',
         child_entrance_fee: rate.child_entrance_fee || '',
@@ -103,19 +102,6 @@ export default function Edit({
                                     className="h-9"
                                 />
                                 {errors.rate && <p className="text-xs text-destructive">{errors.rate}</p>}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <Label htmlFor="base_capacity" className="text-sm cursor-text select-text">Base Capacity (pax)</Label>
-                                <Input
-                                    id="base_capacity"
-                                    type="number"
-                                    min="1"
-                                    value={data.base_capacity}
-                                    onChange={(e) => setData('base_capacity', e.target.value)}
-                                    className="h-9"
-                                />
-                                {errors.base_capacity && <p className="text-xs text-destructive">{errors.base_capacity}</p>}
                             </div>
 
                             <div className="space-y-1.5">
