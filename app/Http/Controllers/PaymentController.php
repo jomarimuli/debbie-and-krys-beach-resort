@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Payment;
 use App\Models\Booking;
+use App\Models\PaymentAccount;
 use App\Http\Requests\Payment\StorePaymentRequest;
 use App\Http\Requests\Payment\UpdatePaymentRequest;
 use App\Traits\HandlesImageUpload;
@@ -44,8 +45,13 @@ class PaymentController extends Controller
             ->orderBy('booking_number')
             ->get();
 
+        $paymentAccounts = PaymentAccount::active()
+            ->ordered()
+            ->get();
+
         return Inertia::render('payment/create', [
             'bookings' => $bookings,
+            'payment_accounts' => $paymentAccounts,
         ]);
     }
 
@@ -55,7 +61,6 @@ class PaymentController extends Controller
         try {
             $data = $request->validated();
 
-            // Handle reference image upload to private storage
             if ($request->hasFile('reference_image')) {
                 $data['reference_image'] = $this->uploadImageToPrivate(
                     $request->file('reference_image'),
@@ -85,7 +90,7 @@ class PaymentController extends Controller
 
     public function show(Payment $payment): Response
     {
-        $payment->load(['booking', 'receivedBy']);
+        $payment->load(['booking', 'paymentAccount', 'receivedByUser']);
 
         return Inertia::render('payment/show', [
             'payment' => $payment,
@@ -94,8 +99,13 @@ class PaymentController extends Controller
 
     public function edit(Payment $payment): Response
     {
+        $paymentAccounts = PaymentAccount::active()
+            ->ordered()
+            ->get();
+
         return Inertia::render('payment/edit', [
             'payment' => $payment,
+            'payment_accounts' => $paymentAccounts,
         ]);
     }
 
@@ -105,20 +115,16 @@ class PaymentController extends Controller
         try {
             $data = $request->validated();
 
-            // Handle reference image update
             if ($request->hasFile('reference_image')) {
-                // Delete old image
                 if ($payment->reference_image) {
                     $this->deleteImageFromPrivate($payment->reference_image);
                 }
 
-                // Upload new image
                 $data['reference_image'] = $this->uploadImageToPrivate(
                     $request->file('reference_image'),
                     'payments'
                 );
             } elseif ($request->input('remove_reference_image')) {
-                // Remove image if requested
                 if ($payment->reference_image) {
                     $this->deleteImageFromPrivate($payment->reference_image);
                 }
@@ -148,7 +154,6 @@ class PaymentController extends Controller
         try {
             $booking = $payment->booking;
 
-            // Delete reference image
             if ($payment->reference_image) {
                 $this->deleteImageFromPrivate($payment->reference_image);
             }
@@ -169,7 +174,6 @@ class PaymentController extends Controller
         }
     }
 
-    // Serve private image
     public function showReferenceImage(Payment $payment): StreamedResponse
     {
         if (!$payment->reference_image || !Storage::disk('local')->exists($payment->reference_image)) {
@@ -179,7 +183,6 @@ class PaymentController extends Controller
         return Storage::disk('local')->response($payment->reference_image);
     }
 
-    // Add helper methods for private storage
     protected function uploadImageToPrivate($file, string $folder): string
     {
         $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);

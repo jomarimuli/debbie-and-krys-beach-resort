@@ -67,6 +67,12 @@ class PermissionRoleUserSeeder extends Seeder
             'payment edit',
             'payment delete',
 
+            // payment-account
+            'payment-account show',
+            'payment-account create',
+            'payment-account edit',
+            'payment-account delete',
+
             // feedback
             'feedback show',
             'feedback create',

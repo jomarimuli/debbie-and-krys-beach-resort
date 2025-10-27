@@ -15,9 +15,9 @@ class UpdatePaymentRequest extends FormRequest
     {
         return [
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'payment_method' => ['required', 'in:cash,card,bank_transfer,gcash,other'],
+            'payment_method' => ['required', 'in:cash,card,bank,gcash,maya,other'],
+            'payment_account_id' => ['nullable', 'exists:payment_accounts,id'],
             'reference_number' => ['nullable', 'string', 'max:255'],
-            'reference_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp'],
             'remove_reference_image' => ['boolean'],
             'notes' => ['nullable', 'string'],
             'payment_date' => ['required', 'date'],
@@ -43,6 +43,13 @@ class UpdatePaymentRequest extends FormRequest
 
             if ($newBalance < 0) {
                 $validator->errors()->add('amount', 'Payment amount exceeds remaining balance.');
+            }
+
+            if ($this->payment_account_id && $this->payment_method) {
+                $paymentAccount = \App\Models\PaymentAccount::find($this->payment_account_id);
+                if ($paymentAccount && $paymentAccount->type !== $this->payment_method) {
+                    $validator->errors()->add('payment_account_id', 'Selected payment account does not match payment method.');
+                }
             }
         });
     }

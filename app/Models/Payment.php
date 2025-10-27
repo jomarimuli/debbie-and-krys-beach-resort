@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class Payment extends Model
 {
@@ -15,6 +14,7 @@ class Payment extends Model
         'payment_number',
         'amount',
         'payment_method',
+        'payment_account_id',
         'reference_number',
         'reference_image',
         'notes',
@@ -27,32 +27,30 @@ class Payment extends Model
         'payment_date' => 'datetime',
     ];
 
-    protected $appends = ['reference_image_url'];
-
-    // Relationships
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }
 
-    public function receivedBy(): BelongsTo
+    public function paymentAccount(): BelongsTo
+    {
+        return $this->belongsTo(PaymentAccount::class);
+    }
+
+    public function receivedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by');
     }
 
-    // Accessors
     public function getReferenceImageUrlAttribute(): ?string
     {
         if (!$this->reference_image) {
             return null;
         }
 
-        return Storage::disk('local')->exists($this->reference_image)
-            ? route('payment.reference-image', $this->id)
-            : null;
+        return asset('storage/' . $this->reference_image);
     }
 
-    // Boot
     protected static function boot()
     {
         parent::boot();
@@ -63,23 +61,30 @@ class Payment extends Model
             }
         });
 
-        static::deleting(function ($payment) {
-            if ($payment->reference_image && Storage::disk('local')->exists($payment->reference_image)) {
-                Storage::disk('local')->delete($payment->reference_image);
-            }
+        static::created(function ($payment) {
+            $payment->booking->updatePaidAmount();
+        });
+
+        static::updated(function ($payment) {
+            $payment->booking->updatePaidAmount();
+        });
+
+        static::deleted(function ($payment) {
+            $payment->booking->updatePaidAmount();
         });
     }
 
-    // Static Methods
-    public static function generatePaymentNumber(): string
+    private static function generatePaymentNumber(): string
     {
-        $yearMonth = now()->format('Ym');
-        $latest = self::where('payment_number', 'like', "PAY-{$yearMonth}-%")
+        $year = now()->format('Y');
+        $month = now()->format('m');
+        $lastPayment = self::whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
             ->latest('id')
             ->first();
 
-        $number = $latest ? intval(substr($latest->payment_number, -4)) + 1 : 1;
+        $nextNumber = $lastPayment ? ((int) substr($lastPayment->payment_number, -4)) + 1 : 1;
 
-        return 'PAY-' . $yearMonth . '-' . str_pad($number, 4, '0', STR_PAD_LEFT);
+        return sprintf('PAY-%s%s-%04d', $year, $month, $nextNumber);
     }
 }

@@ -1,13 +1,15 @@
 import type { PaginatedData } from './datatable';
 import type { User } from './user';
 import type { Booking } from './booking';
+import type { PaymentAccount } from './payment-account';
 
 export interface Payment {
     id: number;
     booking_id: number;
     payment_number: string;
     amount: string;
-    payment_method: 'cash' | 'card' | 'bank_transfer' | 'gcash' | 'other';
+    payment_method: 'cash' | 'card' | 'bank' | 'gcash' | 'maya' | 'other';
+    payment_account_id: number | null;
     reference_number: string | null;
     reference_image: string | null;
     reference_image_url: string | null;
@@ -16,7 +18,8 @@ export interface Payment {
     created_at: string;
     updated_at: string;
     booking?: Booking;
-    received_by?: User;
+    payment_account?: PaymentAccount;
+    received_by_user?: User;
 }
 
 export interface PaymentIndexData {
@@ -26,7 +29,8 @@ export interface PaymentIndexData {
 export interface PaymentFormData {
     booking_id: string;
     amount: string;
-    payment_method: 'cash' | 'card' | 'bank_transfer' | 'gcash' | 'other';
+    payment_method: 'cash' | 'card' | 'bank' | 'gcash' | 'maya' | 'other';
+    payment_account_id?: string;
     reference_number?: string;
     reference_image?: File | null;
     remove_reference_image?: boolean;

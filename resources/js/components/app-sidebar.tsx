@@ -5,7 +5,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home } from 'lucide-react';
+import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import { GithubUpdatesModal } from '@/components/github-updates-modal';
@@ -53,6 +53,12 @@ const allNavItems: NavItem[] = [
         href: '/payments',
         icon: Banknote,
         requiredPermissions: ['payment show', 'global access'],
+    },
+    {
+        title: 'Payment Accounts',
+        href: '/payment-accounts',
+        icon: Wallet,
+        requiredPermissions: ['payment-account show', 'global access'],
     },
     {
         title: 'Feedbacks',

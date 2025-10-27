@@ -19,7 +19,7 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
     const { data, setData, post, processing, errors } = useForm({
         booking_id: '',
         amount: '',
-        payment_method: 'cash' as 'cash' | 'card' | 'bank_transfer' | 'gcash' | 'other',
+        payment_method: 'cash' as 'cash' | 'card' | 'bank' | 'gcash' | 'maya' | 'other',
         reference_number: '',
         reference_image: null as File | null,
         notes: '',
@@ -142,7 +142,7 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                                     <SelectContent>
                                         <SelectItem value="cash">Cash</SelectItem>
                                         <SelectItem value="card">Card</SelectItem>
-                                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                        <SelectItem value="bank">Bank</SelectItem>
                                         <SelectItem value="gcash">GCash</SelectItem>
                                         <SelectItem value="other">Other</SelectItem>
                                     </SelectContent>

@@ -103,7 +103,7 @@ export default function Edit({ payment }: PageProps & { payment: Payment }) {
                                     <SelectContent>
                                         <SelectItem value="cash">Cash</SelectItem>
                                         <SelectItem value="card">Card</SelectItem>
-                                        <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                                        <SelectItem value="bank"></SelectItem>
                                         <SelectItem value="gcash">GCash</SelectItem>
                                         <SelectItem value="other">Other</SelectItem>
                                     </SelectContent>
