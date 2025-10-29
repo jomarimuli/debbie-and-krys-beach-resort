@@ -34,8 +34,17 @@ export default function Index({ payments: paymentData }: PaymentIndexProps) {
     };
 
     const getPaymentMethodBadge = (method: string) => {
+        const colors: Record<string, string> = {
+            cash: 'bg-green-100 text-green-800',
+            card: 'bg-blue-100 text-blue-800',
+            bank: 'bg-purple-100 text-purple-800',
+            gcash: 'bg-teal-100 text-teal-800',
+            maya: 'bg-orange-100 text-orange-800',
+            other: 'bg-gray-100 text-gray-800',
+        };
+
         return (
-            <Badge variant="outline" className="capitalize text-xs">
+            <Badge variant="outline" className={`capitalize text-xs ${colors[method] || ''}`}>
                 {method.replace('_', ' ')}
             </Badge>
         );
@@ -71,6 +80,7 @@ export default function Index({ payments: paymentData }: PaymentIndexProps) {
                                 <TableHead>Guest</TableHead>
                                 <TableHead>Amount</TableHead>
                                 <TableHead>Method</TableHead>
+                                <TableHead>Account</TableHead>
                                 <TableHead>Date</TableHead>
                                 <TableHead className="w-32 text-right">Actions</TableHead>
                             </TableRow>
@@ -100,6 +110,18 @@ export default function Index({ payments: paymentData }: PaymentIndexProps) {
                                     </TableCell>
                                     <TableCell>
                                         {getPaymentMethodBadge(payment.payment_method)}
+                                    </TableCell>
+                                    <TableCell className="text-sm">
+                                        {payment.payment_account ? (
+                                            <div className="text-xs">
+                                                <div className="font-medium">{payment.payment_account.account_name}</div>
+                                                {payment.payment_account.account_number && (
+                                                    <div className="text-muted-foreground">{payment.payment_account.account_number}</div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <span className="text-muted-foreground">-</span>
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-sm">
                                         {format(new Date(payment.payment_date), 'MMM dd, yyyy')}

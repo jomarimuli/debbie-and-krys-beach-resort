@@ -9,17 +9,18 @@ import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import { Link } from '@inertiajs/react';
-import { type Payment, type PageProps } from '@/types';
+import { type Payment, type PaymentAccount, type PageProps } from '@/types';
 import { format } from 'date-fns';
 import payments from '@/routes/payments';
 
-export default function Edit({ payment }: PageProps & { payment: Payment }) {
+export default function Edit({ payment, payment_accounts }: PageProps & { payment: Payment; payment_accounts: PaymentAccount[] }) {
     const [currentImage, setCurrentImage] = useState<string | null>(payment.reference_image_url);
     const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
 
     const { data, setData, post, processing, errors } = useForm({
         amount: payment.amount,
         payment_method: payment.payment_method,
+        payment_account_id: payment.payment_account_id?.toString() || '',
         reference_number: payment.reference_number || '',
         reference_image: null as File | null,
         remove_reference_image: false,
@@ -27,6 +28,11 @@ export default function Edit({ payment }: PageProps & { payment: Payment }) {
         payment_date: format(new Date(payment.payment_date), 'yyyy-MM-dd'),
         _method: 'PUT',
     });
+
+    // Filter payment accounts by selected payment method
+    const filteredAccounts = payment_accounts.filter(
+        (account) => account.type === data.payment_method && account.is_active
+    );
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -96,20 +102,50 @@ export default function Edit({ payment }: PageProps & { payment: Payment }) {
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="payment_method" className="text-sm cursor-text select-text">Payment Method</Label>
-                                <Select value={data.payment_method} onValueChange={(value: any) => setData('payment_method', value)}>
+                                <Select
+                                    value={data.payment_method}
+                                    onValueChange={(value: any) => {
+                                        setData('payment_method', value);
+                                        setData('payment_account_id', ''); // Reset account when method changes
+                                    }}
+                                >
                                     <SelectTrigger className="h-9">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="cash">Cash</SelectItem>
                                         <SelectItem value="card">Card</SelectItem>
-                                        <SelectItem value="bank"></SelectItem>
+                                        <SelectItem value="bank">Bank</SelectItem>
                                         <SelectItem value="gcash">GCash</SelectItem>
+                                        <SelectItem value="maya">Maya</SelectItem>
                                         <SelectItem value="other">Other</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 {errors.payment_method && <p className="text-xs text-destructive">{errors.payment_method}</p>}
                             </div>
+
+                            {/* Payment Account Selection */}
+                            {filteredAccounts.length > 0 && (
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="payment_account_id" className="text-sm cursor-text select-text">
+                                        Payment Account (Optional)
+                                    </Label>
+                                    <Select value={data.payment_account_id} onValueChange={(value) => setData('payment_account_id', value)}>
+                                        <SelectTrigger className="h-9">
+                                            <SelectValue placeholder="Select account" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="">None</SelectItem>
+                                            {filteredAccounts.map((account) => (
+                                                <SelectItem key={account.id} value={account.id.toString()}>
+                                                    {account.account_name} {account.account_number && `- ${account.account_number}`}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.payment_account_id && <p className="text-xs text-destructive">{errors.payment_account_id}</p>}
+                                </div>
+                            )}
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="reference_number" className="text-sm cursor-text select-text">Reference Number</Label>

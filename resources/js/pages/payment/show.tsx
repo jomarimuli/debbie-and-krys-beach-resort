@@ -4,14 +4,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type Payment, type PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, Edit } from 'lucide-react';
+import { ArrowLeft, Edit, QrCode } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import payments from '@/routes/payments';
 import bookings from '@/routes/bookings';
 
+const paymentMethodLabels: Record<string, string> = {
+    cash: 'Cash',
+    card: 'Card',
+    bank: 'Bank',
+    gcash: 'GCash',
+    maya: 'Maya',
+    other: 'Other',
+};
+
+const paymentMethodColors: Record<string, string> = {
+    cash: 'bg-green-100 text-green-800',
+    card: 'bg-blue-100 text-blue-800',
+    bank: 'bg-purple-100 text-purple-800',
+    gcash: 'bg-teal-100 text-teal-800',
+    maya: 'bg-orange-100 text-orange-800',
+    other: 'bg-gray-100 text-gray-800',
+};
+
 export default function Show({ payment }: PageProps & { payment: Payment }) {
     const [imageModalOpen, setImageModalOpen] = useState(false);
+    const [qrModalOpen, setQrModalOpen] = useState(false);
 
     return (
         <div className="space-y-4">
@@ -72,10 +91,38 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Payment Method</p>
-                            <Badge variant="outline" className="capitalize text-xs">
-                                {payment.payment_method.replace('_', ' ')}
+                            <Badge variant="outline" className={`capitalize text-xs ${paymentMethodColors[payment.payment_method]}`}>
+                                {paymentMethodLabels[payment.payment_method]}
                             </Badge>
                         </div>
+
+                        {/* Payment Account Information */}
+                        {payment.payment_account && (
+                            <div>
+                                <p className="text-xs text-muted-foreground mb-0.5">Payment Account</p>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-medium">{payment.payment_account.account_name}</p>
+                                    {payment.payment_account.account_number && (
+                                        <p className="text-xs text-muted-foreground">{payment.payment_account.account_number}</p>
+                                    )}
+                                    {payment.payment_account.bank_name && (
+                                        <p className="text-xs text-muted-foreground">{payment.payment_account.bank_name}</p>
+                                    )}
+                                    {payment.payment_account.qr_code_url && (
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="mt-2"
+                                            onClick={() => setQrModalOpen(true)}
+                                        >
+                                            <QrCode className="mr-1.5 h-3.5 w-3.5" />
+                                            View QR Code
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Payment Date</p>
                             <p className="text-sm font-medium">
@@ -118,6 +165,12 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                                     </p>
                                 </div>
                                 <div>
+                                    <p className="text-xs text-muted-foreground mb-0.5">Paid Amount</p>
+                                    <p className="text-sm font-medium text-green-600">
+                                        ₱{parseFloat(payment.booking.paid_amount).toLocaleString()}
+                                    </p>
+                                </div>
+                                <div>
                                     <p className="text-xs text-muted-foreground mb-0.5">Balance</p>
                                     <p className="text-sm font-medium text-red-600">
                                         ₱{parseFloat(payment.booking.balance).toLocaleString()}
@@ -140,7 +193,7 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                 </Card>
             )}
 
-            {payment.received_by && (
+            {payment.received_by_user && (
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base font-medium">Additional Information</CardTitle>
@@ -148,7 +201,7 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                     <CardContent className="space-y-3">
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Received By</p>
-                            <p className="text-sm font-medium">{payment.received_by.name}</p>
+                            <p className="text-sm font-medium">{payment.received_by_user.name}</p>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Recorded At</p>
@@ -160,6 +213,7 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                 </Card>
             )}
 
+            {/* Reference Image Modal */}
             {imageModalOpen && payment.reference_image_url && (
                 <div
                     className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
@@ -176,6 +230,44 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                             size="sm"
                             className="absolute top-2 right-2"
                             onClick={() => setImageModalOpen(false)}
+                        >
+                            Close
+                        </Button>
+                    </div>
+                </div>
+            )}
+
+            {/* QR Code Modal */}
+            {qrModalOpen && payment.payment_account?.qr_code_url && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+                    onClick={() => setQrModalOpen(false)}
+                >
+                    <div className="relative max-w-2xl">
+                        <Card className="p-6">
+                            <CardHeader className="pb-3">
+                                <CardTitle className="text-base font-medium">
+                                    {payment.payment_account.account_name} - QR Code
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex flex-col items-center">
+                                <img
+                                    src={payment.payment_account.qr_code_url}
+                                    alt="Payment account QR code"
+                                    className="w-64 h-64 object-contain rounded border"
+                                />
+                                {payment.payment_account.account_number && (
+                                    <p className="text-sm text-muted-foreground mt-4">
+                                        {payment.payment_account.account_number}
+                                    </p>
+                                )}
+                            </CardContent>
+                        </Card>
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="absolute top-2 right-2"
+                            onClick={() => setQrModalOpen(false)}
                         >
                             Close
                         </Button>

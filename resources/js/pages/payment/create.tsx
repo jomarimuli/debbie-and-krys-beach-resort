@@ -9,17 +9,18 @@ import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import { Link } from '@inertiajs/react';
-import { type Booking, type PageProps } from '@/types';
+import { type Booking, type PaymentAccount, type PageProps } from '@/types';
 import { format } from 'date-fns';
 import payments from '@/routes/payments';
 
-export default function Create({ bookings }: PageProps & { bookings: Booking[] }) {
+export default function Create({ bookings, payment_accounts }: PageProps & { bookings: Booking[]; payment_accounts: PaymentAccount[] }) {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const { data, setData, post, processing, errors } = useForm({
         booking_id: '',
         amount: '',
         payment_method: 'cash' as 'cash' | 'card' | 'bank' | 'gcash' | 'maya' | 'other',
+        payment_account_id: '',
         reference_number: '',
         reference_image: null as File | null,
         notes: '',
@@ -27,6 +28,11 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
     });
 
     const selectedBooking = bookings.find((b) => b.id === parseInt(data.booking_id));
+
+    // Filter payment accounts by selected payment method
+    const filteredAccounts = payment_accounts.filter(
+        (account) => account.type === data.payment_method && account.is_active
+    );
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -135,7 +141,13 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="payment_method" className="text-sm cursor-text select-text">Payment Method</Label>
-                                <Select value={data.payment_method} onValueChange={(value: any) => setData('payment_method', value)}>
+                                <Select
+                                    value={data.payment_method}
+                                    onValueChange={(value: any) => {
+                                        setData('payment_method', value);
+                                        setData('payment_account_id', ''); // Reset account when method changes
+                                    }}
+                                >
                                     <SelectTrigger className="h-9">
                                         <SelectValue />
                                     </SelectTrigger>
@@ -144,11 +156,35 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                                         <SelectItem value="card">Card</SelectItem>
                                         <SelectItem value="bank">Bank</SelectItem>
                                         <SelectItem value="gcash">GCash</SelectItem>
+                                        <SelectItem value="maya">Maya</SelectItem>
                                         <SelectItem value="other">Other</SelectItem>
                                     </SelectContent>
                                 </Select>
                                 {errors.payment_method && <p className="text-xs text-destructive">{errors.payment_method}</p>}
                             </div>
+
+                            {/* Payment Account Selection */}
+                            {filteredAccounts.length > 0 && (
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="payment_account_id" className="text-sm cursor-text select-text">
+                                        Payment Account (Optional)
+                                    </Label>
+                                    <Select value={data.payment_account_id} onValueChange={(value) => setData('payment_account_id', value)}>
+                                        <SelectTrigger className="h-9">
+                                            <SelectValue placeholder="Select account" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="">None</SelectItem>
+                                            {filteredAccounts.map((account) => (
+                                                <SelectItem key={account.id} value={account.id.toString()}>
+                                                    {account.account_name} {account.account_number && `- ${account.account_number}`}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.payment_account_id && <p className="text-xs text-destructive">{errors.payment_account_id}</p>}
+                                </div>
+                            )}
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="reference_number" className="text-sm cursor-text select-text">Reference Number</Label>

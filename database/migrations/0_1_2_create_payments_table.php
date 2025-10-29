@@ -28,7 +28,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('booking_id', 'idx_payment_booking_id');
-            $table->index('payment_account_id', 'idx_payment_account_id'); // ADDED
+            $table->index('payment_account_id', 'idx_payment_account_id');
         });
     }
 
