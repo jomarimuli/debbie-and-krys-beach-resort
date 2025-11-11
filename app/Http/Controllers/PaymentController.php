@@ -73,14 +73,12 @@ class PaymentController extends Controller
                 'received_by' => auth()->id(),
             ]);
 
-            $booking = $payment->booking;
-            $booking->update([
-                'paid_amount' => $booking->payments()->sum('amount'),
-            ]);
+            // Update booking paid amounts (handled by Payment model boot method)
+            // booking->updatePaidAmount() is called automatically
 
             DB::commit();
 
-            return redirect()->route('bookings.show', $booking)
+            return redirect()->route('bookings.show', $payment->booking)
                 ->with('success', 'Payment recorded successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -90,7 +88,7 @@ class PaymentController extends Controller
 
     public function show(Payment $payment): Response
     {
-        $payment->load(['booking', 'paymentAccount', 'receivedByUser']);
+        $payment->load(['booking', 'paymentAccount', 'receivedByUser', 'refunds']);
 
         return Inertia::render('payment/show', [
             'payment' => $payment,
@@ -133,14 +131,12 @@ class PaymentController extends Controller
 
             $payment->update($data);
 
-            $booking = $payment->booking;
-            $booking->update([
-                'paid_amount' => $booking->payments()->sum('amount'),
-            ]);
+            // Update booking paid amounts (handled by Payment model boot method)
+            // booking->updatePaidAmount() is called automatically
 
             DB::commit();
 
-            return redirect()->route('bookings.show', $booking)
+            return redirect()->route('bookings.show', $payment->booking)
                 ->with('success', 'Payment updated successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -160,9 +156,8 @@ class PaymentController extends Controller
 
             $payment->delete();
 
-            $booking->update([
-                'paid_amount' => $booking->payments()->sum('amount'),
-            ]);
+            // Update booking paid amounts (handled by Payment model boot method)
+            // booking->updatePaidAmount() is called automatically
 
             DB::commit();
 

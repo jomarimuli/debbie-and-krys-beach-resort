@@ -106,7 +106,14 @@ export default function Index({ payments: paymentData }: PaymentIndexProps) {
                                     </TableCell>
                                     <TableCell className="text-sm">{payment.booking?.guest_name}</TableCell>
                                     <TableCell className="font-medium text-sm">
-                                        ₱{parseFloat(payment.amount).toLocaleString()}
+                                        <div className="flex items-center gap-1.5">
+                                            <span>₱{parseFloat(payment.amount).toLocaleString()}</span>
+                                            {payment.is_down_payment && (
+                                                <Badge variant="outline" className="bg-blue-100 text-blue-800 text-xs">
+                                                    DP
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         {getPaymentMethodBadge(payment.payment_method)}

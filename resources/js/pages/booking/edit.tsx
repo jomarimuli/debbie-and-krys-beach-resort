@@ -23,6 +23,8 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
         check_out_date: booking.check_out_date ? format(new Date(booking.check_out_date), 'yyyy-MM-dd') : '',
         total_adults: booking.total_adults.toString(),
         total_children: booking.total_children.toString(),
+        down_payment_required: booking.down_payment_required,
+        down_payment_amount: booking.down_payment_amount || '',
         notes: booking.notes || '',
         status: booking.status,
     });
@@ -166,6 +168,55 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
                                 </Select>
                                 {errors.status && <p className="text-xs text-destructive">{errors.status}</p>}
                             </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="down_payment_required"
+                                    checked={data.down_payment_required}
+                                    onChange={(e) => {
+                                        setData('down_payment_required', e.target.checked);
+                                        if (!e.target.checked) {
+                                            setData('down_payment_amount', '');
+                                        }
+                                    }}
+                                    className="h-4 w-4 rounded border-gray-300"
+                                />
+                                <Label htmlFor="down_payment_required" className="text-sm cursor-pointer">
+                                    Require down payment
+                                </Label>
+                            </div>
+
+                            {data.down_payment_required && (
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="down_payment_amount" className="text-sm cursor-text select-text">
+                                        Down Payment Amount
+                                    </Label>
+                                    <Input
+                                        id="down_payment_amount"
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        value={data.down_payment_amount}
+                                        onChange={(e) => setData('down_payment_amount', e.target.value)}
+                                        className="h-9"
+                                        placeholder="0.00"
+                                    />
+                                    {errors.down_payment_amount && (
+                                        <p className="text-xs text-destructive">{errors.down_payment_amount}</p>
+                                    )}
+                                    {errors.down_payment_required && (
+                                        <p className="text-xs text-destructive">{errors.down_payment_required}</p>
+                                    )}
+                                    {parseFloat(booking.down_payment_paid) > 0 && (
+                                        <p className="text-xs text-blue-600">
+                                            Already paid: ₱{parseFloat(booking.down_payment_paid).toLocaleString()}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         <div className="space-y-1.5">

@@ -1,34 +1,37 @@
+// resources/js/pages/refund/show.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { type Payment, type PageProps } from '@/types';
+import { type Refund, type PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
 import { ArrowLeft, Edit, QrCode } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
+import refunds from '@/routes/refunds';
 import payments from '@/routes/payments';
-import bookings from '@/routes/bookings';
 
-const paymentMethodLabels: Record<string, string> = {
+const refundMethodLabels: Record<string, string> = {
     cash: 'Cash',
     card: 'Card',
     bank: 'Bank',
     gcash: 'GCash',
     maya: 'Maya',
+    original_method: 'Original Method',
     other: 'Other',
 };
 
-const paymentMethodColors: Record<string, string> = {
+const refundMethodColors: Record<string, string> = {
     cash: 'bg-green-100 text-green-800',
     card: 'bg-blue-100 text-blue-800',
     bank: 'bg-purple-100 text-purple-800',
     gcash: 'bg-teal-100 text-teal-800',
     maya: 'bg-orange-100 text-orange-800',
+    original_method: 'bg-indigo-100 text-indigo-800',
     other: 'bg-gray-100 text-gray-800',
 };
 
-export default function Show({ payment }: PageProps & { payment: Payment }) {
+export default function Show({ refund }: PageProps & { refund: Refund }) {
     const [imageModalOpen, setImageModalOpen] = useState(false);
     const [qrModalOpen, setQrModalOpen] = useState(false);
 
@@ -36,17 +39,17 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <Link href={payments.index.url()}>
+                    <Link href={refunds.index.url()}>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
                             <ArrowLeft className="h-4 w-4" />
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-xl font-semibold">{payment.payment_number}</h1>
-                        <p className="text-sm text-muted-foreground">Payment details</p>
+                        <h1 className="text-xl font-semibold">{refund.refund_number}</h1>
+                        <p className="text-sm text-muted-foreground">Refund details</p>
                     </div>
                 </div>
-                <Link href={payments.edit.url({ payment: payment.id })}>
+                <Link href={refunds.edit.url({ refund: refund.id })}>
                     <Button size="sm">
                         <Edit className="mr-1.5 h-3.5 w-3.5" />
                         Edit
@@ -54,7 +57,7 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                 </Link>
             </div>
 
-            {payment.reference_image_url && (
+            {refund.reference_image_url && (
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base font-medium">Reference Image</CardTitle>
@@ -62,8 +65,8 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                     <CardContent>
                         <div className="relative inline-block">
                             <img
-                                src={payment.reference_image_url}
-                                alt="Payment reference"
+                                src={refund.reference_image_url}
+                                alt="Refund reference"
                                 className="w-full max-w-2xl h-64 object-cover rounded border cursor-pointer hover:opacity-90 transition-opacity"
                                 onClick={() => setImageModalOpen(true)}
                             />
@@ -78,43 +81,36 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
             <div className="grid gap-4 md:grid-cols-2">
                 <Card>
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-medium">Payment Information</CardTitle>
+                        <CardTitle className="text-base font-medium">Refund Information</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">Payment Number</p>
-                            <p className="text-sm font-medium">{payment.payment_number}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Refund Number</p>
+                            <p className="text-sm font-medium">{refund.refund_number}</p>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Amount</p>
-                            <div className="flex items-center gap-2">
-                                <p className="text-xl font-bold">₱{parseFloat(payment.amount).toLocaleString()}</p>
-                                {payment.is_down_payment && (
-                                    <Badge variant="outline" className="bg-blue-100 text-blue-800">
-                                        Down Payment
-                                    </Badge>
-                                )}
-                            </div>
+                            <p className="text-xl font-bold text-red-600">-₱{parseFloat(refund.amount).toLocaleString()}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">Payment Method</p>
-                            <Badge variant="outline" className={`capitalize text-xs ${paymentMethodColors[payment.payment_method]}`}>
-                                {paymentMethodLabels[payment.payment_method]}
+                            <p className="text-xs text-muted-foreground mb-0.5">Refund Method</p>
+                            <Badge variant="outline" className={`capitalize text-xs ${refundMethodColors[refund.refund_method]}`}>
+                                {refundMethodLabels[refund.refund_method]}
                             </Badge>
                         </div>
 
-                        {payment.payment_account && (
+                        {refund.refund_account && (
                             <div>
-                                <p className="text-xs text-muted-foreground mb-0.5">Payment Account</p>
+                                <p className="text-xs text-muted-foreground mb-0.5">Refund Account</p>
                                 <div className="space-y-1">
-                                    <p className="text-sm font-medium">{payment.payment_account.account_name}</p>
-                                    {payment.payment_account.account_number && (
-                                        <p className="text-xs text-muted-foreground">{payment.payment_account.account_number}</p>
+                                    <p className="text-sm font-medium">{refund.refund_account.account_name}</p>
+                                    {refund.refund_account.account_number && (
+                                        <p className="text-xs text-muted-foreground">{refund.refund_account.account_number}</p>
                                     )}
-                                    {payment.payment_account.bank_name && (
-                                        <p className="text-xs text-muted-foreground">{payment.payment_account.bank_name}</p>
+                                    {refund.refund_account.bank_name && (
+                                        <p className="text-xs text-muted-foreground">{refund.refund_account.bank_name}</p>
                                     )}
-                                    {payment.payment_account.qr_code_url && (
+                                    {refund.refund_account.qr_code_url && (
                                         <Button
                                             variant="outline"
                                             size="sm"
@@ -130,15 +126,15 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                         )}
 
                         <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">Payment Date</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Refund Date</p>
                             <p className="text-sm font-medium">
-                                {format(new Date(payment.payment_date), 'MMMM dd, yyyy')}
+                                {format(new Date(refund.refund_date), 'MMMM dd, yyyy')}
                             </p>
                         </div>
-                        {payment.reference_number && (
+                        {refund.reference_number && (
                             <div>
                                 <p className="text-xs text-muted-foreground mb-0.5">Reference Number</p>
-                                <p className="text-sm font-medium">{payment.reference_number}</p>
+                                <p className="text-sm font-medium">{refund.reference_number}</p>
                             </div>
                         )}
                     </CardContent>
@@ -146,113 +142,92 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
 
                 <Card>
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-medium">Booking Information</CardTitle>
+                        <CardTitle className="text-base font-medium">Payment Information</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">Booking Number</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Payment Number</p>
                             <Link
-                                href={bookings.show.url({ booking: payment.booking_id })}
+                                href={payments.show.url({ payment: refund.payment_id })}
                                 className="text-sm font-medium text-primary hover:underline"
                             >
-                                {payment.booking?.booking_number}
+                                {refund.payment?.payment_number}
                             </Link>
                         </div>
-                        {payment.booking && (
+                        {refund.payment && (
                             <>
                                 <div>
                                     <p className="text-xs text-muted-foreground mb-0.5">Guest Name</p>
-                                    <p className="text-sm font-medium">{payment.booking.guest_name}</p>
+                                    <p className="text-sm font-medium">{refund.payment.booking?.guest_name}</p>
                                 </div>
                                 <div>
-                                    <p className="text-xs text-muted-foreground mb-0.5">Total Amount</p>
+                                    <p className="text-xs text-muted-foreground mb-0.5">Booking Number</p>
+                                    <p className="text-sm font-medium">{refund.payment.booking?.booking_number}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground mb-0.5">Original Payment Amount</p>
                                     <p className="text-sm font-medium">
-                                        ₱{parseFloat(payment.booking.total_amount).toLocaleString()}
+                                        ₱{parseFloat(refund.payment.amount).toLocaleString()}
                                     </p>
                                 </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground mb-0.5">Paid Amount</p>
-                                    <p className="text-sm font-medium text-green-600">
-                                        ₱{parseFloat(payment.booking.paid_amount).toLocaleString()}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground mb-0.5">Balance</p>
-                                    <p className="text-sm font-medium text-red-600">
-                                        ₱{parseFloat(payment.booking.balance).toLocaleString()}
-                                    </p>
-                                </div>
-                                {payment.booking.down_payment_required && (
-                                    <>
-                                        <div className="border-t pt-3">
-                                            <p className="text-xs font-semibold text-muted-foreground mb-2">Down Payment Details</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-muted-foreground mb-0.5">Down Payment Required</p>
-                                            <p className="text-sm font-medium">
-                                                ₱{parseFloat(payment.booking.down_payment_amount || '0').toLocaleString()}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-muted-foreground mb-0.5">Down Payment Paid</p>
-                                            <p className="text-sm font-medium text-green-600">
-                                                ₱{parseFloat(payment.booking.down_payment_paid).toLocaleString()}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs text-muted-foreground mb-0.5">Down Payment Balance</p>
-                                            <p className="text-sm font-medium text-red-600">
-                                                ₱{parseFloat(payment.booking.down_payment_balance).toLocaleString()}
-                                            </p>
-                                        </div>
-                                    </>
-                                )}
                             </>
                         )}
                     </CardContent>
                 </Card>
             </div>
 
-            {payment.notes && (
+            {refund.reason && (
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Reason</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-muted-foreground">{refund.reason}</p>
+                    </CardContent>
+                </Card>
+            )}
+
+            {refund.notes && (
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base font-medium">Notes</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-muted-foreground">{payment.notes}</p>
+                        <p className="text-sm text-muted-foreground">{refund.notes}</p>
                     </CardContent>
                 </Card>
             )}
 
-            {payment.received_by_user && (
+            {refund.processed_by_user && (
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base font-medium">Additional Information</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">Received By</p>
-                            <p className="text-sm font-medium">{payment.received_by_user.name}</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Processed By</p>
+                            <p className="text-sm font-medium">{refund.processed_by_user.name}</p>
                         </div>
                         <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">Recorded At</p>
+                            <p className="text-xs text-muted-foreground mb-0.5">Processed At</p>
                             <p className="text-sm font-medium">
-                                {format(new Date(payment.created_at), 'MMMM dd, yyyy HH:mm')}
+                                {format(new Date(refund.created_at), 'MMMM dd, yyyy HH:mm')}
                             </p>
                         </div>
                     </CardContent>
                 </Card>
             )}
 
-            {imageModalOpen && payment.reference_image_url && (
+            {/* Reference Image Modal */}
+            {imageModalOpen && refund.reference_image_url && (
                 <div
                     className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
                     onClick={() => setImageModalOpen(false)}
                 >
                     <div className="relative max-w-7xl max-h-[90vh]">
                         <img
-                            src={payment.reference_image_url}
-                            alt="Payment reference full size"
+                            src={refund.reference_image_url}
+                            alt="Refund reference full size"
                             className="max-w-full max-h-[90vh] object-contain rounded"
                         />
                         <Button
@@ -267,7 +242,8 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                 </div>
             )}
 
-            {qrModalOpen && payment.payment_account?.qr_code_url && (
+            {/* QR Code Modal */}
+            {qrModalOpen && refund.refund_account?.qr_code_url && (
                 <div
                     className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
                     onClick={() => setQrModalOpen(false)}
@@ -276,18 +252,18 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                         <Card className="p-6">
                             <CardHeader className="pb-3">
                                 <CardTitle className="text-base font-medium">
-                                    {payment.payment_account.account_name} - QR Code
+                                    {refund.refund_account.account_name} - QR Code
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="flex flex-col items-center">
                                 <img
-                                    src={payment.payment_account.qr_code_url}
-                                    alt="Payment account QR code"
+                                    src={refund.refund_account.qr_code_url}
+                                    alt="Refund account QR code"
                                     className="w-64 h-64 object-contain rounded border"
                                 />
-                                {payment.payment_account.account_number && (
+                                {refund.refund_account.account_number && (
                                     <p className="text-sm text-muted-foreground mt-4">
-                                        {payment.payment_account.account_number}
+                                        {refund.refund_account.account_number}
                                     </p>
                                 )}
                             </CardContent>
@@ -311,7 +287,7 @@ Show.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
-            { title: 'Payments', href: '/payments' },
+            { title: 'Refunds', href: '/refunds' },
             { title: 'Show', href: '#' },
         ]}
     >

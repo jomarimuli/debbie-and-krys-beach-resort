@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type Booking, type PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, CheckCircle, LogIn, LogOut, XCircle, Plus } from 'lucide-react';
+import { ArrowLeft, Edit, CheckCircle, LogIn, LogOut, XCircle, Plus, Copy } from 'lucide-react';
 import { format } from 'date-fns';
 import { router } from '@inertiajs/react';
+import { toast } from 'sonner';
 import bookings from '@/routes/bookings';
 import payments from '@/routes/payments';
 
@@ -40,6 +41,11 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
         }
     };
 
+    const copyBookingCode = () => {
+        navigator.clipboard.writeText(booking.booking_code);
+        toast.success('Booking code copied to clipboard!');
+    };
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -50,7 +56,17 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                         </Button>
                     </Link>
                     <div>
-                        <h1 className="text-xl font-semibold">{booking.booking_number}</h1>
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl font-semibold">{booking.booking_number}</h1>
+                            <Badge
+                                variant="outline"
+                                className="font-mono text-xs cursor-pointer hover:bg-muted"
+                                onClick={copyBookingCode}
+                            >
+                                {booking.booking_code}
+                                <Copy className="ml-1 h-3 w-3" />
+                            </Badge>
+                        </div>
                         <p className="text-sm text-muted-foreground">{booking.guest_name}</p>
                     </div>
                 </div>
@@ -217,15 +233,40 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                         <span className="font-semibold">Total Amount</span>
                         <span className="font-semibold">₱{parseFloat(booking.total_amount).toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Paid Amount</span>
-                        <span className="font-medium text-green-600">₱{parseFloat(booking.paid_amount).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm border-t pt-2">
-                        <span className="font-semibold">Balance</span>
-                        <span className={`font-semibold ${parseFloat(booking.balance) > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                            ₱{parseFloat(booking.balance).toLocaleString()}
-                        </span>
+
+                    {booking.down_payment_required && (
+                        <>
+                            <div className="border-t pt-2">
+                                <p className="text-xs font-semibold text-muted-foreground mb-2">Down Payment</p>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Required</span>
+                                <span className="font-medium">₱{parseFloat(booking.down_payment_amount || '0').toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Paid</span>
+                                <span className="font-medium text-green-600">₱{parseFloat(booking.down_payment_paid).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-sm border-t pt-2">
+                                <span className="font-semibold">Down Payment Balance</span>
+                                <span className={`font-semibold ${parseFloat(booking.down_payment_balance) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                    ₱{parseFloat(booking.down_payment_balance).toLocaleString()}
+                                </span>
+                            </div>
+                        </>
+                    )}
+
+                    <div className="border-t pt-2">
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Paid Amount</span>
+                            <span className="font-medium text-green-600">₱{parseFloat(booking.paid_amount).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between text-sm border-t pt-2 mt-2">
+                            <span className="font-semibold">Balance</span>
+                            <span className={`font-semibold ${parseFloat(booking.balance) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                ₱{parseFloat(booking.balance).toLocaleString()}
+                            </span>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
@@ -245,7 +286,14 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                                     className="flex justify-between items-center p-2 border rounded hover:bg-muted/50 transition-colors"
                                 >
                                     <div className="text-sm">
-                                        <p className="font-medium">{payment.payment_number}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-medium">{payment.payment_number}</p>
+                                            {payment.is_down_payment && (
+                                                <Badge variant="outline" className="bg-blue-100 text-blue-800 text-xs">
+                                                    DP
+                                                </Badge>
+                                            )}
+                                        </div>
                                         <p className="text-xs text-muted-foreground">
                                             {format(new Date(payment.payment_date), 'MMM dd, yyyy')} · {payment.payment_method.replace('_', ' ')}
                                         </p>

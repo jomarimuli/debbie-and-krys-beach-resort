@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Booking;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class UpdateBookingRequest extends FormRequest
 {
@@ -22,11 +23,16 @@ class UpdateBookingRequest extends FormRequest
             'check_out_date' => ['nullable', 'date', 'after:check_in_date'],
             'total_adults' => ['required', 'integer', 'min:1'],
             'total_children' => ['required', 'integer', 'min:0'],
+            'down_payment_required' => ['boolean'],
+            'down_payment_amount' => ['nullable', 'numeric', 'min:0.01'],
             'notes' => ['nullable', 'string'],
             'status' => ['required', 'in:pending,confirmed,checked_in,checked_out,cancelled'],
         ];
     }
 
+    /**
+     * @param \Illuminate\Contracts\Validation\Validator $validator
+     */
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
@@ -64,6 +70,31 @@ class UpdateBookingRequest extends FormRequest
                     'status',
                     'Cannot change status after checkout is complete.'
                 );
+            }
+
+            // 5. Validate down payment changes
+            if ($this->down_payment_required && !$this->down_payment_amount) {
+                $validator->errors()->add(
+                    'down_payment_amount',
+                    'Down payment amount is required when down payment is enabled.'
+                );
+            }
+
+            if (!$this->down_payment_required && $this->down_payment_amount) {
+                $validator->errors()->add(
+                    'down_payment_required',
+                    'Down payment must be enabled to set an amount.'
+                );
+            }
+
+            // 6. Prevent reducing down payment below what's already paid
+            if ($booking->down_payment_required && $this->down_payment_amount) {
+                if ($this->down_payment_amount < $booking->down_payment_paid) {
+                    $validator->errors()->add(
+                        'down_payment_amount',
+                        'Cannot set down payment below already paid amount (₱' . number_format($booking->down_payment_paid, 2) . ').'
+                    );
+                }
             }
         });
     }

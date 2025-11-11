@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Payment extends Model
 {
@@ -14,6 +15,7 @@ class Payment extends Model
         'payment_number',
         'amount',
         'payment_method',
+        'is_down_payment',
         'payment_account_id',
         'reference_number',
         'reference_image',
@@ -24,6 +26,7 @@ class Payment extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'is_down_payment' => 'boolean',
         'payment_date' => 'datetime',
     ];
 
@@ -35,6 +38,11 @@ class Payment extends Model
     public function paymentAccount(): BelongsTo
     {
         return $this->belongsTo(PaymentAccount::class);
+    }
+
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
     }
 
     public function receivedByUser(): BelongsTo
@@ -86,5 +94,25 @@ class Payment extends Model
         $nextNumber = $lastPayment ? ((int) substr($lastPayment->payment_number, -4)) + 1 : 1;
 
         return sprintf('PAY-%s%s-%04d', $year, $month, $nextNumber);
+    }
+
+    public function refundedAmount(): float
+    {
+        return (float) $this->refunds()->sum('amount');
+    }
+
+    public function remainingAmount(): float
+    {
+        return $this->amount - $this->refundedAmount();
+    }
+
+    public function isFullyRefunded(): bool
+    {
+        return $this->remainingAmount() <= 0;
+    }
+
+    public function canRefund(float $amount): bool
+    {
+        return $amount > 0 && $amount <= $this->remainingAmount();
     }
 }

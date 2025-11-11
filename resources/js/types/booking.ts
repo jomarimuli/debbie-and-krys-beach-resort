@@ -8,6 +8,7 @@ import type { Payment } from './payment';
 export interface Booking {
     id: number;
     booking_number: string;
+    booking_code: string;
     source: 'guest' | 'registered' | 'walkin';
     booking_type: 'day_tour' | 'overnight';
     guest_name: string;
@@ -23,6 +24,10 @@ export interface Booking {
     total_amount: string;
     paid_amount: string;
     balance: string;
+    down_payment_amount: string | null;
+    down_payment_paid: string;
+    down_payment_required: boolean;
+    down_payment_balance: string;
     is_fully_paid: boolean;
     total_guests: number;
     status: 'pending' | 'confirmed' | 'checked_in' | 'checked_out' | 'cancelled';
@@ -84,6 +89,8 @@ export interface BookingFormData {
     check_out_date?: string;
     total_adults: number;
     total_children: number;
+    down_payment_required?: boolean;
+    down_payment_amount?: string;
     notes?: string;
     accommodations: {
         accommodation_id: number;

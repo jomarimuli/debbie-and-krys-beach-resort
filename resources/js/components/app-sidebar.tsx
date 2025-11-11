@@ -1,94 +1,125 @@
-// resources\js\components\app-sidebar.tsx
+// resources/js/components/app-sidebar.tsx
 
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem, type SharedData } from '@/types';
+import { type NavGroup, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet } from 'lucide-react';
+import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import { GithubUpdatesModal } from '@/components/github-updates-modal';
 
-const allNavItems: NavItem[] = [
+const allNavGroups: NavGroup[] = [
     {
-        title: 'Home',
-        href: '/',
-        icon: Home,
-        requiredPermissions: [],
+        title: 'Main',
+        items: [
+            {
+                title: 'Home',
+                href: '/',
+                icon: Home,
+                requiredPermissions: [],
+            },
+            {
+                title: 'Dashboard',
+                href: '/dashboard',
+                icon: LayoutGrid,
+                requiredPermissions: [],
+            },
+            {
+                title: 'Pulse',
+                href: '/pulse',
+                icon: HeartPulse,
+                requiredPermissions: ['pulse access', 'global access'],
+                isExternal: true,
+            },
+        ],
     },
     {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutGrid,
-        requiredPermissions: [],
+        title: 'Booking Management',
+        items: [
+            {
+                title: 'Accommodations',
+                href: '/accommodations',
+                icon: Hotel,
+                requiredPermissions: ['accommodation show', 'global access'],
+            },
+            {
+                title: 'Rates',
+                href: '/accommodation-rates',
+                icon: Coins,
+                requiredPermissions: ['accommodation-rate show', 'global access'],
+            },
+            {
+                title: 'Bookings',
+                href: '/bookings',
+                icon: Ticket,
+                requiredPermissions: ['booking show', 'global access'],
+            },
+        ],
     },
     {
-        title: 'Pulse',
-        href: '/pulse',
-        icon: HeartPulse,
-        requiredPermissions: ['pulse access', 'global access'],
-        isExternal: true,
+        title: 'Financial',
+        items: [
+            {
+                title: 'Payments',
+                href: '/payments',
+                icon: Banknote,
+                requiredPermissions: ['payment show', 'global access'],
+            },
+            {
+                title: 'Refunds',
+                href: '/refunds',
+                icon: ReceiptText,
+                requiredPermissions: ['refund show', 'global access'],
+            },
+            {
+                title: 'Payment Accounts',
+                href: '/payment-accounts',
+                icon: Wallet,
+                requiredPermissions: ['payment-account show', 'global access'],
+            },
+        ],
     },
     {
-        title: 'Accommodations',
-        href: '/accommodations',
-        icon: Hotel,
-        requiredPermissions: ['accommodation show', 'global access'],
+        title: 'Content',
+        items: [
+            {
+                title: 'Feedbacks',
+                href: '/feedbacks',
+                icon: MessageSquare,
+                requiredPermissions: ['feedback show', 'global access'],
+            },
+            {
+                title: 'Gallery',
+                href: '/galleries',
+                icon: ImageIcon,
+                requiredPermissions: ['gallery show', 'global access'],
+            },
+            {
+                title: 'Announcements',
+                href: '/announcements',
+                icon: Megaphone,
+                requiredPermissions: ['announcement show', 'global access'],
+            },
+        ],
     },
     {
-        title: 'Rates',
-        href: '/accommodation-rates',
-        icon: Coins,
-        requiredPermissions: ['accommodation-rate show', 'global access'],
-    },
-    {
-        title: 'Bookings',
-        href: '/bookings',
-        icon: Ticket,
-        requiredPermissions: ['booking show', 'global access'],
-    },
-    {
-        title: 'Payments',
-        href: '/payments',
-        icon: Banknote,
-        requiredPermissions: ['payment show', 'global access'],
-    },
-    {
-        title: 'Payment Accounts',
-        href: '/payment-accounts',
-        icon: Wallet,
-        requiredPermissions: ['payment-account show', 'global access'],
-    },
-    {
-        title: 'Feedbacks',
-        href: '/feedbacks',
-        icon: MessageSquare,
-        requiredPermissions: ['feedback show', 'global access'],
-    },
-    {
-        title: 'Gallery',
-        href: '/galleries',
-        icon: ImageIcon,
-        requiredPermissions: ['gallery show', 'global access'],
-    },
-    {
-        title: 'Announcements',
-        href: '/announcements',
-        icon: Megaphone,
-        requiredPermissions: ['announcement show', 'global access'],
-    },
-    {
-        title: 'Users',
-        href: '/users',
-        icon: Users,
-        requiredPermissions: ['user show', 'global access'],
-    },
-    {
-        title: 'Roles',
-        href: '/roles',
-        icon: Shield,
-        requiredPermissions: ['role show', 'global access'],
+        title: 'Administration',
+        items: [
+            {
+                title: 'Users',
+                href: '/users',
+                icon: Users,
+                requiredPermissions: ['user show', 'global access'],
+            },
+            {
+                title: 'Roles',
+                href: '/roles',
+                icon: Shield,
+                requiredPermissions: ['role show', 'global access'],
+            },
+        ],
     },
 ];
 
@@ -96,19 +127,24 @@ export function AppSidebar() {
     const page = usePage<SharedData>();
     const { auth } = page.props;
 
-    // Filter navigation items based on user permissions
-    const mainNavItems = useMemo(() => {
-        return allNavItems.filter(item => {
-            // If no permissions required, show the item
-            if (!item.requiredPermissions || item.requiredPermissions.length === 0) {
-                return true;
-            }
+    // Filter navigation groups and items based on user permissions
+    const mainNavGroups = useMemo(() => {
+        return allNavGroups
+            .map(group => ({
+                ...group,
+                items: group.items.filter(item => {
+                    // If no permissions required, show the item
+                    if (!item.requiredPermissions || item.requiredPermissions.length === 0) {
+                        return true;
+                    }
 
-            // Check if user has any of the required permissions
-            return item.requiredPermissions.some(permission =>
-                auth.user?.permissions?.includes(permission)
-            );
-        });
+                    // Check if user has any of the required permissions
+                    return item.requiredPermissions.some(permission =>
+                        auth.user?.permissions?.includes(permission)
+                    );
+                }),
+            }))
+            .filter(group => group.items.length > 0); // Remove empty groups
     }, [auth.user?.permissions]);
 
     return (
@@ -126,22 +162,24 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain groups={mainNavGroups} />
             </SidebarContent>
 
             <SidebarFooter>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <GithubUpdatesModal>
-                            <SidebarMenuButton className="w-full cursor-pointer animate-pulse-glow" asChild>
-                                <button className="flex items-center gap-2 w-full">
-                                    <GitBranch className="h-4 w-4" />
-                                    <span>Updates</span>
-                                </button>
-                            </SidebarMenuButton>
-                        </GithubUpdatesModal>
-                    </SidebarMenuItem>
-                </SidebarMenu>
+                <div className="border-t pt-2">
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <GithubUpdatesModal>
+                                <SidebarMenuButton className="w-full cursor-pointer animate-pulse-glow" asChild>
+                                    <button className="flex items-center gap-2 w-full">
+                                        <GitBranch className="h-4 w-4" />
+                                        <span>Updates</span>
+                                    </button>
+                                </SidebarMenuButton>
+                            </GithubUpdatesModal>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </div>
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Booking;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 
 class StoreBookingRequest extends FormRequest
 {
@@ -25,6 +26,8 @@ class StoreBookingRequest extends FormRequest
             'check_out_date' => ['nullable', 'date', 'after:check_in_date'],
             'total_adults' => ['required', 'integer', 'min:1'],
             'total_children' => ['required', 'integer', 'min:0'],
+            'down_payment_required' => ['boolean'],
+            'down_payment_amount' => ['nullable', 'numeric', 'min:0.01'],
             'notes' => ['nullable', 'string'],
             'accommodations' => ['required', 'array', 'min:1'],
             'accommodations.*.accommodation_id' => ['required', 'exists:accommodations,id'],
@@ -40,9 +43,13 @@ class StoreBookingRequest extends FormRequest
             'accommodations.required' => 'Please select at least one accommodation.',
             'accommodations.*.accommodation_rate_id.required' => 'Please select a rate for each accommodation.',
             'accommodations.*.accommodation_rate_id.exists' => 'The selected rate is invalid.',
+            'down_payment_amount.min' => 'Down payment must be at least ₱0.01.',
         ];
     }
 
+    /**
+     * @param \Illuminate\Contracts\Validation\Validator $validator
+     */
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
@@ -53,6 +60,22 @@ class StoreBookingRequest extends FormRequest
                 $validator->errors()->add(
                     'accommodations',
                     "Total accommodation guests ($accommodationGuests) must equal total party size ($totalGuests)"
+                );
+            }
+
+            // Validate down payment amount if required
+            if ($this->down_payment_required && !$this->down_payment_amount) {
+                $validator->errors()->add(
+                    'down_payment_amount',
+                    'Down payment amount is required when down payment is enabled.'
+                );
+            }
+
+            // Down payment should not be required if amount is not set
+            if (!$this->down_payment_required && $this->down_payment_amount) {
+                $validator->errors()->add(
+                    'down_payment_required',
+                    'Down payment must be enabled to set an amount.'
                 );
             }
         });

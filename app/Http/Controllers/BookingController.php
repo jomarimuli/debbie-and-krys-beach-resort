@@ -122,16 +122,18 @@ class BookingController extends Controller
                 $entranceFeeTotal += $childFee;
             }
 
+            $totalAmount = $accommodationTotal + $entranceFeeTotal;
+
             $booking->update([
                 'accommodation_total' => $accommodationTotal,
                 'entrance_fee_total' => $entranceFeeTotal,
-                'total_amount' => $accommodationTotal + $entranceFeeTotal,
+                'total_amount' => $totalAmount,
             ]);
 
             DB::commit();
 
             return redirect()->route('bookings.show', $booking)
-                ->with('success', 'Booking created successfully.');
+                ->with('success', 'Booking created successfully. Booking code: ' . $booking->booking_code);
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', $e->getMessage());
@@ -143,7 +145,7 @@ class BookingController extends Controller
         $booking->load([
             'accommodations.accommodationRate',
             'entranceFees',
-            'payments',
+            'payments.receivedByUser',
         ]);
 
         return Inertia::render('booking/show', [

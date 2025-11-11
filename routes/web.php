@@ -9,6 +9,7 @@ use App\Http\Controllers\GitHubController;
 use App\Http\Controllers\AccommodationController;
 use App\Http\Controllers\AccommodationRateController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\RefundController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentAccountController;
 use App\Http\Controllers\FeedbackController;
@@ -55,6 +56,11 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
     Route::resource('payments', PaymentController::class);
     Route::get('/payments/{payment}/reference-image', [PaymentController::class, 'showReferenceImage'])
         ->name('payment.reference-image');
+
+    // Refunds
+    Route::resource('refunds', RefundController::class);
+    Route::get('/refunds/{refund}/reference-image', [RefundController::class, 'showReferenceImage'])
+        ->name('refund.reference-image');
 
     // Payment Accounts
     Route::resource('payment-accounts', PaymentAccountController::class);

@@ -111,3 +111,4 @@ export type PaymentAccountIndexProps = PageProps & PaymentAccountIndexData;
 export type FeedbackIndexProps = PageProps & FeedbackIndexData;
 export type GalleryIndexProps = PageProps & GalleryIndexData;
 export type AnnouncementIndexProps = PageProps & AnnouncementIndexData;
+export type RefundIndexProps = PageProps & RefundIndexData;

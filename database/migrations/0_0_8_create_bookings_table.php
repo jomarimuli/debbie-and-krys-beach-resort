@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
             $table->string('booking_number')->unique(); // BK-202510-0001
+            $table->string('booking_code', 8)->unique(); // ABC12345 - for quick lookup
             $table->enum('source', ['guest', 'registered', 'walkin']);
             $table->enum('booking_type', ['day_tour', 'overnight']);
 
@@ -37,6 +38,11 @@ return new class extends Migration
             $table->decimal('total_amount', 10, 2)->default(0);
             $table->decimal('paid_amount', 10, 2)->default(0);
 
+            // Down payment
+            $table->decimal('down_payment_amount', 10, 2)->nullable();
+            $table->decimal('down_payment_paid', 10, 2)->default(0);
+            $table->boolean('down_payment_required')->default(false);
+
             // Status
             $table->enum('status', ['pending', 'confirmed', 'checked_in', 'checked_out', 'cancelled'])->default('pending');
             $table->text('notes')->nullable();
@@ -45,6 +51,7 @@ return new class extends Migration
 
             $table->index(['check_in_date', 'check_out_date', 'status'], 'idx_booking_dates_status');
             $table->index('booking_number', 'idx_booking_number');
+            $table->index('booking_code', 'idx_booking_code');
         });
     }
 

@@ -12,6 +12,7 @@ class Booking extends Model
 
     protected $fillable = [
         'booking_number',
+        'booking_code',
         'source',
         'booking_type',
         'created_by',
@@ -27,6 +28,9 @@ class Booking extends Model
         'entrance_fee_total',
         'total_amount',
         'paid_amount',
+        'down_payment_amount',
+        'down_payment_paid',
+        'down_payment_required',
         'status',
         'notes',
     ];
@@ -40,9 +44,12 @@ class Booking extends Model
         'entrance_fee_total' => 'decimal:2',
         'total_amount' => 'decimal:2',
         'paid_amount' => 'decimal:2',
+        'down_payment_amount' => 'decimal:2',
+        'down_payment_paid' => 'decimal:2',
+        'down_payment_required' => 'boolean',
     ];
 
-    protected $appends = ['balance', 'is_fully_paid', 'total_guests'];
+    protected $appends = ['balance', 'is_fully_paid', 'total_guests', 'down_payment_balance'];
 
     // Relationships
     public function createdBy(): BelongsTo
@@ -87,6 +94,38 @@ class Booking extends Model
         );
     }
 
+    protected function downPaymentBalance(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if (!$this->down_payment_required || !$this->down_payment_amount) {
+                    return 0;
+                }
+                return $this->down_payment_amount - $this->down_payment_paid;
+            },
+        );
+    }
+
+    // Helper Methods
+    public function isDownPaymentPaid(): bool
+    {
+        if (!$this->down_payment_required || !$this->down_payment_amount) {
+            return true;
+        }
+        return $this->down_payment_paid >= $this->down_payment_amount;
+    }
+
+    public function updatePaidAmount(): void
+    {
+        $totalPaid = $this->payments()->sum('amount');
+        $downPaymentPaid = $this->payments()->where('is_down_payment', true)->sum('amount');
+
+        $this->update([
+            'paid_amount' => $totalPaid,
+            'down_payment_paid' => $downPaymentPaid,
+        ]);
+    }
+
     // Scopes
     public function scopePending($query)
     {
@@ -113,6 +152,9 @@ class Booking extends Model
             if (!$booking->booking_number) {
                 $booking->booking_number = self::generateBookingNumber();
             }
+            if (!$booking->booking_code) {
+                $booking->booking_code = self::generateBookingCode();
+            }
         });
     }
 
@@ -127,5 +169,19 @@ class Booking extends Model
         $number = $latest ? intval(substr($latest->booking_number, -4)) + 1 : 1;
 
         return 'BK-' . $yearMonth . '-' . str_pad($number, 4, '0', STR_PAD_LEFT);
+    }
+
+    public static function generateBookingCode(): string
+    {
+        do {
+            // Generate 8-character alphanumeric code (no confusing chars: 0/O, 1/I/L)
+            $characters = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+            $code = '';
+            for ($i = 0; $i < 8; $i++) {
+                $code .= $characters[rand(0, strlen($characters) - 1)];
+            }
+        } while (self::where('booking_code', $code)->exists());
+
+        return $code;
     }
 }

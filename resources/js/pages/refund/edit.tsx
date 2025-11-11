@@ -1,3 +1,4 @@
+// resources/js/pages/refund/edit.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,30 +10,30 @@ import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import { Link } from '@inertiajs/react';
-import { type Payment, type PaymentAccount, type PageProps } from '@/types';
+import { type Refund, type PaymentAccount, type PageProps } from '@/types';
 import { format } from 'date-fns';
-import payments from '@/routes/payments';
+import refunds from '@/routes/refunds';
 
-export default function Edit({ payment, payment_accounts }: PageProps & { payment: Payment; payment_accounts: PaymentAccount[] }) {
-    const [currentImage, setCurrentImage] = useState<string | null>(payment.reference_image_url);
+export default function Edit({ refund, payment_accounts }: PageProps & { refund: Refund; payment_accounts: PaymentAccount[] }) {
+    const [currentImage, setCurrentImage] = useState<string | null>(refund.reference_image_url);
     const [newImagePreview, setNewImagePreview] = useState<string | null>(null);
 
     const { data, setData, post, processing, errors } = useForm({
-        amount: payment.amount,
-        payment_method: payment.payment_method,
-        is_down_payment: payment.is_down_payment,
-        payment_account_id: payment.payment_account_id?.toString() || '',
-        reference_number: payment.reference_number || '',
+        amount: refund.amount,
+        refund_method: refund.refund_method,
+        refund_account_id: refund.refund_account_id?.toString() || '',
+        reference_number: refund.reference_number || '',
         reference_image: null as File | null,
         remove_reference_image: false,
-        notes: payment.notes || '',
-        payment_date: format(new Date(payment.payment_date), 'yyyy-MM-dd'),
+        reason: refund.reason || '',
+        notes: refund.notes || '',
+        refund_date: format(new Date(refund.refund_date), 'yyyy-MM-dd'),
         _method: 'PUT',
     });
 
-    // Filter payment accounts by selected payment method
+    // Filter refund accounts by selected refund method
     const filteredAccounts = payment_accounts.filter(
-        (account) => account.type === data.payment_method && account.is_active
+        (account) => account.type === data.refund_method && account.is_active
     );
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +62,7 @@ export default function Edit({ payment, payment_accounts }: PageProps & { paymen
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(payments.update.url({ payment: payment.id }), {
+        post(refunds.update.url({ refund: refund.id }), {
             forceFormData: true,
         });
     };
@@ -69,44 +70,45 @@ export default function Edit({ payment, payment_accounts }: PageProps & { paymen
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-3">
-                <Link href={payments.show.url({ payment: payment.id })}>
+                <Link href={refunds.show.url({ refund: refund.id })}>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-xl font-semibold">Edit Payment</h1>
-                    <p className="text-sm text-muted-foreground">{payment.payment_number}</p>
+                    <h1 className="text-xl font-semibold">Edit Refund</h1>
+                    <p className="text-sm text-muted-foreground">{refund.refund_number}</p>
                 </div>
             </div>
 
             <Card>
                 <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-medium">Payment Details</CardTitle>
+                    <CardTitle className="text-base font-medium">Refund Details</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={submit} className="space-y-5">
-                        {payment.booking?.down_payment_required && (
-                            <div className="space-y-1.5">
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="checkbox"
-                                        id="is_down_payment"
-                                        checked={data.is_down_payment}
-                                        onChange={(e) => setData('is_down_payment', e.target.checked)}
-                                        className="h-4 w-4 rounded border-gray-300"
-                                    />
-                                    <Label htmlFor="is_down_payment" className="text-sm cursor-pointer">
-                                        This is a down payment
-                                    </Label>
+                        {refund.payment && (
+                            <div className="rounded border p-3 bg-muted/30 space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Payment:</span>
+                                    <span className="font-medium">{refund.payment.payment_number}</span>
                                 </div>
-                                {errors.is_down_payment && <p className="text-xs text-destructive">{errors.is_down_payment}</p>}
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Guest:</span>
+                                    <span className="font-medium">{refund.payment.booking?.guest_name}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Payment Amount:</span>
+                                    <span className="font-medium">
+                                        ₱{parseFloat(refund.payment.amount).toLocaleString()}
+                                    </span>
+                                </div>
                             </div>
                         )}
 
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="space-y-1.5">
-                                <Label htmlFor="amount" className="text-sm cursor-text select-text">Amount</Label>
+                                <Label htmlFor="amount" className="text-sm cursor-text select-text">Refund Amount</Label>
                                 <Input
                                     id="amount"
                                     type="number"
@@ -120,12 +122,12 @@ export default function Edit({ payment, payment_accounts }: PageProps & { paymen
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="payment_method" className="text-sm cursor-text select-text">Payment Method</Label>
+                                <Label htmlFor="refund_method" className="text-sm cursor-text select-text">Refund Method</Label>
                                 <Select
-                                    value={data.payment_method}
+                                    value={data.refund_method}
                                     onValueChange={(value: any) => {
-                                        setData('payment_method', value);
-                                        setData('payment_account_id', '');
+                                        setData('refund_method', value);
+                                        setData('refund_account_id', '');
                                     }}
                                 >
                                     <SelectTrigger className="h-9">
@@ -137,18 +139,19 @@ export default function Edit({ payment, payment_accounts }: PageProps & { paymen
                                         <SelectItem value="bank">Bank</SelectItem>
                                         <SelectItem value="gcash">GCash</SelectItem>
                                         <SelectItem value="maya">Maya</SelectItem>
+                                        <SelectItem value="original_method">Original Method</SelectItem>
                                         <SelectItem value="other">Other</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                {errors.payment_method && <p className="text-xs text-destructive">{errors.payment_method}</p>}
+                                {errors.refund_method && <p className="text-xs text-destructive">{errors.refund_method}</p>}
                             </div>
 
                             {filteredAccounts.length > 0 && (
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="payment_account_id" className="text-sm cursor-text select-text">
-                                        Payment Account (Optional)
+                                    <Label htmlFor="refund_account_id" className="text-sm cursor-text select-text">
+                                        Refund Account (Optional)
                                     </Label>
-                                    <Select value={data.payment_account_id} onValueChange={(value) => setData('payment_account_id', value)}>
+                                    <Select value={data.refund_account_id} onValueChange={(value) => setData('refund_account_id', value)}>
                                         <SelectTrigger className="h-9">
                                             <SelectValue placeholder="Select account" />
                                         </SelectTrigger>
@@ -161,7 +164,7 @@ export default function Edit({ payment, payment_accounts }: PageProps & { paymen
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.payment_account_id && <p className="text-xs text-destructive">{errors.payment_account_id}</p>}
+                                    {errors.refund_account_id && <p className="text-xs text-destructive">{errors.refund_account_id}</p>}
                                 </div>
                             )}
 
@@ -177,15 +180,15 @@ export default function Edit({ payment, payment_accounts }: PageProps & { paymen
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="payment_date" className="text-sm cursor-text select-text">Payment Date</Label>
+                                <Label htmlFor="refund_date" className="text-sm cursor-text select-text">Refund Date</Label>
                                 <Input
-                                    id="payment_date"
+                                    id="refund_date"
                                     type="date"
-                                    value={data.payment_date}
-                                    onChange={(e) => setData('payment_date', e.target.value)}
+                                    value={data.refund_date}
+                                    onChange={(e) => setData('refund_date', e.target.value)}
                                     className="h-9"
                                 />
-                                {errors.payment_date && <p className="text-xs text-destructive">{errors.payment_date}</p>}
+                                {errors.refund_date && <p className="text-xs text-destructive">{errors.refund_date}</p>}
                             </div>
                         </div>
 
@@ -261,6 +264,19 @@ export default function Edit({ payment, payment_accounts }: PageProps & { paymen
                         </div>
 
                         <div className="space-y-1.5">
+                            <Label htmlFor="reason" className="text-sm cursor-text select-text">Reason</Label>
+                            <Textarea
+                                id="reason"
+                                value={data.reason}
+                                onChange={(e) => setData('reason', e.target.value)}
+                                rows={2}
+                                className="resize-none"
+                                placeholder="Reason for refund"
+                            />
+                            {errors.reason && <p className="text-xs text-destructive">{errors.reason}</p>}
+                        </div>
+
+                        <div className="space-y-1.5">
                             <Label htmlFor="notes" className="text-sm cursor-text select-text">Notes</Label>
                             <Textarea
                                 id="notes"
@@ -274,9 +290,9 @@ export default function Edit({ payment, payment_accounts }: PageProps & { paymen
 
                         <div className="flex gap-2 pt-2">
                             <Button type="submit" disabled={processing} size="sm">
-                                Update Payment
+                                Update Refund
                             </Button>
-                            <Link href={payments.show.url({ payment: payment.id })}>
+                            <Link href={refunds.show.url({ refund: refund.id })}>
                                 <Button type="button" variant="outline" size="sm">
                                     Cancel
                                 </Button>
@@ -293,7 +309,7 @@ Edit.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
-            { title: 'Payments', href: '/payments' },
+            { title: 'Refunds', href: '/refunds' },
             { title: 'Edit', href: '#' },
         ]}
     >

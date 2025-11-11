@@ -32,6 +32,8 @@ export default function Create({ accommodations }: PageProps & { accommodations:
         check_out_date: '',
         total_adults: '1',
         total_children: '0',
+        down_payment_required: false,
+        down_payment_amount: '',
         notes: '',
         accommodations: [
             { accommodation_id: '', accommodation_rate_id: '', guests: '1' }
@@ -300,8 +302,10 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                                     })}
                                                 </SelectContent>
                                             </Select>
-                                            {errors[`accommodations.${index}.accommodation_id`] && (
-                                                <p className="text-xs text-destructive">{errors[`accommodations.${index}.accommodation_id`]}</p>
+                                            {errors[`accommodations.${index}.accommodation_id` as keyof typeof errors] && (
+                                                <p className="text-xs text-destructive">
+                                                    {errors[`accommodations.${index}.accommodation_id` as keyof typeof errors]}
+                                                </p>
                                             )}
                                         </div>
 
@@ -323,8 +327,10 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                                     ))}
                                                 </SelectContent>
                                             </Select>
-                                            {errors[`accommodations.${index}.accommodation_rate_id`] && (
-                                                <p className="text-xs text-destructive">{errors[`accommodations.${index}.accommodation_rate_id`]}</p>
+                                            {errors[`accommodations.${index}.accommodation_rate_id` as keyof typeof errors] && (
+                                                <p className="text-xs text-destructive">
+                                                    {errors[`accommodations.${index}.accommodation_rate_id` as keyof typeof errors]}
+                                                </p>
                                             )}
                                         </div>
 
@@ -338,8 +344,10 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                                     onChange={(e) => updateAccommodation(index, 'guests', e.target.value)}
                                                     className="h-9"
                                                 />
-                                                {errors[`accommodations.${index}.guests`] && (
-                                                    <p className="text-xs text-destructive">{errors[`accommodations.${index}.guests`]}</p>
+                                                {errors[`accommodations.${index}.guests` as keyof typeof errors] && (
+                                                    <p className="text-xs text-destructive">
+                                                        {errors[`accommodations.${index}.guests` as keyof typeof errors]}
+                                                    </p>
                                                 )}
                                             </div>
                                             {data.accommodations.length > 1 && (
@@ -394,6 +402,57 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                             );
                         })}
                         {errors.accommodations && <p className="text-xs text-destructive">{errors.accommodations}</p>}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Down Payment</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div className="flex items-center space-x-2">
+                                <input
+                                    type="checkbox"
+                                    id="down_payment_required"
+                                    checked={data.down_payment_required}
+                                    onChange={(e) => {
+                                        setData('down_payment_required', e.target.checked);
+                                        if (!e.target.checked) {
+                                            setData('down_payment_amount', '');
+                                        }
+                                    }}
+                                    className="h-4 w-4 rounded border-gray-300"
+                                />
+                                <Label htmlFor="down_payment_required" className="text-sm cursor-pointer">
+                                    Require down payment
+                                </Label>
+                            </div>
+
+                            {data.down_payment_required && (
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="down_payment_amount" className="text-sm cursor-text select-text">
+                                        Down Payment Amount
+                                    </Label>
+                                    <Input
+                                        id="down_payment_amount"
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        value={data.down_payment_amount}
+                                        onChange={(e) => setData('down_payment_amount', e.target.value)}
+                                        className="h-9"
+                                        placeholder="0.00"
+                                    />
+                                    {errors.down_payment_amount && (
+                                        <p className="text-xs text-destructive">{errors.down_payment_amount}</p>
+                                    )}
+                                    {errors.down_payment_required && (
+                                        <p className="text-xs text-destructive">{errors.down_payment_required}</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </CardContent>
                 </Card>
 

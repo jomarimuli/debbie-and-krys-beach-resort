@@ -1,3 +1,4 @@
+// resources/js/pages/refund/create.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,30 +10,30 @@ import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import { Link } from '@inertiajs/react';
-import { type Booking, type PaymentAccount, type PageProps } from '@/types';
+import { type Payment, type PaymentAccount, type PageProps } from '@/types';
 import { format } from 'date-fns';
-import payments from '@/routes/payments';
+import refunds from '@/routes/refunds';
 
-export default function Create({ bookings, payment_accounts }: PageProps & { bookings: Booking[]; payment_accounts: PaymentAccount[] }) {
+export default function Create({ payments, payment_accounts }: PageProps & { payments: Payment[]; payment_accounts: PaymentAccount[] }) {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
     const { data, setData, post, processing, errors } = useForm({
-        booking_id: '',
+        payment_id: '',
         amount: '',
-        payment_method: 'cash' as 'cash' | 'card' | 'bank' | 'gcash' | 'maya' | 'other',
-        is_down_payment: false,
-        payment_account_id: '',
+        refund_method: 'cash' as 'cash' | 'card' | 'bank' | 'gcash' | 'maya' | 'original_method' | 'other',
+        refund_account_id: '',
         reference_number: '',
         reference_image: null as File | null,
+        reason: '',
         notes: '',
-        payment_date: format(new Date(), 'yyyy-MM-dd'),
+        refund_date: format(new Date(), 'yyyy-MM-dd'),
     });
 
-    const selectedBooking = bookings.find((b) => b.id === parseInt(data.booking_id));
+    const selectedPayment = payments.find((p) => p.id === parseInt(data.payment_id));
 
-    // Filter payment accounts by selected payment method
+    // Filter refund accounts by selected refund method
     const filteredAccounts = payment_accounts.filter(
-        (account) => account.type === data.payment_method && account.is_active
+        (account) => account.type === data.refund_method && account.is_active
     );
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,7 +56,7 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        post(payments.store.url(), {
+        post(refunds.store.url(), {
             forceFormData: true,
         });
     };
@@ -63,104 +64,65 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
     return (
         <div className="space-y-4">
             <div className="flex items-center gap-3">
-                <Link href={payments.index.url()}>
+                <Link href={refunds.index.url()}>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                 </Link>
                 <div>
-                    <h1 className="text-xl font-semibold">Record Payment</h1>
-                    <p className="text-sm text-muted-foreground">Add a new payment record</p>
+                    <h1 className="text-xl font-semibold">Process Refund</h1>
+                    <p className="text-sm text-muted-foreground">Create a new refund record</p>
                 </div>
             </div>
 
             <Card>
                 <CardHeader className="pb-3">
-                    <CardTitle className="text-base font-medium">Payment Details</CardTitle>
+                    <CardTitle className="text-base font-medium">Refund Details</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={submit} className="space-y-5">
                         <div className="space-y-1.5">
-                            <Label htmlFor="booking_id" className="text-sm cursor-text select-text">Booking</Label>
-                            <Select value={data.booking_id} onValueChange={(value) => setData('booking_id', value)}>
+                            <Label htmlFor="payment_id" className="text-sm cursor-text select-text">Payment</Label>
+                            <Select value={data.payment_id} onValueChange={(value) => setData('payment_id', value)}>
                                 <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Select booking" />
+                                    <SelectValue placeholder="Select payment" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {bookings.map((booking) => (
-                                        <SelectItem key={booking.id} value={booking.id.toString()}>
-                                            {booking.booking_number} - {booking.guest_name} (Balance: ₱
-                                            {parseFloat(booking.balance).toLocaleString()})
+                                    {payments.map((payment) => (
+                                        <SelectItem key={payment.id} value={payment.id.toString()}>
+                                            {payment.payment_number} - {payment.booking?.guest_name} (Remaining: ₱
+                                            {parseFloat(payment.remaining_amount || payment.amount).toLocaleString()})
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {errors.booking_id && <p className="text-xs text-destructive">{errors.booking_id}</p>}
+                            {errors.payment_id && <p className="text-xs text-destructive">{errors.payment_id}</p>}
                         </div>
 
-                        {selectedBooking && (
+                        {selectedPayment && (
                             <div className="rounded border p-3 bg-muted/30 space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Guest:</span>
-                                    <span className="font-medium">{selectedBooking.guest_name}</span>
+                                    <span className="font-medium">{selectedPayment.booking?.guest_name}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Total:</span>
+                                    <span className="text-muted-foreground">Payment Amount:</span>
                                     <span className="font-medium">
-                                        ₱{parseFloat(selectedBooking.total_amount).toLocaleString()}
+                                        ₱{parseFloat(selectedPayment.amount).toLocaleString()}
                                     </span>
                                 </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Paid:</span>
-                                    <span className="font-medium text-green-600">
-                                        ₱{parseFloat(selectedBooking.paid_amount).toLocaleString()}
-                                    </span>
-                                </div>
+                                {selectedPayment.refunded_amount && parseFloat(selectedPayment.refunded_amount) > 0 && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Already Refunded:</span>
+                                        <span className="font-medium text-red-600">
+                                            ₱{parseFloat(selectedPayment.refunded_amount).toLocaleString()}
+                                        </span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between text-sm border-t pt-2">
-                                    <span className="font-semibold">Balance:</span>
-                                    <span className="font-semibold text-red-600">
-                                        ₱{parseFloat(selectedBooking.balance).toLocaleString()}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
-
-                        {selectedBooking && selectedBooking.down_payment_required && (
-                            <div className="space-y-1.5">
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="checkbox"
-                                        id="is_down_payment"
-                                        checked={data.is_down_payment}
-                                        onChange={(e) => setData('is_down_payment', e.target.checked)}
-                                        className="h-4 w-4 rounded border-gray-300"
-                                    />
-                                    <Label htmlFor="is_down_payment" className="text-sm cursor-pointer">
-                                        This is a down payment
-                                    </Label>
-                                </div>
-                                {errors.is_down_payment && <p className="text-xs text-destructive">{errors.is_down_payment}</p>}
-                            </div>
-                        )}
-
-                        {selectedBooking && selectedBooking.down_payment_required && (
-                            <div className="rounded border p-3 bg-blue-50 space-y-2">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Down Payment Required:</span>
-                                    <span className="font-medium">
-                                        ₱{parseFloat(selectedBooking.down_payment_amount || '0').toLocaleString()}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Down Payment Paid:</span>
-                                    <span className="font-medium text-green-600">
-                                        ₱{parseFloat(selectedBooking.down_payment_paid).toLocaleString()}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between text-sm border-t pt-2">
-                                    <span className="font-semibold">Down Payment Balance:</span>
-                                    <span className="font-semibold text-red-600">
-                                        ₱{parseFloat(selectedBooking.down_payment_balance).toLocaleString()}
+                                    <span className="font-semibold">Available to Refund:</span>
+                                    <span className="font-semibold text-green-600">
+                                        ₱{parseFloat(selectedPayment.remaining_amount || selectedPayment.amount).toLocaleString()}
                                     </span>
                                 </div>
                             </div>
@@ -168,7 +130,7 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
 
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="space-y-1.5">
-                                <Label htmlFor="amount" className="text-sm cursor-text select-text">Amount</Label>
+                                <Label htmlFor="amount" className="text-sm cursor-text select-text">Refund Amount</Label>
                                 <Input
                                     id="amount"
                                     type="number"
@@ -182,12 +144,12 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="payment_method" className="text-sm cursor-text select-text">Payment Method</Label>
+                                <Label htmlFor="refund_method" className="text-sm cursor-text select-text">Refund Method</Label>
                                 <Select
-                                    value={data.payment_method}
+                                    value={data.refund_method}
                                     onValueChange={(value: any) => {
-                                        setData('payment_method', value);
-                                        setData('payment_account_id', ''); // Reset account when method changes
+                                        setData('refund_method', value);
+                                        setData('refund_account_id', '');
                                     }}
                                 >
                                     <SelectTrigger className="h-9">
@@ -199,19 +161,19 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
                                         <SelectItem value="bank">Bank</SelectItem>
                                         <SelectItem value="gcash">GCash</SelectItem>
                                         <SelectItem value="maya">Maya</SelectItem>
+                                        <SelectItem value="original_method">Original Method</SelectItem>
                                         <SelectItem value="other">Other</SelectItem>
                                     </SelectContent>
                                 </Select>
-                                {errors.payment_method && <p className="text-xs text-destructive">{errors.payment_method}</p>}
+                                {errors.refund_method && <p className="text-xs text-destructive">{errors.refund_method}</p>}
                             </div>
 
-                            {/* Payment Account Selection */}
                             {filteredAccounts.length > 0 && (
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="payment_account_id" className="text-sm cursor-text select-text">
-                                        Payment Account (Optional)
+                                    <Label htmlFor="refund_account_id" className="text-sm cursor-text select-text">
+                                        Refund Account (Optional)
                                     </Label>
-                                    <Select value={data.payment_account_id} onValueChange={(value) => setData('payment_account_id', value)}>
+                                    <Select value={data.refund_account_id} onValueChange={(value) => setData('refund_account_id', value)}>
                                         <SelectTrigger className="h-9">
                                             <SelectValue placeholder="Select account" />
                                         </SelectTrigger>
@@ -224,7 +186,7 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    {errors.payment_account_id && <p className="text-xs text-destructive">{errors.payment_account_id}</p>}
+                                    {errors.refund_account_id && <p className="text-xs text-destructive">{errors.refund_account_id}</p>}
                                 </div>
                             )}
 
@@ -240,15 +202,15 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="payment_date" className="text-sm cursor-text select-text">Payment Date</Label>
+                                <Label htmlFor="refund_date" className="text-sm cursor-text select-text">Refund Date</Label>
                                 <Input
-                                    id="payment_date"
+                                    id="refund_date"
                                     type="date"
-                                    value={data.payment_date}
-                                    onChange={(e) => setData('payment_date', e.target.value)}
+                                    value={data.refund_date}
+                                    onChange={(e) => setData('refund_date', e.target.value)}
                                     className="h-9"
                                 />
-                                {errors.payment_date && <p className="text-xs text-destructive">{errors.payment_date}</p>}
+                                {errors.refund_date && <p className="text-xs text-destructive">{errors.refund_date}</p>}
                             </div>
                         </div>
 
@@ -292,6 +254,19 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
                         </div>
 
                         <div className="space-y-1.5">
+                            <Label htmlFor="reason" className="text-sm cursor-text select-text">Reason</Label>
+                            <Textarea
+                                id="reason"
+                                value={data.reason}
+                                onChange={(e) => setData('reason', e.target.value)}
+                                rows={2}
+                                className="resize-none"
+                                placeholder="Reason for refund"
+                            />
+                            {errors.reason && <p className="text-xs text-destructive">{errors.reason}</p>}
+                        </div>
+
+                        <div className="space-y-1.5">
                             <Label htmlFor="notes" className="text-sm cursor-text select-text">Notes</Label>
                             <Textarea
                                 id="notes"
@@ -305,9 +280,9 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
 
                         <div className="flex gap-2 pt-2">
                             <Button type="submit" disabled={processing} size="sm">
-                                Record Payment
+                                Process Refund
                             </Button>
-                            <Link href={payments.index.url()}>
+                            <Link href={refunds.index.url()}>
                                 <Button type="button" variant="outline" size="sm">
                                     Cancel
                                 </Button>
@@ -324,7 +299,7 @@ Create.layout = (page: React.ReactNode) => (
     <AppLayout
         breadcrumbs={[
             { title: 'Dashboard', href: '/dashboard' },
-            { title: 'Payments', href: '/payments' },
+            { title: 'Refunds', href: '/refunds' },
             { title: 'Create', href: '#' },
         ]}
     >

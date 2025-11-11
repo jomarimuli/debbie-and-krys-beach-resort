@@ -18,6 +18,8 @@ return new class extends Migration
             $table->decimal('amount', 10, 2);
             $table->enum('payment_method', ['cash', 'card', 'bank', 'gcash', 'maya', 'other']);
 
+            $table->boolean('is_down_payment')->default(false);
+
             $table->foreignId('payment_account_id')->nullable()->constrained()->nullOnDelete();
 
             $table->string('reference_number')->nullable();
