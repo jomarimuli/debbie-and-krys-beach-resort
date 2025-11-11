@@ -56,7 +56,7 @@ export default function Index({ galleries: galleryData }: GalleryIndexProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {galleryData.data.map((gallery: Gallery) => (
                         <Card key={gallery.id} className="overflow-hidden group">
-                            <div className="relative aspect-square">
+                            <div className="relative aspect-square overflow-hidden">
                                 <img
                                     src={gallery.image_url}
                                     alt={gallery.title}

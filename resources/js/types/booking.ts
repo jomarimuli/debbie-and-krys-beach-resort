@@ -98,3 +98,83 @@ export interface BookingFormData {
         guests: number;
     }[];
 }
+
+export interface Rebooking {
+    id: number;
+    original_booking_id: number;
+    rebooking_number: string;
+    processed_by: number | null;
+    new_check_in_date: string;
+    new_check_out_date: string | null;
+    new_total_adults: number;
+    new_total_children: number;
+    new_total_guests: number;
+    original_amount: string;
+    new_amount: string;
+    amount_difference: string;
+    rebooking_fee: string;
+    total_adjustment: string;
+    status: 'pending' | 'approved' | 'completed' | 'cancelled';
+    payment_status: 'pending' | 'paid' | 'refunded';
+    reason: string | null;
+    admin_notes: string | null;
+    approved_at: string | null;
+    completed_at: string | null;
+    created_at: string;
+    updated_at: string;
+    original_booking?: Booking;
+    processed_by_user?: User;
+    accommodations?: RebookingAccommodation[];
+    entrance_fees?: RebookingEntranceFee[];
+}
+
+export interface RebookingAccommodation {
+    id: number;
+    rebooking_id: number;
+    accommodation_id: number;
+    accommodation_rate_id: number;
+    guests: number;
+    rate: string;
+    additional_pax_charge: string;
+    subtotal: string;
+    free_entrance_used: number;
+    created_at: string;
+    updated_at: string;
+    accommodation?: Accommodation;
+    accommodation_rate?: AccommodationRate;
+}
+
+export interface RebookingEntranceFee {
+    id: number;
+    rebooking_id: number;
+    type: 'adult' | 'child';
+    quantity: number;
+    rate: string;
+    subtotal: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface RebookingIndexData {
+    rebookings: PaginatedData<Rebooking>;
+    stats?: {
+        total_rebookings: number;
+        pending_rebookings: number;
+        approved_rebookings: number;
+        completed_rebookings: number;
+    };
+}
+
+export interface RebookingFormData {
+    original_booking_id: number;
+    new_check_in_date: string;
+    new_check_out_date?: string;
+    new_total_adults: number;
+    new_total_children: number;
+    reason?: string;
+    accommodations: {
+        accommodation_id: number;
+        accommodation_rate_id: number;
+        guests: number;
+    }[];
+}

@@ -92,22 +92,25 @@ export default function Create({}: PageProps) {
                                     </p>
                                 </div>
                             ) : (
-                                <div className="relative">
-                                    <img
-                                        src={imagePreview}
-                                        alt="Preview"
-                                        className="w-full max-w-md h-64 object-cover rounded border"
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="destructive"
-                                        size="icon"
-                                        className="absolute top-2 right-2 h-8 w-8"
-                                        onClick={removeImage}
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </Button>
-                                </div>
+                                <>
+                                    <p className="text-xs text-muted-foreground mb-1.5">New Image</p>
+                                    <div className="relative inline-block max-w-md">
+                                        <img
+                                            src={imagePreview}
+                                            alt="Preview"
+                                            className="w-full h-64 object-cover rounded border"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="icon"
+                                            className="absolute top-2 right-2 h-8 w-8"
+                                            onClick={removeImage}
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </>
                             )}
                             {errors.image && <p className="text-xs text-destructive">{errors.image}</p>}
                         </div>

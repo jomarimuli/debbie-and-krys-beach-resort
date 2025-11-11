@@ -84,6 +84,9 @@ class GalleryController extends Controller
                 $request->file('image'),
                 'galleries'
             );
+        } else {
+            // Remove image from update data if not provided
+            unset($data['image']);
         }
 
         $gallery->update($data);

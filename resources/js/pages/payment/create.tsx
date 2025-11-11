@@ -271,22 +271,25 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
                                     </Label>
                                 </div>
                             ) : (
-                                <div className="relative inline-block">
-                                    <img
-                                        src={imagePreview}
-                                        alt="Reference preview"
-                                        className="w-full max-w-sm h-32 object-cover rounded border"
-                                    />
-                                    <Button
-                                        type="button"
-                                        variant="destructive"
-                                        size="icon"
-                                        className="absolute top-1 right-1 h-6 w-6"
-                                        onClick={removeImage}
-                                    >
-                                        <X className="h-3 w-3" />
-                                    </Button>
-                                </div>
+                                <>
+                                    <p className="text-xs text-muted-foreground mb-1.5">New Image</p>
+                                    <div className="relative inline-block">
+                                        <img
+                                            src={imagePreview}
+                                            alt="Reference preview"
+                                            className="w-full max-w-sm h-32 object-cover rounded border"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="icon"
+                                            className="absolute top-1 right-1 h-6 w-6"
+                                            onClick={removeImage}
+                                        >
+                                            <X className="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                </>
                             )}
                             {errors.reference_image && <p className="text-xs text-destructive">{errors.reference_image}</p>}
                         </div>

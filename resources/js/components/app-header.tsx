@@ -13,7 +13,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, Menu, Search, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText } from 'lucide-react';
+import { LayoutGrid, Users, Shield, Menu, Search, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
@@ -54,6 +54,12 @@ const allNavItems: NavItem[] = [
         title: 'Bookings',
         href: '/bookings',
         icon: Ticket,
+        requiredPermissions: ['booking show', 'global access'],
+    },
+    {
+        title: 'Rebookings',
+        href: '/rebookings',
+        icon: RefreshCw,
         requiredPermissions: ['booking show', 'global access'],
     },
     {

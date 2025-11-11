@@ -110,11 +110,11 @@ export default function Edit({ gallery }: PageProps & { gallery: Gallery }) {
                             {newImagePreview && (
                                 <div>
                                     <p className="text-xs text-muted-foreground mb-1.5">New Image</p>
-                                    <div className="relative">
+                                    <div className="relative inline-block max-w-md">
                                         <img
                                             src={newImagePreview}
                                             alt="New preview"
-                                            className="w-full max-w-md h-64 object-cover rounded border"
+                                            className="w-full h-64 object-cover rounded border"
                                         />
                                         <Button
                                             type="button"
@@ -128,7 +128,6 @@ export default function Edit({ gallery }: PageProps & { gallery: Gallery }) {
                                     </div>
                                 </div>
                             )}
-
                             {errors.image && <p className="text-xs text-destructive">{errors.image}</p>}
                         </div>
 

@@ -5,7 +5,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavGroup, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText } from 'lucide-react';
+import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import { GithubUpdatesModal } from '@/components/github-updates-modal';
@@ -54,6 +54,12 @@ const allNavGroups: NavGroup[] = [
                 title: 'Bookings',
                 href: '/bookings',
                 icon: Ticket,
+                requiredPermissions: ['booking show', 'global access'],
+            },
+            {
+                title: 'Rebookings',
+                href: '/rebookings',
+                icon: RefreshCw,
                 requiredPermissions: ['booking show', 'global access'],
             },
         ],

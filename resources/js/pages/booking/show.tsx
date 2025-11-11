@@ -1,10 +1,12 @@
+// resources/js/pages/booking/show.tsx
+
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type Booking, type PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, CheckCircle, LogIn, LogOut, XCircle, Plus, Copy } from 'lucide-react';
+import { ArrowLeft, Edit, CheckCircle, LogIn, LogOut, XCircle, Plus, Copy, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
@@ -45,6 +47,9 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
         navigator.clipboard.writeText(booking.booking_code);
         toast.success('Booking code copied to clipboard!');
     };
+
+    // Check if booking can be rebooked
+    const canRebook = ['pending', 'confirmed'].includes(booking.status) && new Date(booking.check_in_date) > new Date();
 
     return (
         <div className="space-y-4">
@@ -88,6 +93,14 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                             <LogOut className="h-3.5 w-3.5 mr-1.5" />
                             Check Out
                         </Button>
+                    )}
+                    {canRebook && (
+                        <Link href={bookings.rebook.url({ booking: booking.id })}>
+                            <Button size="sm" variant="outline">
+                                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                                Rebook
+                            </Button>
+                        </Link>
                     )}
                     {!['cancelled', 'checked_out'].includes(booking.status) && (
                         <Button size="sm" variant="destructive" onClick={() => handleStatusChange('cancel')}>

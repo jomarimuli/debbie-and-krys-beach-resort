@@ -72,6 +72,11 @@ class Booking extends Model
         return $this->hasMany(Payment::class);
     }
 
+    public function rebookings(): HasMany
+    {
+        return $this->hasMany(Rebooking::class, 'original_booking_id');
+    }
+
     // Accessors
     protected function balance(): Attribute
     {
@@ -141,6 +146,12 @@ class Booking extends Model
     {
         return $query->whereIn('status', ['pending', 'confirmed'])
             ->where('check_in_date', '>=', now()->toDateString());
+    }
+
+    public function scopeCanBeRebooked($query)
+    {
+        return $query->whereIn('status', ['pending', 'confirmed'])
+            ->where('check_in_date', '>', now()->toDateString());
     }
 
     // Boot

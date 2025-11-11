@@ -10,6 +10,7 @@ use App\Http\Controllers\AccommodationController;
 use App\Http\Controllers\AccommodationRateController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\RefundController;
+use App\Http\Controllers\RebookingController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PaymentAccountController;
 use App\Http\Controllers\FeedbackController;
@@ -51,6 +52,19 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
         ->name('bookings.checkOut');
     Route::post('bookings/{booking}/cancel', [BookingController::class, 'cancel'])
         ->name('bookings.cancel');
+
+    // Rebookings
+    Route::get('bookings/{booking}/rebook', [RebookingController::class, 'create'])
+        ->name('bookings.rebook');
+    Route::resource('rebookings', RebookingController::class);
+    Route::post('rebookings/{rebooking}/approve', [RebookingController::class, 'approve'])
+        ->name('rebookings.approve');
+    Route::post('rebookings/{rebooking}/reject', [RebookingController::class, 'reject'])
+        ->name('rebookings.reject');
+    Route::post('rebookings/{rebooking}/complete', [RebookingController::class, 'complete'])
+        ->name('rebookings.complete');
+    Route::post('rebookings/{rebooking}/cancel', [RebookingController::class, 'cancel'])
+        ->name('rebookings.cancel');
 
     // Payments
     Route::resource('payments', PaymentController::class);
