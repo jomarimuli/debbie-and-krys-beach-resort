@@ -23,9 +23,16 @@ class FeedbackController extends Controller
 
     public function index(): Response
     {
-        $feedbacks = Feedback::with(['booking.accommodations.accommodation'])
-            ->latest()
-            ->paginate(10);
+        $query = Feedback::with(['booking.accommodations.accommodation']);
+
+        // Customers can only see their own feedback
+        if (auth()->user()->hasRole('customer')) {
+            $query->whereHas('booking', function ($q) {
+                $q->where('created_by', auth()->id());
+            });
+        }
+
+        $feedbacks = $query->latest()->paginate(10);
 
         return Inertia::render('feedback/index', [
             'feedbacks' => $feedbacks,
@@ -34,9 +41,14 @@ class FeedbackController extends Controller
 
     public function create(): Response
     {
-        $bookings = Booking::whereIn('status', ['checked_out'])
-            ->orderBy('booking_number', 'desc')
-            ->get();
+        $query = Booking::whereIn('status', ['checked_out']);
+
+        // Customers can only create feedback for their own bookings
+        if (auth()->user()->hasRole('customer')) {
+            $query->where('created_by', auth()->id());
+        }
+
+        $bookings = $query->orderBy('booking_number', 'desc')->get();
 
         return Inertia::render('feedback/create', [
             'bookings' => $bookings,
@@ -53,6 +65,11 @@ class FeedbackController extends Controller
 
     public function show(Feedback $feedback): Response
     {
+        // Customers can only view their own feedback
+        if (auth()->user()->hasRole('customer') && $feedback->booking->created_by !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $feedback->load(['booking.accommodations.accommodation']);
 
         return Inertia::render('feedback/show', [
@@ -62,9 +79,18 @@ class FeedbackController extends Controller
 
     public function edit(Feedback $feedback): Response
     {
-        $bookings = Booking::whereIn('status', ['checked_out'])
-            ->orderBy('booking_number', 'desc')
-            ->get();
+        // Customers can only edit their own feedback
+        if (auth()->user()->hasRole('customer') && $feedback->booking->created_by !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $query = Booking::whereIn('status', ['checked_out']);
+
+        if (auth()->user()->hasRole('customer')) {
+            $query->where('created_by', auth()->id());
+        }
+
+        $bookings = $query->orderBy('booking_number', 'desc')->get();
 
         return Inertia::render('feedback/edit', [
             'feedback' => $feedback,
@@ -74,6 +100,11 @@ class FeedbackController extends Controller
 
     public function update(UpdateFeedbackRequest $request, Feedback $feedback): RedirectResponse
     {
+        // Customers can only update their own feedback
+        if (auth()->user()->hasRole('customer') && $feedback->booking->created_by !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $feedback->update($request->validated());
 
         return redirect()->route('feedbacks.show', $feedback)
@@ -82,14 +113,24 @@ class FeedbackController extends Controller
 
     public function destroy(Feedback $feedback): RedirectResponse
     {
+        // Customers can only delete their own feedback
+        if (auth()->user()->hasRole('customer') && $feedback->booking->created_by !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $feedback->delete();
 
         return redirect()->route('feedbacks.index')
             ->with('success', 'Feedback deleted successfully.');
     }
 
+    // Customers cannot approve/reject feedback
     public function approve(Feedback $feedback): RedirectResponse
     {
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $feedback->update(['status' => 'approved']);
 
         return back()->with('success', 'Feedback approved successfully.');
@@ -97,6 +138,10 @@ class FeedbackController extends Controller
 
     public function reject(Feedback $feedback): RedirectResponse
     {
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $feedback->update(['status' => 'rejected']);
 
         return back()->with('success', 'Feedback rejected successfully.');

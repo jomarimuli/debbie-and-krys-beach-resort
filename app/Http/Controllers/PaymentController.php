@@ -29,9 +29,16 @@ class PaymentController extends Controller
 
     public function index(): Response
     {
-        $payments = Payment::with(['booking'])
-            ->latest('payment_date')
-            ->paginate(10);
+        $query = Payment::with(['booking', 'rebooking']);
+
+        // Customers can only see payments for their own bookings
+        if (auth()->user()->hasRole('customer')) {
+            $query->whereHas('booking', function ($q) {
+                $q->where('created_by', auth()->id());
+            });
+        }
+
+        $payments = $query->latest('payment_date')->paginate(10);
 
         return Inertia::render('payment/index', [
             'payments' => $payments,
@@ -40,6 +47,11 @@ class PaymentController extends Controller
 
     public function create(): Response
     {
+        // Customers cannot create payments (admin/staff only)
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $bookings = Booking::whereIn('status', ['pending', 'confirmed'])
             ->whereColumn('paid_amount', '<', 'total_amount')
             ->orderBy('booking_number')
@@ -78,6 +90,12 @@ class PaymentController extends Controller
 
             DB::commit();
 
+            // Redirect based on whether it's a rebooking payment or regular payment
+            if ($payment->rebooking_id) {
+                return redirect()->route('rebookings.show', $payment->rebooking_id)
+                    ->with('success', 'Rebooking payment recorded successfully.');
+            }
+
             return redirect()->route('bookings.show', $payment->booking)
                 ->with('success', 'Payment recorded successfully.');
         } catch (\Exception $e) {
@@ -88,7 +106,12 @@ class PaymentController extends Controller
 
     public function show(Payment $payment): Response
     {
-        $payment->load(['booking', 'paymentAccount', 'receivedByUser', 'refunds']);
+        // Check if customer is trying to view someone else's payment
+        if (auth()->user()->hasRole('customer') && $payment->booking->created_by !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $payment->load(['booking', 'rebooking', 'paymentAccount', 'receivedByUser', 'refunds']);
 
         return Inertia::render('payment/show', [
             'payment' => $payment,
@@ -97,6 +120,8 @@ class PaymentController extends Controller
 
     public function edit(Payment $payment): Response
     {
+        $payment->load(['rebooking']);
+
         $paymentAccounts = PaymentAccount::active()
             ->ordered()
             ->get();
@@ -136,6 +161,12 @@ class PaymentController extends Controller
 
             DB::commit();
 
+            // Redirect based on whether it's a rebooking payment or regular payment
+            if ($payment->rebooking_id) {
+                return redirect()->route('rebookings.show', $payment->rebooking_id)
+                    ->with('success', 'Rebooking payment updated successfully.');
+            }
+
             return redirect()->route('bookings.show', $payment->booking)
                 ->with('success', 'Payment updated successfully.');
         } catch (\Exception $e) {
@@ -149,6 +180,7 @@ class PaymentController extends Controller
         DB::beginTransaction();
         try {
             $booking = $payment->booking;
+            $rebookingId = $payment->rebooking_id;
 
             if ($payment->reference_image) {
                 $this->deleteImageFromPrivate($payment->reference_image);
@@ -160,6 +192,12 @@ class PaymentController extends Controller
             // booking->updatePaidAmount() is called automatically
 
             DB::commit();
+
+            // Redirect based on whether it's a rebooking payment or regular payment
+            if ($rebookingId) {
+                return redirect()->route('rebookings.show', $rebookingId)
+                    ->with('success', 'Rebooking payment deleted successfully.');
+            }
 
             return redirect()->route('bookings.show', $booking)
                 ->with('success', 'Payment deleted successfully.');

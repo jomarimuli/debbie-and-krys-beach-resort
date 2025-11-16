@@ -75,6 +75,11 @@ class AccommodationController extends Controller
 
     public function edit(Accommodation $accommodation): Response
     {
+        // Customers cannot edit accommodations
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         return Inertia::render('accommodation/edit', [
             'accommodation' => $accommodation,
         ]);
@@ -82,6 +87,11 @@ class AccommodationController extends Controller
 
     public function update(UpdateAccommodationRequest $request, Accommodation $accommodation): RedirectResponse
     {
+        // Customers cannot update accommodations
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         DB::beginTransaction();
         try {
             $data = $request->validated();

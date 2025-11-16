@@ -68,6 +68,16 @@ class Rebooking extends Model
         return $this->hasMany(RebookingEntranceFee::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class);
+    }
+
     public function processedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'processed_by');

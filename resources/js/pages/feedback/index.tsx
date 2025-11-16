@@ -21,7 +21,10 @@ import {
 import { format } from 'date-fns';
 import feedbacks from '@/routes/feedbacks';
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Index({ feedbacks: feedbackData }: FeedbackIndexProps) {
+    const { can, user, isAdmin, isStaff } = useAuth();
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
@@ -67,6 +70,21 @@ export default function Index({ feedbacks: feedbackData }: FeedbackIndexProps) {
         );
     };
 
+    // Permission check helper for feedback ownership
+    const canEditFeedback = (feedback: Feedback) => {
+        if (!can('feedback edit')) return false;
+        if (isAdmin() || isStaff()) return true;
+        // Check if customer owns the feedback's booking
+        return feedback.booking?.created_by === user?.id;
+    };
+
+    const canDeleteFeedback = (feedback: Feedback) => {
+        if (!can('feedback delete')) return false;
+        if (isAdmin() || isStaff()) return true;
+        // Check if customer owns the feedback's booking
+        return feedback.booking?.created_by === user?.id;
+    };
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -74,12 +92,15 @@ export default function Index({ feedbacks: feedbackData }: FeedbackIndexProps) {
                     <h1 className="text-xl font-semibold">Feedbacks</h1>
                     <p className="text-sm text-muted-foreground">Manage guest reviews and ratings</p>
                 </div>
-                <Link href={feedbacks.create.url()}>
-                    <Button size="sm">
-                        <Plus className="mr-1.5 h-3.5 w-3.5" />
-                        Add Feedback
-                    </Button>
-                </Link>
+                {/* Everyone can create feedback */}
+                {can('feedback create') && (
+                    <Link href={feedbacks.create.url()}>
+                        <Button size="sm">
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                            Add Feedback
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <Card>
@@ -141,7 +162,8 @@ export default function Index({ feedbacks: feedbackData }: FeedbackIndexProps) {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
-                                            {feedback.status === 'pending' && (
+                                            {/* Only admin/staff can approve/reject */}
+                                            {feedback.status === 'pending' && (isAdmin() || isStaff()) && can('feedback approve') && (
                                                 <>
                                                     <Button
                                                         variant="ghost"
@@ -161,24 +183,36 @@ export default function Index({ feedbacks: feedbackData }: FeedbackIndexProps) {
                                                     </Button>
                                                 </>
                                             )}
-                                            <Link href={feedbacks.show.url({ feedback: feedback.id })}>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Eye className="h-3.5 w-3.5" />
+
+                                            {/* Everyone can view their own feedback */}
+                                            {can('feedback show') && (
+                                                <Link href={feedbacks.show.url({ feedback: feedback.id })}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Eye className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </Link>
+                                            )}
+
+                                            {/* Check edit permission with ownership */}
+                                            {canEditFeedback(feedback) && (
+                                                <Link href={feedbacks.edit.url({ feedback: feedback.id })}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Edit className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </Link>
+                                            )}
+
+                                            {/* Check delete permission with ownership */}
+                                            {canDeleteFeedback(feedback) && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                    onClick={() => setDeleteId(feedback.id)}
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
                                                 </Button>
-                                            </Link>
-                                            <Link href={feedbacks.edit.url({ feedback: feedback.id })}>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Edit className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </Link>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={() => setDeleteId(feedback.id)}
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                            </Button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>

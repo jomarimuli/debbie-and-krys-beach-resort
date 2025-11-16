@@ -19,7 +19,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import galleries from '@/routes/galleries';
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Index({ galleries: galleryData }: GalleryIndexProps) {
+    const { can, isAdmin, isStaff } = useAuth();
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
@@ -37,12 +40,15 @@ export default function Index({ galleries: galleryData }: GalleryIndexProps) {
                     <h1 className="text-xl font-semibold">Gallery</h1>
                     <p className="text-sm text-muted-foreground">Manage resort images</p>
                 </div>
-                <Link href={galleries.create.url()}>
-                    <Button size="sm">
-                        <Plus className="mr-1.5 h-3.5 w-3.5" />
-                        Add Image
-                    </Button>
-                </Link>
+                {/* Only admin/staff can create */}
+                {(isAdmin() || isStaff()) && can('gallery create') && (
+                    <Link href={galleries.create.url()}>
+                        <Button size="sm">
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                            Add Image
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             {galleryData.data.length === 0 ? (
@@ -63,24 +69,35 @@ export default function Index({ galleries: galleryData }: GalleryIndexProps) {
                                     className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
-                                    <Link href={galleries.show.url({ gallery: gallery.id })}>
-                                        <Button variant="secondary" size="icon" className="h-8 w-8">
-                                            <Eye className="h-4 w-4" />
+                                    {/* Everyone can view */}
+                                    {can('gallery show') && (
+                                        <Link href={galleries.show.url({ gallery: gallery.id })}>
+                                            <Button variant="secondary" size="icon" className="h-8 w-8">
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+                                        </Link>
+                                    )}
+
+                                    {/* Only admin/staff can edit */}
+                                    {(isAdmin() || isStaff()) && can('gallery edit') && (
+                                        <Link href={galleries.edit.url({ gallery: gallery.id })}>
+                                            <Button variant="secondary" size="icon" className="h-8 w-8">
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                        </Link>
+                                    )}
+
+                                    {/* Only admin/staff can delete */}
+                                    {(isAdmin() || isStaff()) && can('gallery delete') && (
+                                        <Button
+                                            variant="destructive"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={() => setDeleteId(gallery.id)}
+                                        >
+                                            <Trash2 className="h-4 w-4" />
                                         </Button>
-                                    </Link>
-                                    <Link href={galleries.edit.url({ gallery: gallery.id })}>
-                                        <Button variant="secondary" size="icon" className="h-8 w-8">
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
-                                    </Link>
-                                    <Button
-                                        variant="destructive"
-                                        size="icon"
-                                        className="h-8 w-8"
-                                        onClick={() => setDeleteId(gallery.id)}
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    )}
                                 </div>
                                 {!gallery.is_active && (
                                     <Badge variant="secondary" className="absolute top-2 right-2 text-xs">

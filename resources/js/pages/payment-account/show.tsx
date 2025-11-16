@@ -13,7 +13,11 @@ const paymentTypeLabels: Record<PaymentAccount['type'], string> = {
     other: 'Other',
 };
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Show({ payment_account }: PageProps & { payment_account: PaymentAccount }) {
+    const { can, isAdmin, isStaff } = useAuth();
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -28,12 +32,15 @@ export default function Show({ payment_account }: PageProps & { payment_account:
                         <p className="text-sm text-muted-foreground">Payment account details</p>
                     </div>
                 </div>
-                <Link href={`/payment-accounts/${payment_account.id}/edit`}>
-                    <Button size="sm">
-                        <Edit className="mr-1.5 h-3.5 w-3.5" />
-                        Edit
-                    </Button>
-                </Link>
+                {/* Only admin/staff can edit */}
+                {(isAdmin() || isStaff()) && can('payment-account edit') && (
+                    <Link href={`/payment-accounts/${payment_account.id}/edit`}>
+                        <Button size="sm">
+                            <Edit className="mr-1.5 h-3.5 w-3.5" />
+                            Edit
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">

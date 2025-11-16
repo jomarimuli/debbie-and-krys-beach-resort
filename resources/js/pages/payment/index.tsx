@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type PaymentIndexProps, type Payment } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Plus, Banknote, Eye, Edit, Trash2, ImageIcon } from 'lucide-react';
+import { Plus, Banknote, Eye, Edit, Trash2, ImageIcon, RefreshCw } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -21,8 +21,12 @@ import {
 import { format } from 'date-fns';
 import payments from '@/routes/payments';
 import bookings from '@/routes/bookings';
+import rebookings from '@/routes/rebookings';
+
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Index({ payments: paymentData }: PaymentIndexProps) {
+    const { can, user, isAdmin, isStaff } = useAuth();
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
@@ -36,7 +40,6 @@ export default function Index({ payments: paymentData }: PaymentIndexProps) {
     const getPaymentMethodBadge = (method: string) => {
         const colors: Record<string, string> = {
             cash: 'bg-green-100 text-green-800',
-            card: 'bg-blue-100 text-blue-800',
             bank: 'bg-purple-100 text-purple-800',
             gcash: 'bg-teal-100 text-teal-800',
             maya: 'bg-orange-100 text-orange-800',
@@ -57,12 +60,15 @@ export default function Index({ payments: paymentData }: PaymentIndexProps) {
                     <h1 className="text-xl font-semibold">Payments</h1>
                     <p className="text-sm text-muted-foreground">Manage booking payments</p>
                 </div>
-                <Link href={payments.create.url()}>
-                    <Button size="sm">
-                        <Plus className="mr-1.5 h-3.5 w-3.5" />
-                        Record Payment
-                    </Button>
-                </Link>
+                {/* Only admin/staff can create */}
+                {(isAdmin() || isStaff()) && can('payment create') && (
+                    <Link href={payments.create.url()}>
+                        <Button size="sm">
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                            Record Payment
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <Card>
@@ -97,20 +103,35 @@ export default function Index({ payments: paymentData }: PaymentIndexProps) {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Link
-                                            href={bookings.show.url({ booking: payment.booking_id })}
-                                            className="text-primary hover:underline text-sm"
-                                        >
-                                            {payment.booking?.booking_number}
-                                        </Link>
+                                        {payment.rebooking_id ? (
+                                            <Link
+                                                href={rebookings.show.url({ rebooking: payment.rebooking_id })}
+                                                className="text-primary hover:underline text-sm flex items-center gap-1"
+                                            >
+                                                <RefreshCw className="h-3 w-3" />
+                                                {payment.rebooking?.rebooking_number}
+                                            </Link>
+                                        ) : (
+                                            <Link
+                                                href={bookings.show.url({ booking: payment.booking_id })}
+                                                className="text-primary hover:underline text-sm"
+                                            >
+                                                {payment.booking?.booking_number}
+                                            </Link>
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-sm">{payment.booking?.guest_name}</TableCell>
                                     <TableCell className="font-medium text-sm">
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex items-center gap-1.5 flex-wrap">
                                             <span>₱{parseFloat(payment.amount).toLocaleString()}</span>
                                             {payment.is_down_payment && (
                                                 <Badge variant="outline" className="bg-blue-100 text-blue-800 text-xs">
                                                     DP
+                                                </Badge>
+                                            )}
+                                            {payment.is_rebooking_payment && (
+                                                <Badge variant="outline" className="bg-purple-100 text-purple-800 text-xs">
+                                                    Rebooking
                                                 </Badge>
                                             )}
                                         </div>

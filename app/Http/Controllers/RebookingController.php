@@ -16,6 +16,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Log;
 
 class RebookingController extends Controller
 {
@@ -28,13 +29,20 @@ class RebookingController extends Controller
 
     public function index(): Response
     {
-        $rebookings = Rebooking::with([
+        $query = Rebooking::with([
             'originalBooking',
             'processedByUser',
             'accommodations.accommodation',
-        ])
-            ->latest()
-            ->paginate(10);
+        ]);
+
+        // Customers can only see rebookings for their own bookings
+        if (auth()->user()->hasRole('customer')) {
+            $query->whereHas('originalBooking', function ($q) {
+                $q->where('created_by', auth()->id());
+            });
+        }
+
+        $rebookings = $query->latest()->paginate(10);
 
         return Inertia::render('rebooking/index', [
             'rebookings' => $rebookings,
@@ -43,6 +51,11 @@ class RebookingController extends Controller
 
     public function create(Booking $booking): Response
     {
+        // Check if customer is trying to rebook someone else's booking
+        if (auth()->user()->hasRole('customer') && $booking->created_by !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         // Load booking relationships
         $booking->load([
             'accommodations.accommodation',
@@ -64,6 +77,14 @@ class RebookingController extends Controller
         try {
             $originalBooking = Booking::with(['accommodations', 'entranceFees'])->findOrFail($request->original_booking_id);
 
+            // Calculate number of nights for overnight bookings
+            $numberOfNights = 1;
+            if ($originalBooking->booking_type === 'overnight' && $request->new_check_out_date) {
+                $checkIn = \Carbon\Carbon::parse($request->new_check_in_date);
+                $checkOut = \Carbon\Carbon::parse($request->new_check_out_date);
+                $numberOfNights = max(1, $checkOut->diffInDays($checkIn));
+            }
+
             // Calculate new booking totals
             $accommodationTotal = 0;
             $entranceFeeTotal = 0;
@@ -71,16 +92,29 @@ class RebookingController extends Controller
 
             $accommodationsData = [];
 
-            foreach ($request->accommodations as $item) {
+            foreach ($request->accommodations as $index => $item) {
                 $accommodation = Accommodation::findOrFail($item['accommodation_id']);
                 $rate = AccommodationRate::findOrFail($item['accommodation_rate_id']);
 
-                $subtotal = $rate->rate;
+                // Calculate base rate (multiply by nights for overnight)
+                $baseRate = $rate->rate;
+                if ($originalBooking->booking_type === 'overnight') {
+                    $baseRate = $rate->rate * $numberOfNights;
+                }
+
+                $subtotal = $baseRate;
                 $additionalPaxCharge = 0;
 
                 if ($accommodation->min_capacity && $item['guests'] > $accommodation->min_capacity) {
                     $additionalGuests = $item['guests'] - $accommodation->min_capacity;
-                    $additionalPaxCharge = $additionalGuests * ($rate->additional_pax_rate ?? 0);
+                    $additionalPaxRate = $rate->additional_pax_rate ?? 0;
+
+                    // Multiply additional pax rate by nights for overnight
+                    if ($originalBooking->booking_type === 'overnight') {
+                        $additionalPaxRate = $additionalPaxRate * $numberOfNights;
+                    }
+
+                    $additionalPaxCharge = $additionalGuests * $additionalPaxRate;
                     $subtotal += $additionalPaxCharge;
                 }
 
@@ -105,7 +139,7 @@ class RebookingController extends Controller
                 }
             }
 
-            // Calculate entrance fees
+            // Calculate entrance fees (not multiplied by nights)
             $adultsNeedingEntrance = max(0, $request->new_total_adults - $totalFreeEntrances);
             $childrenNeedingEntrance = $request->new_total_children;
 
@@ -178,12 +212,18 @@ class RebookingController extends Controller
                 ->with('success', 'Rebooking request created successfully. Rebooking number: ' . $rebooking->rebooking_number);
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->with('error', $e->getMessage());
         }
     }
 
     public function show(Rebooking $rebooking): Response
     {
+        // Check if customer is trying to view someone else's rebooking
+        if (auth()->user()->hasRole('customer') && $rebooking->originalBooking->created_by !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $rebooking->load([
             'originalBooking.accommodations.accommodation',
             'originalBooking.accommodations.accommodationRate',
@@ -192,6 +232,8 @@ class RebookingController extends Controller
             'accommodations.accommodationRate',
             'entranceFees',
             'processedByUser',
+            'payments',
+            'refunds',
         ]);
 
         return Inertia::render('rebooking/show', [
@@ -201,6 +243,11 @@ class RebookingController extends Controller
 
     public function edit(Rebooking $rebooking): Response|RedirectResponse
     {
+        // Check if customer is trying to edit someone else's rebooking
+        if (auth()->user()->hasRole('customer') && $rebooking->originalBooking->created_by !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         if ($rebooking->status !== 'pending') {
             return redirect()->route('rebookings.show', $rebooking)
                 ->with('error', 'Only pending rebookings can be edited.');
@@ -323,15 +370,20 @@ class RebookingController extends Controller
         }
     }
 
+    // Customers should not be able to approve/reject/complete rebookings
     public function approve(ApproveRebookingRequest $request, Rebooking $rebooking): RedirectResponse
     {
+        // Only admin/staff can approve
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         if ($rebooking->status !== 'pending') {
             return back()->with('error', 'Only pending rebookings can be approved.');
         }
 
         DB::beginTransaction();
         try {
-            // Update rebooking fee and total adjustment
             $totalAdjustment = $rebooking->amount_difference + $request->rebooking_fee;
 
             $rebooking->update([
@@ -378,6 +430,11 @@ class RebookingController extends Controller
 
     public function complete(Rebooking $rebooking): RedirectResponse
     {
+        // Only admin/staff can complete
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         if ($rebooking->status !== 'approved') {
             return back()->with('error', 'Only approved rebookings can be completed.');
         }

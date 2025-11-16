@@ -6,14 +6,30 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Booking, type PageProps } from '@/types';
 import { format } from 'date-fns';
 import bookings from '@/routes/bookings';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Edit({ booking }: PageProps & { booking: Booking }) {
+    const { isCustomer } = useAuth();
+
+    // Calculate min check-in date based on role
+    const minCheckInDate = useMemo(() => {
+        const today = new Date();
+        if (isCustomer()) {
+            // Customer: minimum is tomorrow
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            return format(tomorrow, 'yyyy-MM-dd');
+        }
+        // Admin/Staff: minimum is today
+        return format(today, 'yyyy-MM-dd');
+    }, [isCustomer]);
+
     const { data, setData, put, processing, errors } = useForm({
         guest_name: booking.guest_name,
         guest_email: booking.guest_email || '',
@@ -28,6 +44,16 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
         notes: booking.notes || '',
         status: booking.status,
     });
+
+    // Calculate min check-out date based on check-in date
+    const minCheckOutDate = useMemo(() => {
+        if (data.check_in_date) {
+            const checkIn = new Date(data.check_in_date);
+            checkIn.setDate(checkIn.getDate() + 1);
+            return format(checkIn, 'yyyy-MM-dd');
+        }
+        return minCheckInDate;
+    }, [data.check_in_date, minCheckInDate]);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -101,12 +127,18 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="check_in_date" className="text-sm cursor-text select-text">Check-in Date</Label>
+                                <Label htmlFor="check_in_date" className="text-sm cursor-text select-text">
+                                    Check-in Date
+                                    {isCustomer() && (
+                                        <span className="text-xs text-muted-foreground ml-1">(Tomorrow onwards)</span>
+                                    )}
+                                </Label>
                                 <Input
                                     id="check_in_date"
                                     type="date"
                                     value={data.check_in_date}
                                     onChange={(e) => setData('check_in_date', e.target.value)}
+                                    min={minCheckInDate}
                                     className="h-9"
                                 />
                                 {errors.check_in_date && <p className="text-xs text-destructive">{errors.check_in_date}</p>}
@@ -114,13 +146,17 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
 
                             {booking.booking_type === 'overnight' && (
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="check_out_date" className="text-sm cursor-text select-text">Check-out Date</Label>
+                                    <Label htmlFor="check_out_date" className="text-sm cursor-text select-text">
+                                        Check-out Date <span className="text-destructive">*</span>
+                                    </Label>
                                     <Input
                                         id="check_out_date"
                                         type="date"
                                         value={data.check_out_date}
                                         onChange={(e) => setData('check_out_date', e.target.value)}
+                                        min={minCheckOutDate}
                                         className="h-9"
+                                        required
                                     />
                                     {errors.check_out_date && <p className="text-xs text-destructive">{errors.check_out_date}</p>}
                                 </div>
@@ -170,8 +206,8 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
                             </div>
                         </div>
 
-                        <div className="space-y-4">
-                            <div className="flex items-center space-x-2">
+                        <div className="grid gap-4 md:grid-cols-2 items-start pt-4">
+                            <div className="flex items-center space-x-2 pt-2">
                                 <input
                                     type="checkbox"
                                     id="down_payment_required"
@@ -227,6 +263,7 @@ export default function Edit({ booking }: PageProps & { booking: Booking }) {
                                 onChange={(e) => setData('notes', e.target.value)}
                                 rows={2}
                                 className="resize-none"
+                                placeholder="Requests or remarks..."
                             />
                             {errors.notes && <p className="text-xs text-destructive">{errors.notes}</p>}
                         </div>

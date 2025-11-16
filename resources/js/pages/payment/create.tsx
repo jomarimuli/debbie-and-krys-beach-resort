@@ -19,7 +19,6 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
     const { data, setData, post, processing, errors } = useForm({
         booking_id: '',
         amount: '',
-        payment_method: 'cash' as 'cash' | 'card' | 'bank' | 'gcash' | 'maya' | 'other',
         is_down_payment: false,
         payment_account_id: '',
         reference_number: '',
@@ -29,11 +28,6 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
     });
 
     const selectedBooking = bookings.find((b) => b.id === parseInt(data.booking_id));
-
-    // Filter payment accounts by selected payment method
-    const filteredAccounts = payment_accounts.filter(
-        (account) => account.type === data.payment_method && account.is_active
-    );
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -182,51 +176,28 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="payment_method" className="text-sm cursor-text select-text">Payment Method</Label>
+                                <Label htmlFor="payment_account_id" className="text-sm cursor-text select-text">
+                                    Payment Account (Optional)
+                                </Label>
                                 <Select
-                                    value={data.payment_method}
-                                    onValueChange={(value: any) => {
-                                        setData('payment_method', value);
-                                        setData('payment_account_id', ''); // Reset account when method changes
-                                    }}
+                                    value={data.payment_account_id || 'none'}
+                                    onValueChange={(value) => setData('payment_account_id', value === 'none' ? '' : value)}
                                 >
                                     <SelectTrigger className="h-9">
-                                        <SelectValue />
+                                        <SelectValue placeholder="Select account or cash" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="cash">Cash</SelectItem>
-                                        <SelectItem value="card">Card</SelectItem>
-                                        <SelectItem value="bank">Bank</SelectItem>
-                                        <SelectItem value="gcash">GCash</SelectItem>
-                                        <SelectItem value="maya">Maya</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
+                                        <SelectItem value="none">Cash (No Account)</SelectItem>
+                                        {payment_accounts.map((account) => (
+                                            <SelectItem key={account.id} value={account.id.toString()}>
+                                                {account.account_name} ({account.type.toUpperCase()})
+                                                {account.account_number && ` - ${account.account_number}`}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
-                                {errors.payment_method && <p className="text-xs text-destructive">{errors.payment_method}</p>}
+                                {errors.payment_account_id && <p className="text-xs text-destructive">{errors.payment_account_id}</p>}
                             </div>
-
-                            {/* Payment Account Selection */}
-                            {filteredAccounts.length > 0 && (
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="payment_account_id" className="text-sm cursor-text select-text">
-                                        Payment Account (Optional)
-                                    </Label>
-                                    <Select value={data.payment_account_id} onValueChange={(value) => setData('payment_account_id', value)}>
-                                        <SelectTrigger className="h-9">
-                                            <SelectValue placeholder="Select account" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="">None</SelectItem>
-                                            {filteredAccounts.map((account) => (
-                                                <SelectItem key={account.id} value={account.id.toString()}>
-                                                    {account.account_name} {account.account_number && `- ${account.account_number}`}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    {errors.payment_account_id && <p className="text-xs text-destructive">{errors.payment_account_id}</p>}
-                                </div>
-                            )}
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="reference_number" className="text-sm cursor-text select-text">Reference Number</Label>

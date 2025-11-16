@@ -135,7 +135,6 @@ export default function Edit({ refund, payment_accounts }: PageProps & { refund:
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="cash">Cash</SelectItem>
-                                        <SelectItem value="card">Card</SelectItem>
                                         <SelectItem value="bank">Bank</SelectItem>
                                         <SelectItem value="gcash">GCash</SelectItem>
                                         <SelectItem value="maya">Maya</SelectItem>
@@ -151,12 +150,15 @@ export default function Edit({ refund, payment_accounts }: PageProps & { refund:
                                     <Label htmlFor="refund_account_id" className="text-sm cursor-text select-text">
                                         Refund Account (Optional)
                                     </Label>
-                                    <Select value={data.refund_account_id} onValueChange={(value) => setData('refund_account_id', value)}>
+                                    <Select
+                                        value={data.refund_account_id || 'none'}
+                                        onValueChange={(value) => setData('refund_account_id', value === 'none' ? '' : value)}
+                                    >
                                         <SelectTrigger className="h-9">
                                             <SelectValue placeholder="Select account" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="">None</SelectItem>
+                                            <SelectItem value="none">None</SelectItem>
                                             {filteredAccounts.map((account) => (
                                                 <SelectItem key={account.id} value={account.id.toString()}>
                                                     {account.account_name} {account.account_number && `- ${account.account_number}`}

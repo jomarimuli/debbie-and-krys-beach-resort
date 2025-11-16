@@ -12,7 +12,6 @@ export * from './payment-account';
 export * from './feedback';
 export * from './gallery';
 export * from './announcement';
-export * from './rebooking';
 
 // Common types
 export interface BreadcrumbItem {

@@ -8,7 +8,11 @@ import { ArrowLeft, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import announcements from '@/routes/announcements';
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Show({ announcement }: PageProps & { announcement: Announcement }) {
+    const { can, isAdmin, isStaff } = useAuth();
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -23,12 +27,15 @@ export default function Show({ announcement }: PageProps & { announcement: Annou
                         <p className="text-sm text-muted-foreground">Announcement details</p>
                     </div>
                 </div>
-                <Link href={announcements.edit.url({ announcement: announcement.id })}>
-                    <Button size="sm" variant="outline">
-                        <Edit className="h-3.5 w-3.5 mr-1.5" />
-                        Edit
-                    </Button>
-                </Link>
+                {/* Only admin/staff can edit */}
+                {(isAdmin() || isStaff()) && can('announcement edit') && (
+                    <Link href={announcements.edit.url({ announcement: announcement.id })}>
+                        <Button size="sm" variant="outline">
+                            <Edit className="h-3.5 w-3.5 mr-1.5" />
+                            Edit
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">

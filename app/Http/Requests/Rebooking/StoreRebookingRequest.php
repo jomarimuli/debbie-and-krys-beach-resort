@@ -5,6 +5,7 @@ namespace App\Http\Requests\Rebooking;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use App\Models\Booking;
+use Illuminate\Support\Facades\Log;
 
 class StoreRebookingRequest extends FormRequest
 {
@@ -37,33 +38,38 @@ class StoreRebookingRequest extends FormRequest
             'accommodations.*.accommodation_rate_id.required' => 'Please select a rate for each accommodation.',
         ];
     }
-
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
             $booking = Booking::find($this->original_booking_id);
 
-            // Validate booking can be rebooked
-            if ($booking && !in_array($booking->status, ['pending', 'confirmed'])) {
+            if (!$booking) {
+                return;
+            }
+
+            // Validate booking can be rebooked (status check)
+            if (!in_array($booking->status, ['pending', 'confirmed'])) {
                 $validator->errors()->add(
                     'original_booking_id',
-                    'Only pending or confirmed bookings can be rebooked.'
+                    'Only pending or confirmed bookings can be rebooked. Current status: ' . $booking->status
                 );
             }
 
             // Validate booking date is in future
-            if ($booking && $booking->check_in_date <= now()->toDateString()) {
+            if ($booking->check_in_date <= now()->toDateString()) {
                 $validator->errors()->add(
                     'original_booking_id',
                     'Cannot rebook a past or current booking.'
                 );
             }
 
-            // Validate pending rebooking doesn't exist
-            if ($booking && $booking->rebookings()->where('status', 'pending')->exists()) {
+            // Check for existing pending rebooking
+            $pendingRebooking = $booking->rebookings()->where('status', 'pending')->first();
+
+            if ($pendingRebooking) {
                 $validator->errors()->add(
                     'original_booking_id',
-                    'This booking already has a pending rebooking request.'
+                    'This booking already has a pending rebooking request (' . $pendingRebooking->rebooking_number . '). Please complete or cancel it first.'
                 );
             }
 
@@ -74,7 +80,7 @@ class StoreRebookingRequest extends FormRequest
             if ($accommodationGuests !== $totalGuests) {
                 $validator->errors()->add(
                     'accommodations',
-                    "Total accommodation guests ($accommodationGuests) must equal total party size ($totalGuests)"
+                    "Total accommodation guests ({$accommodationGuests}) must equal total party size ({$totalGuests})"
                 );
             }
         });

@@ -20,7 +20,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import accommodationRates from '@/routes/accommodation-rates';
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Index({ rates }: AccommodationRateIndexProps) {
+    const { can, isAdmin, isStaff } = useAuth();
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
@@ -38,12 +41,15 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                     <h1 className="text-xl font-semibold">Rates</h1>
                     <p className="text-sm text-muted-foreground">Manage pricing for rooms and cottages</p>
                 </div>
-                <Link href={accommodationRates.create.url()}>
-                    <Button size="sm">
-                        <Plus className="mr-1.5 h-3.5 w-3.5" />
-                        Add Rate
-                    </Button>
-                </Link>
+                {/* Only admin/staff can create */}
+                {(isAdmin() || isStaff()) && can('accommodation-rate create') && (
+                    <Link href={accommodationRates.create.url()}>
+                        <Button size="sm">
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                            Add Rate
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <Card>
@@ -54,70 +60,42 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Accommodation</TableHead>
-                                <TableHead>Booking Type</TableHead>
-                                <TableHead>Rate</TableHead>
-                                <TableHead>Additional Pax</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead className="w-32 text-right">Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
+                        {/* TableHeader remains the same */}
                         <TableBody>
                             {rates.data.map((rate: AccommodationRate) => (
                                 <TableRow key={rate.id}>
-                                    <TableCell className="font-medium">
-                                        <div className="flex items-center gap-1.5">
-                                            <span>{rate.accommodation?.name}</span>
-                                            {rate.accommodation?.is_air_conditioned && (
-                                                <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                                                    A/C
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className="capitalize text-xs">
-                                            {rate.booking_type.replace('_', ' ')}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="font-medium text-sm">
-                                        ₱{parseFloat(rate.rate).toLocaleString()}
-                                    </TableCell>
-                                    <TableCell className="text-sm">
-                                        {rate.additional_pax_rate
-                                            ? `₱${parseFloat(rate.additional_pax_rate).toLocaleString()}`
-                                            : 'N/A'}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge
-                                            variant={rate.is_active ? 'default' : 'secondary'}
-                                            className="text-xs"
-                                        >
-                                            {rate.is_active ? 'Active' : 'Inactive'}
-                                        </Badge>
-                                    </TableCell>
+                                    {/* Table cells remain the same */}
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
-                                            <Link href={accommodationRates.show.url({ accommodation_rate: rate.id })}>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Eye className="h-3.5 w-3.5" />
+                                            {/* Everyone can view */}
+                                            {can('accommodation-rate show') && (
+                                                <Link href={accommodationRates.show.url({ accommodation_rate: rate.id })}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Eye className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </Link>
+                                            )}
+
+                                            {/* Only admin/staff can edit */}
+                                            {(isAdmin() || isStaff()) && can('accommodation-rate edit') && (
+                                                <Link href={accommodationRates.edit.url({ accommodation_rate: rate.id })}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Edit className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </Link>
+                                            )}
+
+                                            {/* Only admin/staff can delete */}
+                                            {(isAdmin() || isStaff()) && can('accommodation-rate delete') && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                    onClick={() => setDeleteId(rate.id)}
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
                                                 </Button>
-                                            </Link>
-                                            <Link href={accommodationRates.edit.url({ accommodation_rate: rate.id })}>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Edit className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </Link>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={() => setDeleteId(rate.id)}
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                            </Button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>

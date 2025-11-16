@@ -4,15 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type Payment, type PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, QrCode } from 'lucide-react';
+import { ArrowLeft, Edit, QrCode, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import payments from '@/routes/payments';
 import bookings from '@/routes/bookings';
+import rebookings from '@/routes/rebookings';
 
 const paymentMethodLabels: Record<string, string> = {
     cash: 'Cash',
-    card: 'Card',
     bank: 'Bank',
     gcash: 'GCash',
     maya: 'Maya',
@@ -21,14 +21,16 @@ const paymentMethodLabels: Record<string, string> = {
 
 const paymentMethodColors: Record<string, string> = {
     cash: 'bg-green-100 text-green-800',
-    card: 'bg-blue-100 text-blue-800',
     bank: 'bg-purple-100 text-purple-800',
     gcash: 'bg-teal-100 text-teal-800',
     maya: 'bg-orange-100 text-orange-800',
     other: 'bg-gray-100 text-gray-800',
 };
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Show({ payment }: PageProps & { payment: Payment }) {
+    const { can, isAdmin, isStaff } = useAuth();
     const [imageModalOpen, setImageModalOpen] = useState(false);
     const [qrModalOpen, setQrModalOpen] = useState(false);
 
@@ -46,13 +48,44 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                         <p className="text-sm text-muted-foreground">Payment details</p>
                     </div>
                 </div>
-                <Link href={payments.edit.url({ payment: payment.id })}>
-                    <Button size="sm">
-                        <Edit className="mr-1.5 h-3.5 w-3.5" />
-                        Edit
-                    </Button>
-                </Link>
+                {/* Only admin/staff can edit */}
+                {(isAdmin() || isStaff()) && can('payment edit') && (
+                    <Link href={payments.edit.url({ payment: payment.id })}>
+                        <Button size="sm">
+                            <Edit className="mr-1.5 h-3.5 w-3.5" />
+                            Edit
+                        </Button>
+                    </Link>
+                )}
             </div>
+
+            {payment.is_rebooking_payment && payment.rebooking && (
+                <Card className="border-purple-200 bg-purple-50/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium flex items-center gap-2">
+                            <RefreshCw className="h-4 w-4" />
+                            Rebooking Payment
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Rebooking Number:</span>
+                            <Link
+                                href={rebookings.show.url({ rebooking: payment.rebooking_id! })}
+                                className="font-medium text-primary hover:underline"
+                            >
+                                {payment.rebooking.rebooking_number}
+                            </Link>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Status:</span>
+                            <Badge variant="outline" className="text-xs capitalize">
+                                {payment.rebooking.status}
+                            </Badge>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {payment.reference_image_url && (
                 <Card>
@@ -87,11 +120,16 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Amount</p>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 <p className="text-xl font-bold">₱{parseFloat(payment.amount).toLocaleString()}</p>
                                 {payment.is_down_payment && (
                                     <Badge variant="outline" className="bg-blue-100 text-blue-800">
                                         Down Payment
+                                    </Badge>
+                                )}
+                                {payment.is_rebooking_payment && (
+                                    <Badge variant="outline" className="bg-purple-100 text-purple-800">
+                                        Rebooking
                                     </Badge>
                                 )}
                             </div>

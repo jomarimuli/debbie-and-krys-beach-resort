@@ -9,7 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useState } from 'react';
 import accommodations from '@/routes/accommodations';
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Show({ accommodation }: PageProps & { accommodation: Accommodation }) {
+    const { can, isAdmin, isStaff } = useAuth();
     const [selectedImage, setSelectedImage] = useState<string | null>(
         accommodation.image_urls?.[0] || null
     );
@@ -28,12 +31,15 @@ export default function Show({ accommodation }: PageProps & { accommodation: Acc
                         <p className="text-sm text-muted-foreground">Accommodation details</p>
                     </div>
                 </div>
-                <Link href={accommodations.edit.url({ accommodation: accommodation.id })}>
-                    <Button size="sm">
-                        <Edit className="mr-1.5 h-3.5 w-3.5" />
-                        Edit
-                    </Button>
-                </Link>
+                {/* Only admin/staff can edit */}
+                {(isAdmin() || isStaff()) && can('accommodation edit') && (
+                    <Link href={accommodations.edit.url({ accommodation: accommodation.id })}>
+                        <Button size="sm">
+                            <Edit className="mr-1.5 h-3.5 w-3.5" />
+                            Edit
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             {accommodation.image_urls && accommodation.image_urls.length > 0 && (

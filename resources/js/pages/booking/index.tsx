@@ -20,8 +20,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import bookings from '@/routes/bookings';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Index({ bookings: bookingData }: BookingIndexProps) {
+    const { can, user, isAdmin, isStaff } = useAuth();
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
@@ -48,6 +50,19 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
         );
     };
 
+    // Add permission check helper
+    const canEditBooking = (booking: Booking) => {
+        if (!can('booking edit')) return false;
+        if (isAdmin() || isStaff()) return true;
+        return booking.created_by === user?.id;
+    };
+
+    const canDeleteBooking = (booking: Booking) => {
+        if (!can('booking delete')) return false;
+        if (isAdmin() || isStaff()) return true;
+        return booking.created_by === user?.id;
+    };
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -55,12 +70,15 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                     <h1 className="text-xl font-semibold">Bookings</h1>
                     <p className="text-sm text-muted-foreground">Manage guest reservations</p>
                 </div>
-                <Link href={bookings.create.url()}>
-                    <Button size="sm">
-                        <Plus className="mr-1.5 h-3.5 w-3.5" />
-                        New Booking
-                    </Button>
-                </Link>
+                {/* Check create permission */}
+                {can('booking create') && (
+                    <Link href={bookings.create.url()}>
+                        <Button size="sm">
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                            New Booking
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <Card>
@@ -132,24 +150,35 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
-                                            <Link href={bookings.show.url({ booking: booking.id })}>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Eye className="h-3.5 w-3.5" />
+                                            {/* Always show view if user can view bookings */}
+                                            {can('booking show') && (
+                                                <Link href={bookings.show.url({ booking: booking.id })}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Eye className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </Link>
+                                            )}
+
+                                            {/* Check edit permission */}
+                                            {canEditBooking(booking) && (
+                                                <Link href={bookings.edit.url({ booking: booking.id })}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Edit className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </Link>
+                                            )}
+
+                                            {/* Check delete permission */}
+                                            {canDeleteBooking(booking) && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                    onClick={() => setDeleteId(booking.id)}
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
                                                 </Button>
-                                            </Link>
-                                            <Link href={bookings.edit.url({ booking: booking.id })}>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Edit className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </Link>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={() => setDeleteId(booking.id)}
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                            </Button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>

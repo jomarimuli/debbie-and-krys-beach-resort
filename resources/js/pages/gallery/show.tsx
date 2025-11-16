@@ -8,7 +8,11 @@ import { ArrowLeft, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import galleries from '@/routes/galleries';
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Show({ gallery }: PageProps & { gallery: Gallery }) {
+    const { can, isAdmin, isStaff } = useAuth();
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -23,13 +27,17 @@ export default function Show({ gallery }: PageProps & { gallery: Gallery }) {
                         <p className="text-sm text-muted-foreground">Gallery image details</p>
                     </div>
                 </div>
-                <Link href={galleries.edit.url({ gallery: gallery.id })}>
-                    <Button size="sm" variant="outline">
-                        <Edit className="h-3.5 w-3.5 mr-1.5" />
-                        Edit
-                    </Button>
-                </Link>
+                {/* Only admin/staff can edit */}
+                {(isAdmin() || isStaff()) && can('gallery edit') && (
+                    <Link href={galleries.edit.url({ gallery: gallery.id })}>
+                        <Button size="sm" variant="outline">
+                            <Edit className="h-3.5 w-3.5 mr-1.5" />
+                            Edit
+                        </Button>
+                    </Link>
+                )}
             </div>
+
 
             <div className="grid gap-4 md:grid-cols-2">
                 {/* Image */}

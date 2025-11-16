@@ -40,7 +40,10 @@ const paymentTypeColors: Record<PaymentAccount['type'], string> = {
     other: 'bg-gray-100 text-gray-800',
 };
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Index({ payment_accounts }: PaymentAccountIndexProps) {
+    const { can, isAdmin, isStaff } = useAuth();
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
@@ -58,12 +61,15 @@ export default function Index({ payment_accounts }: PaymentAccountIndexProps) {
                     <h1 className="text-xl font-semibold">Payment Accounts</h1>
                     <p className="text-sm text-muted-foreground">Manage payment account information</p>
                 </div>
-                <Link href="/payment-accounts/create">
-                    <Button size="sm">
-                        <Plus className="mr-1.5 h-3.5 w-3.5" />
-                        Add Account
-                    </Button>
-                </Link>
+                {/* Only admin/staff can create */}
+                {(isAdmin() || isStaff()) && can('payment-account create') && (
+                    <Link href="/payment-accounts/create">
+                        <Button size="sm">
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                            Add Account
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <Card>

@@ -15,7 +15,8 @@ class UpdateRefundRequest extends FormRequest
     {
         return [
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'refund_method' => ['required', 'in:cash,card,bank,gcash,maya,original_method,other'],
+            'refund_method' => ['required', 'in:cash,bank,gcash,maya,original_method,other'],
+            'is_rebooking_refund' => ['boolean'],
             'refund_account_id' => ['nullable', 'exists:payment_accounts,id'],
             'reference_number' => ['nullable', 'string', 'max:255'],
             'reference_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
@@ -45,13 +46,6 @@ class UpdateRefundRequest extends FormRequest
 
             if ($newRemaining < 0) {
                 $validator->errors()->add('amount', 'Refund amount exceeds available payment amount.');
-            }
-
-            if ($this->refund_account_id && $this->refund_method) {
-                $refundAccount = \App\Models\PaymentAccount::find($this->refund_account_id);
-                if ($refundAccount && $refundAccount->type !== $this->refund_method) {
-                    $validator->errors()->add('refund_account_id', 'Selected refund account does not match refund method.');
-                }
             }
         });
     }

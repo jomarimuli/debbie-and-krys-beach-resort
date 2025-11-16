@@ -12,10 +12,11 @@ class Payment extends Model
 
     protected $fillable = [
         'booking_id',
+        'rebooking_id',
         'payment_number',
         'amount',
-        'payment_method',
         'is_down_payment',
+        'is_rebooking_payment',
         'payment_account_id',
         'reference_number',
         'reference_image',
@@ -27,12 +28,20 @@ class Payment extends Model
     protected $casts = [
         'amount' => 'decimal:2',
         'is_down_payment' => 'boolean',
+        'is_rebooking_payment' => 'boolean',
         'payment_date' => 'datetime',
     ];
+
+    protected $appends = ['payment_method'];
 
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);
+    }
+
+    public function rebooking(): BelongsTo
+    {
+        return $this->belongsTo(Rebooking::class);
     }
 
     public function paymentAccount(): BelongsTo
@@ -48,6 +57,11 @@ class Payment extends Model
     public function receivedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by');
+    }
+
+    public function getPaymentMethodAttribute(): ?string
+    {
+        return $this->paymentAccount?->type ?? 'cash';
     }
 
     public function getReferenceImageUrlAttribute(): ?string

@@ -12,8 +12,11 @@ import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import bookings from '@/routes/bookings';
 import payments from '@/routes/payments';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Show({ booking }: PageProps & { booking: Booking }) {
+    const { can, user, isAdmin, isStaff } = useAuth();
+
     const getStatusBadge = (status: string) => {
         const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
             pending: 'outline',
@@ -49,7 +52,47 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
     };
 
     // Check if booking can be rebooked
-    const canRebook = ['pending', 'confirmed'].includes(booking.status) && new Date(booking.check_in_date) > new Date();
+    const canRebook = ['pending', 'confirmed'].includes(booking.status) &&
+        new Date(booking.check_in_date) > new Date();
+
+    // Check if there's already a pending/approved rebooking
+    const existingRebooking = booking.rebookings?.find(
+        (rb: any) => ['pending', 'approved'].includes(rb.status)
+    );
+
+    const handleRebook = () => {
+        // Client-side validation before navigating
+        if (!['pending', 'confirmed'].includes(booking.status)) {
+            toast.error(`Only pending or confirmed bookings can be rebooked. Current status: ${booking.status}`);
+            return;
+        }
+
+        if (new Date(booking.check_in_date) <= new Date()) {
+            toast.error('Cannot rebook a past or current booking.');
+            return;
+        }
+
+        if (existingRebooking) {
+            toast.error(
+                `This booking already has a ${existingRebooking.status} rebooking request (${existingRebooking.rebooking_number}). Please complete or cancel it first.`,
+                { duration: 5000 }
+            );
+            return;
+        }
+
+        // Navigate to create rebooking page
+        router.visit(bookings.rebook.url({ booking: booking.id }));
+    };
+
+    // Add permission check helpers
+    const isOwner = user?.id === booking.created_by;
+    const canEdit = (isAdmin() || isStaff() || isOwner) && can('booking edit');
+    const canConfirm = (isAdmin() || isStaff()) && can('booking confirm');
+    const canCheckIn = (isAdmin() || isStaff()) && can('booking checkin');
+    const canCheckOut = (isAdmin() || isStaff()) && can('booking checkout');
+    const canCancel = (isAdmin() || isStaff() || isOwner) && can('booking cancel');
+    const canRecordPayment = (isAdmin() || isStaff()) && can('payment create');
+    const canCreateRebooking = (isAdmin() || isStaff() || isOwner) && can('booking edit');
 
     return (
         <div className="space-y-4">
@@ -76,44 +119,62 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    {booking.status === 'pending' && (
+                    {/* Add permission checks for status buttons */}
+                    {booking.status === 'pending' && canConfirm && (
                         <Button size="sm" onClick={() => handleStatusChange('confirm')}>
                             <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
                             Confirm
                         </Button>
                     )}
-                    {booking.status === 'confirmed' && (
+                    {booking.status === 'confirmed' && canCheckIn && (
                         <Button size="sm" onClick={() => handleStatusChange('checkIn')}>
                             <LogIn className="h-3.5 w-3.5 mr-1.5" />
                             Check In
                         </Button>
                     )}
-                    {booking.status === 'checked_in' && (
+                    {booking.status === 'checked_in' && canCheckOut && (
                         <Button size="sm" onClick={() => handleStatusChange('checkOut')}>
                             <LogOut className="h-3.5 w-3.5 mr-1.5" />
                             Check Out
                         </Button>
                     )}
-                    {canRebook && (
-                        <Link href={bookings.rebook.url({ booking: booking.id })}>
-                            <Button size="sm" variant="outline">
-                                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-                                Rebook
-                            </Button>
-                        </Link>
+
+                    {/* Add permission check for rebook */}
+                    {canRebook && !existingRebooking && canCreateRebooking && (
+                        <Button size="sm" variant="outline" onClick={handleRebook}>
+                            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                            Rebook
+                        </Button>
                     )}
-                    {!['cancelled', 'checked_out'].includes(booking.status) && (
+
+                    {canRebook && existingRebooking && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            disabled
+                            className="cursor-not-allowed"
+                        >
+                            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                            Rebooking {existingRebooking.status}
+                        </Button>
+                    )}
+
+                    {!['cancelled', 'checked_out'].includes(booking.status) && canCancel && (
                         <Button size="sm" variant="destructive" onClick={() => handleStatusChange('cancel')}>
                             <XCircle className="h-3.5 w-3.5 mr-1.5" />
                             Cancel
                         </Button>
                     )}
-                    <Link href={bookings.edit.url({ booking: booking.id })}>
-                        <Button size="sm" variant="outline">
-                            <Edit className="h-3.5 w-3.5 mr-1.5" />
-                            Edit
-                        </Button>
-                    </Link>
+
+                    {/* Add permission check for edit */}
+                    {canEdit && (
+                        <Link href={bookings.edit.url({ booking: booking.id })}>
+                            <Button size="sm" variant="outline">
+                                <Edit className="h-3.5 w-3.5 mr-1.5" />
+                                Edit
+                            </Button>
+                        </Link>
+                    )}
                 </div>
             </div>
 
@@ -223,7 +284,7 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                 <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-base font-medium">Payment Summary</CardTitle>
-                        {parseFloat(booking.balance) > 0 && (
+                        {parseFloat(booking.balance) > 0 && canRecordPayment && (
                             <Link href={`${payments.create.url()}?booking_id=${booking.id}`}>
                                 <Button size="sm" variant="outline">
                                     <Plus className="h-3.5 w-3.5 mr-1.5" />

@@ -16,9 +16,10 @@ class StorePaymentRequest extends FormRequest
     {
         return [
             'booking_id' => ['required', 'exists:bookings,id'],
+            'rebooking_id' => ['nullable', 'exists:rebookings,id'],
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'payment_method' => ['required', 'in:cash,card,bank,gcash,maya,other'],
             'is_down_payment' => ['boolean'],
+            'is_rebooking_payment' => ['boolean'],
             'payment_account_id' => ['nullable', 'exists:payment_accounts,id'],
             'reference_number' => ['nullable', 'string', 'max:255'],
             'reference_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
@@ -45,6 +46,12 @@ class StorePaymentRequest extends FormRequest
                 $booking = \App\Models\Booking::find($this->booking_id);
 
                 if ($booking) {
+                    // Skip booking balance validation if this is a rebooking payment
+                    if ($this->is_rebooking_payment) {
+                        // Rebooking payment validation would be handled by rebooking logic
+                        return;
+                    }
+
                     // Check if this is a down payment
                     if ($this->is_down_payment) {
                         // Validate down payment
@@ -62,11 +69,9 @@ class StorePaymentRequest extends FormRequest
                 }
             }
 
-            if ($this->payment_account_id && $this->payment_method) {
-                $paymentAccount = \App\Models\PaymentAccount::find($this->payment_account_id);
-                if ($paymentAccount && $paymentAccount->type !== $this->payment_method) {
-                    $validator->errors()->add('payment_account_id', 'Selected payment account does not match payment method.');
-                }
+            // Validate rebooking_id is provided when is_rebooking_payment is true
+            if ($this->is_rebooking_payment && !$this->rebooking_id) {
+                $validator->errors()->add('rebooking_id', 'Rebooking ID is required for rebooking payments.');
             }
         });
     }

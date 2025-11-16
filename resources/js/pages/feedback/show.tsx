@@ -10,7 +10,11 @@ import { router } from '@inertiajs/react';
 import feedbacks from '@/routes/feedbacks';
 import bookings from '@/routes/bookings';
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Show({ feedback }: PageProps & { feedback: Feedback }) {
+    const { can, user, isAdmin, isStaff } = useAuth();
+
     const handleApprove = () => {
         router.post(feedbacks.approve.url({ feedback: feedback.id }));
     };
@@ -46,6 +50,10 @@ export default function Show({ feedback }: PageProps & { feedback: Feedback }) {
         );
     };
 
+    // Permission check helper for feedback ownership
+    const isOwner = feedback.booking?.created_by === user?.id;
+    const canEdit = (isAdmin() || isStaff() || isOwner) && can('feedback edit');
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -61,7 +69,8 @@ export default function Show({ feedback }: PageProps & { feedback: Feedback }) {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    {feedback.status === 'pending' && (
+                    {/* Only admin/staff can approve/reject */}
+                    {feedback.status === 'pending' && (isAdmin() || isStaff()) && can('feedback approve') && (
                         <>
                             <Button size="sm" onClick={handleApprove}>
                                 <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
@@ -73,12 +82,16 @@ export default function Show({ feedback }: PageProps & { feedback: Feedback }) {
                             </Button>
                         </>
                     )}
-                    <Link href={feedbacks.edit.url({ feedback: feedback.id })}>
-                        <Button size="sm" variant="outline">
-                            <Edit className="h-3.5 w-3.5 mr-1.5" />
-                            Edit
-                        </Button>
-                    </Link>
+
+                    {/* Check edit permission with ownership */}
+                    {canEdit && (
+                        <Link href={feedbacks.edit.url({ feedback: feedback.id })}>
+                            <Button size="sm" variant="outline">
+                                <Edit className="h-3.5 w-3.5 mr-1.5" />
+                                Edit
+                            </Button>
+                        </Link>
+                    )}
                 </div>
             </div>
 

@@ -8,7 +8,11 @@ import { ArrowLeft, Edit } from 'lucide-react';
 import { format } from 'date-fns';
 import accommodationRates from '@/routes/accommodation-rates';
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Show({ rate }: PageProps & { rate: AccommodationRate }) {
+    const { can, isAdmin, isStaff } = useAuth();
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -25,12 +29,15 @@ export default function Show({ rate }: PageProps & { rate: AccommodationRate }) 
                         </p>
                     </div>
                 </div>
-                <Link href={accommodationRates.edit.url({ accommodation_rate: rate.id })}>
-                    <Button size="sm">
-                        <Edit className="mr-1.5 h-3.5 w-3.5" />
-                        Edit
-                    </Button>
-                </Link>
+                {/* Only admin/staff can edit */}
+                {(isAdmin() || isStaff()) && can('accommodation-rate edit') && (
+                    <Link href={accommodationRates.edit.url({ accommodation_rate: rate.id })}>
+                        <Button size="sm">
+                            <Edit className="mr-1.5 h-3.5 w-3.5" />
+                            Edit
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">

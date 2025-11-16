@@ -1,19 +1,18 @@
-// resources/js/pages/refund/show.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type Refund, type PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, QrCode } from 'lucide-react';
+import { ArrowLeft, Edit, QrCode, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
 import refunds from '@/routes/refunds';
 import payments from '@/routes/payments';
+import rebookings from '@/routes/rebookings';
 
 const refundMethodLabels: Record<string, string> = {
     cash: 'Cash',
-    card: 'Card',
     bank: 'Bank',
     gcash: 'GCash',
     maya: 'Maya',
@@ -23,7 +22,6 @@ const refundMethodLabels: Record<string, string> = {
 
 const refundMethodColors: Record<string, string> = {
     cash: 'bg-green-100 text-green-800',
-    card: 'bg-blue-100 text-blue-800',
     bank: 'bg-purple-100 text-purple-800',
     gcash: 'bg-teal-100 text-teal-800',
     maya: 'bg-orange-100 text-orange-800',
@@ -31,7 +29,10 @@ const refundMethodColors: Record<string, string> = {
     other: 'bg-gray-100 text-gray-800',
 };
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Show({ refund }: PageProps & { refund: Refund }) {
+    const { can, isAdmin, isStaff } = useAuth();
     const [imageModalOpen, setImageModalOpen] = useState(false);
     const [qrModalOpen, setQrModalOpen] = useState(false);
 
@@ -49,13 +50,50 @@ export default function Show({ refund }: PageProps & { refund: Refund }) {
                         <p className="text-sm text-muted-foreground">Refund details</p>
                     </div>
                 </div>
-                <Link href={refunds.edit.url({ refund: refund.id })}>
-                    <Button size="sm">
-                        <Edit className="mr-1.5 h-3.5 w-3.5" />
-                        Edit
-                    </Button>
-                </Link>
+                {/* Only admin/staff can edit */}
+                {(isAdmin() || isStaff()) && can('refund edit') && (
+                    <Link href={refunds.edit.url({ refund: refund.id })}>
+                        <Button size="sm">
+                            <Edit className="mr-1.5 h-3.5 w-3.5" />
+                            Edit
+                        </Button>
+                    </Link>
+                )}
             </div>
+
+            {refund.is_rebooking_refund && refund.rebooking && (
+                <Card className="border-purple-200 bg-purple-50/50">
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium flex items-center gap-2">
+                            <RefreshCw className="h-4 w-4" />
+                            Rebooking Refund
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Rebooking Number:</span>
+                            <Link
+                                href={rebookings.show.url({ rebooking: refund.rebooking_id! })}
+                                className="font-medium text-primary hover:underline"
+                            >
+                                {refund.rebooking.rebooking_number}
+                            </Link>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Status:</span>
+                            <Badge variant="outline" className="text-xs capitalize">
+                                {refund.rebooking.status}
+                            </Badge>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Amount Difference:</span>
+                            <span className="font-medium text-red-600">
+                                -₱{parseFloat(refund.rebooking.amount_difference).toLocaleString()}
+                            </span>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {refund.reference_image_url && (
                 <Card>
@@ -90,7 +128,14 @@ export default function Show({ refund }: PageProps & { refund: Refund }) {
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Amount</p>
-                            <p className="text-xl font-bold text-red-600">-₱{parseFloat(refund.amount).toLocaleString()}</p>
+                            <div className="flex items-center gap-2">
+                                <p className="text-xl font-bold text-red-600">-₱{parseFloat(refund.amount).toLocaleString()}</p>
+                                {refund.is_rebooking_refund && (
+                                    <Badge variant="outline" className="bg-purple-100 text-purple-800">
+                                        Rebooking
+                                    </Badge>
+                                )}
+                            </div>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Refund Method</p>

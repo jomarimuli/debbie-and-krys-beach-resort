@@ -83,6 +83,93 @@ export default function Create({
         return accommodation?.rates?.find(r => r.id.toString() === rateId);
     };
 
+    // Calculate rebooking totals
+    const calculateRebookingTotal = () => {
+        let accommodationTotal = 0;
+        let entranceFeeTotal = 0;
+        let totalFreeEntrances = 0;
+
+        // Calculate number of nights
+        let numberOfNights = 1;
+        if (booking.booking_type === 'overnight' && data.new_check_in_date && data.new_check_out_date) {
+            const checkIn = new Date(data.new_check_in_date);
+            const checkOut = new Date(data.new_check_out_date);
+            const diffTime = Math.abs(checkOut.getTime() - checkIn.getTime());
+            numberOfNights = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+        }
+
+        // Calculate accommodation costs
+        data.accommodations.forEach(item => {
+            const accommodation = getSelectedAccommodation(item.accommodation_id);
+            const rate = getSelectedRate(item.accommodation_id, item.accommodation_rate_id);
+
+            if (accommodation && rate && item.guests) {
+                // Base rate (multiplied by nights for overnight)
+                let baseRate = parseFloat(rate.rate);
+                if (booking.booking_type === 'overnight') {
+                    baseRate = baseRate * numberOfNights;
+                }
+
+                let subtotal = baseRate;
+
+                // Additional pax charges
+                if (accommodation.min_capacity && parseInt(item.guests) > accommodation.min_capacity) {
+                    const additionalGuests = parseInt(item.guests) - accommodation.min_capacity;
+                    let additionalPaxRate = rate.additional_pax_rate ? parseFloat(rate.additional_pax_rate) : 0;
+
+                    if (booking.booking_type === 'overnight') {
+                        additionalPaxRate = additionalPaxRate * numberOfNights;
+                    }
+
+                    subtotal += additionalGuests * additionalPaxRate;
+                }
+
+                accommodationTotal += subtotal;
+
+                // Count free entrances
+                if (rate.includes_free_entrance) {
+                    totalFreeEntrances += Math.min(parseInt(item.guests), accommodation.min_capacity || 0);
+                }
+            }
+        });
+
+        // Calculate entrance fees
+        const adultsNeedingEntrance = Math.max(0, parseInt(data.new_total_adults || '0') - totalFreeEntrances);
+        const childrenNeedingEntrance = parseInt(data.new_total_children || '0');
+
+        // Get first selected rate for entrance fees
+        const firstAccom = data.accommodations[0];
+        if (firstAccom?.accommodation_rate_id) {
+            const firstRate = getSelectedRate(firstAccom.accommodation_id, firstAccom.accommodation_rate_id);
+
+            if (firstRate) {
+                if (adultsNeedingEntrance > 0 && firstRate.adult_entrance_fee) {
+                    entranceFeeTotal += adultsNeedingEntrance * parseFloat(firstRate.adult_entrance_fee);
+                }
+
+                if (childrenNeedingEntrance > 0 && firstRate.child_entrance_fee) {
+                    entranceFeeTotal += childrenNeedingEntrance * parseFloat(firstRate.child_entrance_fee);
+                }
+            }
+        }
+
+        const newAmount = accommodationTotal + entranceFeeTotal;
+        const originalAmount = parseFloat(booking.total_amount);
+        const amountDifference = newAmount - originalAmount;
+
+        return {
+            numberOfNights,
+            accommodationTotal,
+            entranceFeeTotal,
+            newAmount,
+            originalAmount,
+            amountDifference,
+            totalFreeEntrances,
+        };
+    };
+
+    const summary = calculateRebookingTotal();
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(rebookings.store.url());
@@ -371,6 +458,56 @@ export default function Create({
                         {errors.reason && <p className="text-xs text-destructive">{errors.reason}</p>}
                     </CardContent>
                 </Card>
+
+                {data.accommodations.some(a => a.accommodation_id && a.accommodation_rate_id) && (
+                    <Card className="border-purple-200 bg-purple-50/50">
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-base font-medium">Rebooking Summary</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            {booking.booking_type === 'overnight' && data.new_check_in_date && data.new_check_out_date && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Number of Nights</span>
+                                    <span className="font-medium">{summary.numberOfNights} {summary.numberOfNights === 1 ? 'night' : 'nights'}</span>
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p className="text-xs text-muted-foreground mb-1">Original Amount</p>
+                                    <p className="font-medium">₱{summary.originalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground mb-1">New Amount</p>
+                                    <p className="font-medium">₱{summary.newAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-between text-sm border-t pt-2">
+                                <span className="font-semibold">Amount Difference</span>
+                                <span className={`font-semibold text-lg ${summary.amountDifference >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {summary.amountDifference >= 0 ? '+' : ''}₱{Math.abs(summary.amountDifference).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                            </div>
+
+                            {summary.amountDifference > 0 && (
+                                <p className="text-xs text-green-700 bg-green-100 p-2 rounded">
+                                    ✓ Guest needs to pay additional amount
+                                </p>
+                            )}
+                            {summary.amountDifference < 0 && (
+                                <p className="text-xs text-red-700 bg-red-100 p-2 rounded">
+                                    ✓ Guest will receive a refund
+                                </p>
+                            )}
+                            {summary.amountDifference === 0 && (
+                                <p className="text-xs text-blue-700 bg-blue-100 p-2 rounded">
+                                    ✓ No payment or refund needed
+                                </p>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
 
                 <div className="flex gap-2">
                     <Button type="submit" disabled={processing} size="sm">

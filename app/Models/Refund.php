@@ -11,9 +11,11 @@ class Refund extends Model
 
     protected $fillable = [
         'payment_id',
+        'rebooking_id',
         'refund_number',
         'amount',
         'refund_method',
+        'is_rebooking_refund',
         'refund_account_id',
         'reference_number',
         'reference_image',
@@ -25,12 +27,18 @@ class Refund extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'is_rebooking_refund' => 'boolean',
         'refund_date' => 'datetime',
     ];
 
     public function payment(): BelongsTo
     {
         return $this->belongsTo(Payment::class);
+    }
+
+    public function rebooking(): BelongsTo
+    {
+        return $this->belongsTo(Rebooking::class);
     }
 
     public function refundAccount(): BelongsTo

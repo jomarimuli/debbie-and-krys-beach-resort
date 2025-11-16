@@ -21,7 +21,10 @@ import {
 import { format } from 'date-fns';
 import announcements from '@/routes/announcements';
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Index({ announcements: announcementData }: AnnouncementIndexProps) {
+    const { can, isAdmin, isStaff } = useAuth();
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
@@ -39,12 +42,15 @@ export default function Index({ announcements: announcementData }: AnnouncementI
                     <h1 className="text-xl font-semibold">Announcements</h1>
                     <p className="text-sm text-muted-foreground">Manage resort announcements</p>
                 </div>
-                <Link href={announcements.create.url()}>
-                    <Button size="sm">
-                        <Plus className="mr-1.5 h-3.5 w-3.5" />
-                        New Announcement
-                    </Button>
-                </Link>
+                {/* Only admin/staff can create */}
+                {(isAdmin() || isStaff()) && can('announcement create') && (
+                    <Link href={announcements.create.url()}>
+                        <Button size="sm">
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                            New Announcement
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <Card>

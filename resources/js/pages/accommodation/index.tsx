@@ -27,7 +27,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import * as accommodations from '@/routes/accommodations';
 
+import { useAuth } from '@/hooks/use-auth';
+
 export default function Index({ accommodations: accommodationData }: AccommodationIndexProps) {
+    const { can, isAdmin, isStaff } = useAuth();
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
@@ -45,12 +48,15 @@ export default function Index({ accommodations: accommodationData }: Accommodati
                     <h1 className="text-xl font-semibold">Accommodations</h1>
                     <p className="text-sm text-muted-foreground">Manage rooms and cottages</p>
                 </div>
-                <Link href={accommodations.create.url()}>
-                    <Button size="sm">
-                        <Plus className="mr-1.5 h-3.5 w-3.5" />
-                        Add
-                    </Button>
-                </Link>
+                {/* Only admin/staff can create */}
+                {(isAdmin() || isStaff()) && can('accommodation create') && (
+                    <Link href={accommodations.create.url()}>
+                        <Button size="sm">
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                            Add
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <Card>
@@ -125,24 +131,35 @@ export default function Index({ accommodations: accommodationData }: Accommodati
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
-                                            <Link href={accommodations.show.url({ accommodation: accommodation.id })}>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Eye className="h-3.5 w-3.5" />
+                                            {/* Everyone can view */}
+                                            {can('accommodation show') && (
+                                                <Link href={accommodations.show.url({ accommodation: accommodation.id })}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Eye className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </Link>
+                                            )}
+
+                                            {/* Only admin/staff can edit */}
+                                            {(isAdmin() || isStaff()) && can('accommodation edit') && (
+                                                <Link href={accommodations.edit.url({ accommodation: accommodation.id })}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Edit className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </Link>
+                                            )}
+
+                                            {/* Only admin/staff can delete */}
+                                            {(isAdmin() || isStaff()) && can('accommodation delete') && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                    onClick={() => setDeleteId(accommodation.id)}
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
                                                 </Button>
-                                            </Link>
-                                            <Link href={accommodations.edit.url({ accommodation: accommodation.id })}>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Edit className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </Link>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={() => setDeleteId(accommodation.id)}
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                            </Button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>

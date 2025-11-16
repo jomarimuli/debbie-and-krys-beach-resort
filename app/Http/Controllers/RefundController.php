@@ -29,9 +29,16 @@ class RefundController extends Controller
 
     public function index(): Response
     {
-        $refunds = Refund::with(['payment.booking'])
-            ->latest('refund_date')
-            ->paginate(10);
+        $query = Refund::with(['payment.booking', 'rebooking']);
+
+        // Customers can only see refunds for their own bookings
+        if (auth()->user()->hasRole('customer')) {
+            $query->whereHas('payment.booking', function ($q) {
+                $q->where('created_by', auth()->id());
+            });
+        }
+
+        $refunds = $query->latest('refund_date')->paginate(10);
 
         return Inertia::render('refund/index', [
             'refunds' => $refunds,
@@ -40,6 +47,11 @@ class RefundController extends Controller
 
     public function create(): Response
     {
+        // Customers cannot create refunds (admin/staff only)
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $payments = Payment::with('booking')
             ->whereHas('booking', function ($query) {
                 $query->whereIn('status', ['confirmed', 'completed', 'cancelled']);
@@ -80,6 +92,12 @@ class RefundController extends Controller
 
             DB::commit();
 
+            // Redirect based on whether it's a rebooking refund or regular refund
+            if ($refund->rebooking_id) {
+                return redirect()->route('rebookings.show', $refund->rebooking_id)
+                    ->with('success', 'Rebooking refund processed successfully.');
+            }
+
             return redirect()->route('payments.show', $refund->payment)
                 ->with('success', 'Refund processed successfully.');
         } catch (\Exception $e) {
@@ -90,7 +108,12 @@ class RefundController extends Controller
 
     public function show(Refund $refund): Response
     {
-        $refund->load(['payment.booking', 'refundAccount', 'processedByUser']);
+        // Check if customer is trying to view someone else's refund
+        if (auth()->user()->hasRole('customer') && $refund->payment->booking->created_by !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $refund->load(['payment.booking', 'rebooking', 'refundAccount', 'processedByUser']);
 
         return Inertia::render('refund/show', [
             'refund' => $refund,
@@ -99,7 +122,7 @@ class RefundController extends Controller
 
     public function edit(Refund $refund): Response
     {
-        $refund->load('payment.booking');
+        $refund->load(['payment.booking', 'rebooking']);
 
         $paymentAccounts = PaymentAccount::active()
             ->ordered()
@@ -137,6 +160,12 @@ class RefundController extends Controller
 
             DB::commit();
 
+            // Redirect based on whether it's a rebooking refund or regular refund
+            if ($refund->rebooking_id) {
+                return redirect()->route('rebookings.show', $refund->rebooking_id)
+                    ->with('success', 'Rebooking refund updated successfully.');
+            }
+
             return redirect()->route('payments.show', $refund->payment)
                 ->with('success', 'Refund updated successfully.');
         } catch (\Exception $e) {
@@ -150,6 +179,7 @@ class RefundController extends Controller
         DB::beginTransaction();
         try {
             $payment = $refund->payment;
+            $rebookingId = $refund->rebooking_id;
 
             if ($refund->reference_image) {
                 $this->deleteImageFromPrivate($refund->reference_image);
@@ -158,6 +188,12 @@ class RefundController extends Controller
             $refund->delete();
 
             DB::commit();
+
+            // Redirect based on whether it's a rebooking refund or regular refund
+            if ($rebookingId) {
+                return redirect()->route('rebookings.show', $rebookingId)
+                    ->with('success', 'Rebooking refund deleted successfully.');
+            }
 
             return redirect()->route('payments.show', $payment)
                 ->with('success', 'Refund deleted successfully.');

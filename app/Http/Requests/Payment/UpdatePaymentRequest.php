@@ -16,8 +16,8 @@ class UpdatePaymentRequest extends FormRequest
     {
         return [
             'amount' => ['required', 'numeric', 'min:0.01'],
-            'payment_method' => ['required', 'in:cash,card,bank,gcash,maya,other'],
             'is_down_payment' => ['boolean'],
+            'is_rebooking_payment' => ['boolean'],
             'payment_account_id' => ['nullable', 'exists:payment_accounts,id'],
             'reference_number' => ['nullable', 'string', 'max:255'],
             'remove_reference_image' => ['boolean'],
@@ -43,6 +43,11 @@ class UpdatePaymentRequest extends FormRequest
             $payment = $this->route('payment');
             $booking = $payment->booking;
 
+            // Skip booking balance validation if this is a rebooking payment
+            if ($this->is_rebooking_payment || $payment->is_rebooking_payment) {
+                return;
+            }
+
             if ($this->is_down_payment) {
                 // Validate as down payment
                 if (!$booking->down_payment_required) {
@@ -66,13 +71,6 @@ class UpdatePaymentRequest extends FormRequest
 
                 if ($newBalance < 0) {
                     $validator->errors()->add('amount', 'Payment amount exceeds remaining balance.');
-                }
-            }
-
-            if ($this->payment_account_id && $this->payment_method) {
-                $paymentAccount = \App\Models\PaymentAccount::find($this->payment_account_id);
-                if ($paymentAccount && $paymentAccount->type !== $this->payment_method) {
-                    $validator->errors()->add('payment_account_id', 'Selected payment account does not match payment method.');
                 }
             }
         });

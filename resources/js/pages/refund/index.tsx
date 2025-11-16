@@ -1,11 +1,10 @@
-// resources/js/pages/refund/index.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type RefundIndexProps, type Refund } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Plus, ReceiptText, Eye, Edit, Trash2, ImageIcon } from 'lucide-react';
+import { Plus, ReceiptText, Eye, Edit, Trash2, ImageIcon, RefreshCw } from 'lucide-react';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -22,8 +21,12 @@ import {
 import { format } from 'date-fns';
 import refunds from '@/routes/refunds';
 import payments from '@/routes/payments';
+import rebookings from '@/routes/rebookings';
+
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Index({ refunds: refundData }: RefundIndexProps) {
+    const { can, isAdmin, isStaff } = useAuth();
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
@@ -37,7 +40,6 @@ export default function Index({ refunds: refundData }: RefundIndexProps) {
     const getRefundMethodBadge = (method: string) => {
         const colors: Record<string, string> = {
             cash: 'bg-green-100 text-green-800',
-            card: 'bg-blue-100 text-blue-800',
             bank: 'bg-purple-100 text-purple-800',
             gcash: 'bg-teal-100 text-teal-800',
             maya: 'bg-orange-100 text-orange-800',
@@ -59,12 +61,15 @@ export default function Index({ refunds: refundData }: RefundIndexProps) {
                     <h1 className="text-xl font-semibold">Refunds</h1>
                     <p className="text-sm text-muted-foreground">Manage payment refunds</p>
                 </div>
-                <Link href={refunds.create.url()}>
-                    <Button size="sm">
-                        <Plus className="mr-1.5 h-3.5 w-3.5" />
-                        Process Refund
-                    </Button>
-                </Link>
+                {/* Only admin/staff can create */}
+                {(isAdmin() || isStaff()) && can('refund create') && (
+                    <Link href={refunds.create.url()}>
+                        <Button size="sm">
+                            <Plus className="mr-1.5 h-3.5 w-3.5" />
+                            Process Refund
+                        </Button>
+                    </Link>
+                )}
             </div>
 
             <Card>
@@ -95,21 +100,49 @@ export default function Index({ refunds: refundData }: RefundIndexProps) {
                                             {refund.reference_image && (
                                                 <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
                                             )}
+                                            {refund.is_rebooking_refund && (
+                                                <RefreshCw className="h-3.5 w-3.5 text-purple-600" />
+                                            )}
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Link
-                                            href={payments.show.url({ payment: refund.payment_id })}
-                                            className="text-primary hover:underline text-sm"
-                                        >
-                                            {refund.payment?.payment_number}
-                                        </Link>
+                                        {refund.rebooking_id ? (
+                                            <div className="space-y-1">
+                                                <Link
+                                                    href={payments.show.url({ payment: refund.payment_id })}
+                                                    className="text-primary hover:underline text-sm block"
+                                                >
+                                                    {refund.payment?.payment_number}
+                                                </Link>
+                                                <Link
+                                                    href={rebookings.show.url({ rebooking: refund.rebooking_id })}
+                                                    className="text-purple-600 hover:underline text-xs flex items-center gap-1"
+                                                >
+                                                    <RefreshCw className="h-3 w-3" />
+                                                    {refund.rebooking?.rebooking_number}
+                                                </Link>
+                                            </div>
+                                        ) : (
+                                            <Link
+                                                href={payments.show.url({ payment: refund.payment_id })}
+                                                className="text-primary hover:underline text-sm"
+                                            >
+                                                {refund.payment?.payment_number}
+                                            </Link>
+                                        )}
                                     </TableCell>
                                     <TableCell className="text-sm">
                                         {refund.payment?.booking?.guest_name}
                                     </TableCell>
-                                    <TableCell className="font-medium text-sm text-red-600">
-                                        -₱{parseFloat(refund.amount).toLocaleString()}
+                                    <TableCell className="font-medium text-sm">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-red-600">-₱{parseFloat(refund.amount).toLocaleString()}</span>
+                                            {refund.is_rebooking_refund && (
+                                                <Badge variant="outline" className="bg-purple-100 text-purple-800 text-xs">
+                                                    Rebooking
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </TableCell>
                                     <TableCell>
                                         {getRefundMethodBadge(refund.refund_method)}

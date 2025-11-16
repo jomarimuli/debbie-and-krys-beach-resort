@@ -37,11 +37,21 @@ class PaymentAccountController extends Controller
 
     public function create(): Response
     {
+        // Customers cannot create payment accounts (admin/staff only)
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         return Inertia::render('payment-account/create');
     }
 
     public function store(StorePaymentAccountRequest $request): RedirectResponse
     {
+        // Customers cannot create payment accounts (admin/staff only)
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         DB::beginTransaction();
         try {
             $data = $request->validated();
@@ -74,6 +84,11 @@ class PaymentAccountController extends Controller
 
     public function edit(PaymentAccount $paymentAccount): Response
     {
+        // Customers cannot edit payment accounts
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         return Inertia::render('payment-account/edit', [
             'payment_account' => $paymentAccount,
         ]);
@@ -81,6 +96,11 @@ class PaymentAccountController extends Controller
 
     public function update(UpdatePaymentAccountRequest $request, PaymentAccount $paymentAccount): RedirectResponse
     {
+        // Customers cannot update payment accounts
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         DB::beginTransaction();
         try {
             $data = $request->validated();
@@ -115,6 +135,11 @@ class PaymentAccountController extends Controller
 
     public function destroy(PaymentAccount $paymentAccount): RedirectResponse
     {
+        // Customers cannot delete payment accounts
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         DB::beginTransaction();
         try {
             if ($paymentAccount->qr_code) {

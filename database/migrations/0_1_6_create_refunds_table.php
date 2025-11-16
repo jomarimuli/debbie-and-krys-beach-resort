@@ -6,20 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('refunds', function (Blueprint $table) {
             $table->id();
             $table->foreignId('payment_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('rebooking_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('refund_number')->unique();
             $table->decimal('amount', 10, 2);
-            $table->enum('refund_method', ['cash', 'card', 'bank', 'gcash', 'maya', 'original_method', 'other']);
-
+            $table->enum('refund_method', ['cash', 'bank', 'gcash', 'maya', 'original_method', 'other']);
+            $table->boolean('is_rebooking_refund')->default(false);
             $table->foreignId('refund_account_id')->nullable()->constrained('payment_accounts')->nullOnDelete();
-
             $table->string('reference_number')->nullable();
             $table->string('reference_image')->nullable();
             $table->text('reason')->nullable();
@@ -29,13 +26,11 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index('payment_id', 'idx_refund_payment_id');
+            $table->index('rebooking_id', 'idx_refund_rebooking_id');
             $table->index('refund_account_id', 'idx_refund_account_id');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('refunds');
