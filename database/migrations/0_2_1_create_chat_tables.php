@@ -34,11 +34,13 @@ return new class extends Migration
         });
 
         Schema::create('chat_typing_indicators', function (Blueprint $table) {
-            $table->id();
             $table->foreignId('conversation_id')->constrained('chat_conversations')->cascadeOnDelete();
             $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
             $table->string('guest_session_id')->nullable();
             $table->timestamp('last_typed_at');
+
+            // composite primary key instead of id
+            $table->primary(['conversation_id', 'user_id', 'guest_session_id']);
         });
     }
 

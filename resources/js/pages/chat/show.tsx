@@ -2,17 +2,23 @@
 
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { type ChatShowProps, type ChatMessage } from '@/types';
+import { type ChatShowProps, type ChatMessage, type ChatStatus } from '@/types';
 import { Link, router } from '@inertiajs/react';
 import { ArrowLeft, Send, UserCheck, X, RefreshCw } from 'lucide-react';
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/use-auth';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { toast } from 'sonner';
+
+const statusVariants: Record<ChatStatus, 'default' | 'secondary' | 'outline'> = {
+    open: 'default',
+    assigned: 'secondary',
+    closed: 'outline',
+};
 
 export default function Show({ conversation }: ChatShowProps) {
     const { user, isAdmin, isStaff } = useAuth();
@@ -38,7 +44,6 @@ export default function Show({ conversation }: ChatShowProps) {
         setIsLoading(true);
 
         try {
-            // Make sure conversation.id exists
             if (!conversation?.id) {
                 throw new Error('Conversation ID is missing');
             }
@@ -48,28 +53,29 @@ export default function Show({ conversation }: ChatShowProps) {
             });
             setMessages([...messages, response.data.message]);
             toast.success('Message sent');
-        } catch (error: any) {
-            if (error.response) {
-                const status = error.response.status;
-                const message = error.response.data?.message || error.response.statusText;
+        } catch (error) {
+            const axiosError = error as AxiosError<{ message?: string; errors?: Record<string, string[]> }>;
+
+            if (axiosError.response) {
+                const { status, data } = axiosError.response;
+                const message = data?.message || axiosError.response.statusText;
 
                 if (status === 403) {
-                    toast.error('Access denied: ' + message);
+                    toast.error(`Access denied: ${message}`);
                 } else if (status === 404) {
                     toast.error('Conversation not found');
                 } else if (status === 422) {
-                    const errors = error.response.data?.errors;
-                    const firstError = errors ? Object.values(errors)[0] : message;
-                    toast.error('Validation error: ' + firstError);
+                    const firstError = data?.errors ? Object.values(data.errors)[0][0] : message;
+                    toast.error(`Validation error: ${firstError}`);
                 } else if (status === 500) {
-                    toast.error('Server error: ' + message);
+                    toast.error(`Server error: ${message}`);
                 } else {
-                    toast.error('Error: ' + message);
+                    toast.error(`Error: ${message}`);
                 }
-            } else if (error.request) {
+            } else if (axiosError.request) {
                 toast.error('Network error: No response from server');
             } else {
-                toast.error('Failed to send message: ' + error.message);
+                toast.error(`Failed to send message: ${axiosError.message}`);
             }
             setInput(messageText);
         } finally {
@@ -77,35 +83,20 @@ export default function Show({ conversation }: ChatShowProps) {
         }
     };
 
-    const handleAssign = () => {
+    const handleAction = (action: 'assign' | 'close' | 'reopen', successMessage: string) => {
         if (!conversation?.id) return;
-        router.post(`/chat/${conversation.id}/assign`, {}, {
-            onSuccess: () => toast.success('Conversation assigned to you'),
+        router.post(`/chat/${conversation.id}/${action}`, {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                router.reload({ only: ['conversation'] });
+            },
+            onError: (errors) => {
+                toast.error(Object.values(errors)[0] as string);
+            },
         });
     };
 
-    const handleClose = () => {
-        if (!conversation?.id) return;
-        router.post(`/chat/${conversation.id}/close`, {}, {
-            onSuccess: () => toast.success('Conversation closed'),
-        });
-    };
-
-    const handleReopen = () => {
-        if (!conversation?.id) return;
-        router.post(`/chat/${conversation.id}/reopen`, {}, {
-            onSuccess: () => toast.success('Conversation reopened'),
-        });
-    };
-
-    const getStatusBadge = (status: string) => {
-        const variants: Record<string, 'default' | 'secondary' | 'outline'> = {
-            open: 'default',
-            assigned: 'secondary',
-            closed: 'outline',
-        };
-        return <Badge variant={variants[status] || 'default'}>{status}</Badge>;
-    };
+    const canManageConversation = isAdmin() || isStaff();
 
     return (
         <div className="space-y-4">
@@ -121,7 +112,9 @@ export default function Show({ conversation }: ChatShowProps) {
                             <h1 className="text-xl font-semibold">
                                 {conversation.subject || 'Chat Conversation'}
                             </h1>
-                            {getStatusBadge(conversation.status)}
+                            <Badge variant={statusVariants[conversation.status as ChatStatus]}>
+                                {conversation.status}
+                            </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
                             {conversation.participant_name}
@@ -129,20 +122,32 @@ export default function Show({ conversation }: ChatShowProps) {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    {(isAdmin() || isStaff()) && conversation.status === 'open' && (
-                        <Button size="sm" variant="outline" onClick={handleAssign}>
+                    {canManageConversation && conversation.status === 'open' && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAction('assign', 'Conversation assigned to you')}
+                        >
                             <UserCheck className="h-3.5 w-3.5 mr-1.5" />
                             Assign to Me
                         </Button>
                     )}
-                    {(isAdmin() || isStaff()) && conversation.status !== 'closed' && (
-                        <Button size="sm" variant="outline" onClick={handleClose}>
+                    {canManageConversation && conversation.status !== 'closed' && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAction('close', 'Conversation closed')}
+                        >
                             <X className="h-3.5 w-3.5 mr-1.5" />
                             Close
                         </Button>
                     )}
                     {conversation.status === 'closed' && (
-                        <Button size="sm" variant="outline" onClick={handleReopen}>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleAction('reopen', 'Conversation reopened')}
+                        >
                             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
                             Reopen
                         </Button>

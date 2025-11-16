@@ -4,10 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\ChatConversation;
 use App\Models\ChatMessage;
-use Illuminate\Http\Request;
+use App\Http\Requests\Chat\StoreConversationRequest;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Log;
 
 class ChatConversationController extends Controller
 {
@@ -18,19 +17,12 @@ class ChatConversationController extends Controller
         }
 
         $user = auth()->user();
-
         $query = ChatConversation::with(['customer', 'staff', 'latestMessage'])
             ->withCount('messages');
 
-        if ($user) {
-            $isCustomer = $user->hasRole('customer');
-            if ($isCustomer) {
-                // Customers only see their own conversations
-                $query->forCustomer($user->id);
-            } else {
-                // Staff see all conversations (not just assigned to them)
-                // No filter needed - they see everything
-            }
+        // customer sees only their conversations
+        if ($user && $user->hasRole('customer')) {
+            $query->forCustomer($user->id);
         }
 
         $conversations = $query->latest('updated_at')->get();
@@ -40,68 +32,37 @@ class ChatConversationController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(StoreConversationRequest $request)
     {
-        // Check permissions for authenticated users
-        if (auth()->check() && !auth()->user()->can('chat access') && !auth()->user()->can('global access')) {
-            abort(403);
-        }
+        $validated = $request->validated();
 
-        // Different validation rules for authenticated vs guest users
-        if (auth()->check()) {
-            $validated = $request->validate([
-                'subject' => ['nullable', 'string', 'max:255'],
-                'message' => ['required', 'string', 'max:1000'],
-            ]);
-        } else {
-            $validated = $request->validate([
-                'subject' => ['nullable', 'string', 'max:255'],
-                'message' => ['required', 'string', 'max:1000'],
-                'guest_name' => ['required', 'string', 'max:255'],
-                'guest_email' => ['required', 'email', 'max:255'],
-            ]);
-        }
-
-        // Only set guest session for non-authenticated users
-        $guestSessionId = null;
-        if (!auth()->check()) {
-            $guestSessionId = session('guest_chat_session_id');
-            if (!$guestSessionId) {
-                $guestSessionId = Str::uuid()->toString();
-                session(['guest_chat_session_id' => $guestSessionId]);
-            }
-        }
-
-        // Create conversation with correct data based on auth status
+        // prepare conversation data
         $conversationData = [
             'subject' => $validated['subject'] ?? null,
             'status' => 'open',
         ];
 
         if (auth()->check()) {
-            // Authenticated user
             $conversationData['customer_id'] = auth()->id();
-            $conversationData['guest_session_id'] = null;
-            $conversationData['guest_name'] = null;
-            $conversationData['guest_email'] = null;
         } else {
-            // Guest user
-            $conversationData['customer_id'] = null;
-            $conversationData['guest_session_id'] = $guestSessionId;
-            $conversationData['guest_name'] = $validated['guest_name'];
-            $conversationData['guest_email'] = $validated['guest_email'];
+            $conversationData = array_merge($conversationData, [
+                'guest_session_id' => $this->getOrCreateGuestSession(),
+                'guest_name' => $validated['guest_name'],
+                'guest_email' => $validated['guest_email'],
+            ]);
         }
 
         $conversation = ChatConversation::create($conversationData);
 
+        // create initial message
         ChatMessage::create([
             'conversation_id' => $conversation->id,
-            'sender_id' => auth()->id(), // Will be null for guests
-            'sender_name' => auth()->check() ? null : $validated['guest_name'],
+            'sender_id' => auth()->id(),
+            'sender_name' => $validated['guest_name'] ?? null,
             'message' => $validated['message'],
         ]);
 
-        return redirect()->route('chat.show', $conversation->id)
+        return redirect()->route('chat.show', $conversation)
             ->with('success', 'Chat conversation started');
     }
 
@@ -113,19 +74,27 @@ class ChatConversationController extends Controller
             if (!$user->can('chat access') && !$user->can('global access')) {
                 abort(403);
             }
+
             if ($user->hasRole('customer') && $conversation->customer_id !== $user->id) {
+                abort(403);
+            }
+
+            // bulk mark as read
+            $conversation->messages()
+                ->where('sender_id', '!=', $user->id)
+                ->where('is_read', false)
+                ->update([
+                    'is_read' => true,
+                    'read_at' => now(),
+                ]);
+        } else {
+            // guest access check
+            if ($conversation->guest_session_id !== session('guest_chat_session_id')) {
                 abort(403);
             }
         }
 
         $conversation->load(['customer', 'staff', 'messages.sender']);
-
-        if ($user) {
-            $conversation->messages()
-                ->where('sender_id', '!=', $user->id)
-                ->where('is_read', false)
-                ->each(fn($message) => $message->markAsRead());
-        }
 
         return Inertia::render('chat/show', [
             'conversation' => $conversation,
@@ -169,7 +138,12 @@ class ChatConversationController extends Controller
             if (!$user->can('chat access') && !$user->can('global access')) {
                 abort(403);
             }
+
             if ($user->hasRole('customer') && $conversation->customer_id !== $user->id) {
+                abort(403);
+            }
+        } else {
+            if ($conversation->guest_session_id !== session('guest_chat_session_id')) {
                 abort(403);
             }
         }
@@ -180,5 +154,18 @@ class ChatConversationController extends Controller
         ]);
 
         return back()->with('success', 'Conversation reopened');
+    }
+
+    // helper for guest session management
+    private function getOrCreateGuestSession(): string
+    {
+        $sessionId = session('guest_chat_session_id');
+
+        if (!$sessionId) {
+            $sessionId = Str::uuid()->toString();
+            session(['guest_chat_session_id' => $sessionId]);
+        }
+
+        return $sessionId;
     }
 }

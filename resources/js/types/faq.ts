@@ -29,14 +29,16 @@ export interface FAQFormData {
     order: number;
 }
 
-export interface FAQIndexData {
-    faqs: {
-        data: FAQ[];
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-    };
+export interface PaginatedData<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+}
+
+export interface FAQIndexProps {
+    faqs: PaginatedData<FAQ>;
 }
 
 export interface FAQSearchResult {
@@ -44,17 +46,16 @@ export interface FAQSearchResult {
     search_id?: number;
 }
 
+export interface SearchQueryCount {
+    query: string;
+    count: number;
+}
+
 export interface FAQAnalytics {
     total_searches: number;
     helpful_count: number;
     not_helpful_count: number;
     no_match_count: number;
-    top_searches: {
-        query: string;
-        count: number;
-    }[];
-    unanswered_queries: {
-        query: string;
-        count: number;
-    }[];
+    top_searches: SearchQueryCount[];
+    unanswered_queries: SearchQueryCount[];
 }

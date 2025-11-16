@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ChatTypingIndicator extends Model
 {
     public $timestamps = false;
-    public $incrementing = false;
 
     protected $fillable = [
         'conversation_id',
         'user_id',
+        'guest_session_id',
         'last_typed_at',
     ];
 

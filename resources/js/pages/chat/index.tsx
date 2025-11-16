@@ -7,9 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { type ChatIndexProps, type ChatConversation } from '@/types';
+import { type ChatIndexProps, type ChatConversation, type ChatStatus } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
-import { MessageCircle, Plus, ArrowRight, User } from 'lucide-react';
+import { MessageCircle, Plus, ArrowRight } from 'lucide-react';
 import { useState, FormEventHandler } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/use-auth';
@@ -19,6 +19,12 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+
+const statusVariants: Record<ChatStatus, 'default' | 'secondary' | 'outline'> = {
+    open: 'default',
+    assigned: 'secondary',
+    closed: 'outline',
+};
 
 export default function Index({ conversations }: ChatIndexProps) {
     const { user } = useAuth();
@@ -41,13 +47,9 @@ export default function Index({ conversations }: ChatIndexProps) {
         });
     };
 
-    const getStatusBadge = (status: string) => {
-        const variants: Record<string, 'default' | 'secondary' | 'outline'> = {
-            open: 'default',
-            assigned: 'secondary',
-            closed: 'outline',
-        };
-        return <Badge variant={variants[status] || 'default'}>{status}</Badge>;
+    const handleCancel = () => {
+        setShowNewChat(false);
+        reset();
     };
 
     return (
@@ -72,33 +74,35 @@ export default function Index({ conversations }: ChatIndexProps) {
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                    {conversations.map((conversation: ChatConversation) => (
-                        <Link
-                            key={conversation.id}
-                            href={`/chat/${conversation.id}`}
-                            className="flex items-center justify-between p-3 border rounded hover:bg-muted/50 transition-colors"
-                        >
-                            <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                    <p className="font-medium text-sm">
-                                        {conversation.subject || 'Chat Conversation'}
+                    {conversations.length > 0 ? (
+                        conversations.map((conversation: ChatConversation) => (
+                            <Link
+                                key={conversation.id}
+                                href={`/chat/${conversation.id}`}
+                                className="flex items-center justify-between p-3 border rounded hover:bg-muted/50 transition-colors"
+                            >
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <p className="font-medium text-sm">
+                                            {conversation.subject || 'Chat Conversation'}
+                                        </p>
+                                        <Badge variant={statusVariants[conversation.status as ChatStatus]}>
+                                            {conversation.status}
+                                        </Badge>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground">
+                                        {conversation.participant_name} · {format(new Date(conversation.updated_at), 'MMM dd, yyyy HH:mm')}
                                     </p>
-                                    {getStatusBadge(conversation.status)}
+                                    {conversation.latest_message && (
+                                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+                                            {conversation.latest_message.message}
+                                        </p>
+                                    )}
                                 </div>
-                                <p className="text-xs text-muted-foreground">
-                                    {conversation.participant_name} · {format(new Date(conversation.updated_at), 'MMM dd, yyyy HH:mm')}
-                                </p>
-                                {conversation.latest_message && (
-                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                                        {conversation.latest_message.message}
-                                    </p>
-                                )}
-                            </div>
-                            <ArrowRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        </Link>
-                    ))}
-
-                    {conversations.length === 0 && (
+                                <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+                            </Link>
+                        ))
+                    ) : (
                         <div className="flex flex-col items-center justify-center py-12">
                             <MessageCircle className="h-10 w-10 text-muted-foreground mb-3" />
                             <h3 className="text-base font-medium mb-1">No conversations yet</h3>
@@ -117,9 +121,7 @@ export default function Index({ conversations }: ChatIndexProps) {
                         {!user && (
                             <>
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="guest_name" className="text-sm">
-                                        Your Name
-                                    </Label>
+                                    <Label htmlFor="guest_name">Your Name</Label>
                                     <Input
                                         id="guest_name"
                                         value={data.guest_name}
@@ -133,9 +135,7 @@ export default function Index({ conversations }: ChatIndexProps) {
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="guest_email" className="text-sm">
-                                        Your Email
-                                    </Label>
+                                    <Label htmlFor="guest_email">Your Email</Label>
                                     <Input
                                         id="guest_email"
                                         type="email"
@@ -152,9 +152,7 @@ export default function Index({ conversations }: ChatIndexProps) {
                         )}
 
                         <div className="space-y-1.5">
-                            <Label htmlFor="subject" className="text-sm">
-                                Subject (Optional)
-                            </Label>
+                            <Label htmlFor="subject">Subject (Optional)</Label>
                             <Input
                                 id="subject"
                                 value={data.subject}
@@ -168,9 +166,7 @@ export default function Index({ conversations }: ChatIndexProps) {
                         </div>
 
                         <div className="space-y-1.5">
-                            <Label htmlFor="message" className="text-sm">
-                                Message
-                            </Label>
+                            <Label htmlFor="message">Message</Label>
                             <Textarea
                                 id="message"
                                 value={data.message}
@@ -188,15 +184,7 @@ export default function Index({ conversations }: ChatIndexProps) {
                             <Button type="submit" disabled={processing} size="sm" className="flex-1">
                                 Start Chat
                             </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                    setShowNewChat(false);
-                                    reset();
-                                }}
-                            >
+                            <Button type="button" variant="outline" size="sm" onClick={handleCancel}>
                                 Cancel
                             </Button>
                         </div>

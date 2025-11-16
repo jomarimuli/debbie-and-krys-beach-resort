@@ -1,5 +1,13 @@
 // resources/js/types/chat.ts
 
+export type ChatStatus = 'open' | 'assigned' | 'closed';
+
+export interface User {
+    id: number;
+    name: string;
+    email: string;
+}
+
 export interface ChatConversation {
     id: number;
     customer_id: number | null;
@@ -7,22 +15,14 @@ export interface ChatConversation {
     guest_name: string | null;
     guest_email: string | null;
     guest_session_id: string | null;
-    status: 'open' | 'assigned' | 'closed';
+    status: ChatStatus;
     subject: string | null;
     assigned_at: string | null;
     closed_at: string | null;
     created_at: string;
     updated_at: string;
-    customer?: {
-        id: number;
-        name: string;
-        email: string;
-    } | null;
-    staff?: {
-        id: number;
-        name: string;
-        email: string;
-    } | null;
+    customer?: User | null;
+    staff?: User | null;
     participant_name: string;
     latest_message?: ChatMessage;
     messages?: ChatMessage[];
@@ -39,11 +39,7 @@ export interface ChatMessage {
     read_at: string | null;
     created_at: string;
     updated_at: string;
-    sender?: {
-        id: number;
-        name: string;
-        email: string;
-    } | null;
+    sender?: User | null;
     sender_display_name: string;
 }
 
@@ -54,10 +50,10 @@ export interface ChatFormData {
     guest_email?: string;
 }
 
-export interface ChatIndexData {
+export interface ChatIndexProps {
     conversations: ChatConversation[];
 }
 
-export interface ChatShowData {
+export interface ChatShowProps {
     conversation: ChatConversation;
 }

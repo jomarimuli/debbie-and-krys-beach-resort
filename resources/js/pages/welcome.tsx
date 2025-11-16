@@ -106,8 +106,8 @@ export default function Welcome() {
                                         <button
                                             className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs sm:px-5 sm:text-sm font-medium text-white bg-[#E55A2B] border border-[#E55A2B] rounded-md hover:bg-[#D14D24] hover:border-[#D14D24] active:bg-[#B8421F] transition-all duration-200 shadow-md hover:shadow-lg"
                                         >
-                                            <span className="max-w-[80px] sm:max-w-none truncate">{auth.user.name}</span>
-                                            <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                                            <span className="max-w-20 sm:max-w-none truncate">{auth.user.name}</span>
+                                            <ChevronDown className="h-4 w-4 shrink-0" />
                                         </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-48">
@@ -172,14 +172,14 @@ export default function Welcome() {
                                     </h2>
                                 </div>
 
-                                <div className="w-24 h-px bg-gradient-to-r from-[#E55A2B] to-[#F06B3B]"></div>
+                                <div className="w-24 h-px bg-linear-to-r from-[#E55A2B] to-[#F06B3B]"></div>
 
                                 <div
                                     className="space-y-2 sm:space-y-3 text-sm sm:text-base lg:text-lg text-[#64748B] font-medium"
                                     style={{ fontFamily: 'Instrument Sans, sans-serif' }}
                                 >
                                     <div className="flex items-center gap-2 sm:gap-3">
-                                        <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] flex-shrink-0" />
+                                        <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
                                         <a
                                             href="https://maps.app.goo.gl/Fvkn2SNiKCa1pXsp8"
                                             target="_blank"
@@ -191,7 +191,7 @@ export default function Welcome() {
                                         </a>
                                     </div>
                                     <div className="flex items-center gap-2 sm:gap-3">
-                                        <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] flex-shrink-0" />
+                                        <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
                                         <a
                                             href="tel:+639278210836"
                                             className="font-mono tracking-wider hover:text-[#E55A2B] transition-colors duration-200 cursor-pointer"
@@ -201,7 +201,7 @@ export default function Welcome() {
                                         </a>
                                     </div>
                                     <div className="flex items-center gap-2 sm:gap-3">
-                                        <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] flex-shrink-0" />
+                                        <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
                                         <a
                                             href="mailto:debbiekrysb@gmail.com"
                                             className="break-all hover:text-[#E55A2B] transition-colors duration-200 cursor-pointer"
@@ -211,7 +211,7 @@ export default function Welcome() {
                                         </a>
                                     </div>
                                     <div className="flex items-center gap-2 sm:gap-3">
-                                        <Facebook className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] flex-shrink-0" />
+                                        <Facebook className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
                                         <a
                                             href="https://www.facebook.com/DebbieAndKrysBeachResort/"
                                             target="_blank"
@@ -248,7 +248,7 @@ export default function Welcome() {
                                         <X className="h-4 w-4" />
                                     </Button>
                                     <div className="flex gap-3 sm:gap-4">
-                                        <Megaphone className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-secondary mt-0.5" />
+                                        <Megaphone className="h-5 w-5 sm:h-6 sm:w-6 shrink-0 text-secondary mt-0.5" />
                                         <div className="flex-1 pr-6">
                                             <h3
                                                 className="text-base sm:text-lg font-bold text-[#2C3E50] mb-2"
@@ -296,7 +296,7 @@ export default function Welcome() {
                                 >
                                     Accommodation
                                 </h2>
-                                <div className="w-16 h-px bg-gradient-to-r from-[#E55A2B] to-[#F06B3B] mx-auto"></div>
+                                <div className="w-16 h-px bg-linear-to-r from-[#E55A2B] to-[#F06B3B] mx-auto"></div>
                             </div>
 
                             {accommodations.length > 0 ? (
@@ -478,7 +478,7 @@ export default function Welcome() {
                                 >
                                     Gallery
                                 </h2>
-                                <div className="w-16 h-px bg-gradient-to-r from-[#E55A2B] to-[#F06B3B] mx-auto"></div>
+                                <div className="w-16 h-px bg-linear-to-r from-[#E55A2B] to-[#F06B3B] mx-auto"></div>
                             </div>
 
                             {galleries.length > 0 ? (
@@ -557,7 +557,7 @@ export default function Welcome() {
                                 >
                                     Feedbacks
                                 </h2>
-                                <div className="w-16 h-px bg-gradient-to-r from-[#E55A2B] to-[#F06B3B] mx-auto"></div>
+                                <div className="w-16 h-px bg-linear-to-r from-[#E55A2B] to-[#F06B3B] mx-auto"></div>
                             </div>
 
                             {feedbacks.length > 0 ? (
@@ -649,7 +649,7 @@ export default function Welcome() {
                             </h4>
                             <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                                 <div className="flex items-start gap-2 sm:gap-3">
-                                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] flex-shrink-0 mt-0.5" />
+                                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0 mt-0.5" />
                                     <a
                                         href="https://maps.app.goo.gl/Fvkn2SNiKCa1pXsp8"
                                         target="_blank"
@@ -660,7 +660,7 @@ export default function Welcome() {
                                     </a>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] flex-shrink-0" />
+                                    <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
                                     <a
                                         href="tel:+639278210836"
                                         className="text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200 font-mono"
@@ -669,7 +669,7 @@ export default function Welcome() {
                                     </a>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] flex-shrink-0" />
+                                    <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
                                     <a
                                         href="mailto:debbiekrysb@gmail.com"
                                         className="text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200 break-all"
@@ -678,7 +678,7 @@ export default function Welcome() {
                                     </a>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <Facebook className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] flex-shrink-0" />
+                                    <Facebook className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
                                     <a
                                         href="https://www.facebook.com/DebbieAndKrysBeachResort/"
                                         target="_blank"

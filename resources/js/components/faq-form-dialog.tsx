@@ -13,7 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, useState } from 'react';
+import { FormEventHandler, useState, KeyboardEvent } from 'react';
 import { type FAQ } from '@/types';
 import { X } from 'lucide-react';
 
@@ -36,21 +36,14 @@ export function FAQFormDialog({ faq, onClose }: FAQFormDialogProps) {
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-        if (isEditing) {
-            put(`/faqs/${faq.id}`, {
-                onSuccess: () => {
-                    reset();
-                    onClose();
-                },
-            });
-        } else {
-            post('/faqs', {
-                onSuccess: () => {
-                    reset();
-                    onClose();
-                },
-            });
-        }
+        const options = {
+            onSuccess: () => {
+                reset();
+                onClose();
+            },
+        };
+
+        isEditing ? put(`/faqs/${faq.id}`, options) : post('/faqs', options);
     };
 
     const addKeyword = () => {
@@ -65,7 +58,7 @@ export function FAQFormDialog({ faq, onClose }: FAQFormDialogProps) {
         setData('keywords', data.keywords.filter(k => k !== keyword));
     };
 
-    const handleKeywordKeyPress = (e: React.KeyboardEvent) => {
+    const handleKeywordKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             addKeyword();
@@ -81,44 +74,38 @@ export function FAQFormDialog({ faq, onClose }: FAQFormDialogProps) {
 
                 <form onSubmit={submit} className="space-y-5">
                     <div className="space-y-1.5">
-                        <Label htmlFor="question" className="text-sm cursor-text select-text">
-                            Question
-                        </Label>
+                        <Label htmlFor="question">Question</Label>
                         <Input
                             id="question"
                             value={data.question}
                             onChange={(e) => setData('question', e.target.value)}
                             className="h-9"
-                            placeholder="..."
+                            placeholder="Enter question"
                         />
                         {errors.question && <p className="text-xs text-destructive">{errors.question}</p>}
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="answer" className="text-sm cursor-text select-text">
-                            Answer
-                        </Label>
+                        <Label htmlFor="answer">Answer</Label>
                         <Textarea
                             id="answer"
                             value={data.answer}
                             onChange={(e) => setData('answer', e.target.value)}
                             rows={4}
                             className="resize-none"
-                            placeholder="..."
+                            placeholder="Enter answer"
                         />
                         {errors.answer && <p className="text-xs text-destructive">{errors.answer}</p>}
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="keywords" className="text-sm cursor-text select-text">
-                            Keywords
-                        </Label>
+                        <Label htmlFor="keywords">Keywords</Label>
                         <div className="flex gap-2">
                             <Input
                                 id="keywords"
                                 value={keywordInput}
                                 onChange={(e) => setKeywordInput(e.target.value)}
-                                onKeyPress={handleKeywordKeyPress}
+                                onKeyDown={handleKeywordKeyPress}
                                 className="h-9"
                                 placeholder="room, rates, price (press Enter)"
                             />
@@ -146,9 +133,7 @@ export function FAQFormDialog({ faq, onClose }: FAQFormDialogProps) {
                     </div>
 
                     <div className="space-y-1.5">
-                        <Label htmlFor="order" className="text-sm cursor-text select-text">
-                            Display Order
-                        </Label>
+                        <Label htmlFor="order">Display Order</Label>
                         <Input
                             id="order"
                             type="number"
@@ -166,9 +151,7 @@ export function FAQFormDialog({ faq, onClose }: FAQFormDialogProps) {
                             checked={data.is_active}
                             onCheckedChange={(checked) => setData('is_active', checked)}
                         />
-                        <Label htmlFor="is_active" className="text-sm cursor-pointer select-text">
-                            Active
-                        </Label>
+                        <Label htmlFor="is_active" className="cursor-pointer">Active</Label>
                     </div>
 
                     <div className="flex gap-2 pt-2">

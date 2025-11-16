@@ -102,12 +102,15 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
     Route::get('/faq/analytics', [FAQSearchController::class, 'analytics'])->name('faq.analytics');
 
     // Chat
-    Route::resource('chat', ChatConversationController::class)->only(['index', 'store', 'show']);
+    Route::get('/chat', [ChatConversationController::class, 'index'])->name('chat.index');
+    Route::post('/chat', [ChatConversationController::class, 'store'])->name('chat.store');
+    Route::get('/chat/{conversation}', [ChatConversationController::class, 'show'])->name('chat.show');
     Route::post('/chat/{conversation}/assign', [ChatConversationController::class, 'assign'])->name('chat.assign');
     Route::post('/chat/{conversation}/close', [ChatConversationController::class, 'close'])->name('chat.close');
     Route::post('/chat/{conversation}/reopen', [ChatConversationController::class, 'reopen'])->name('chat.reopen');
+
     Route::post('/chat/{conversation}/messages', [ChatMessageController::class, 'store'])->name('chat.messages.store');
-    Route::post('/chat/{conversation}/mark-read', [ChatMessageController::class, 'markAsRead'])->name('chat.messages.markRead');
+    Route::post('/chat/{conversation}/mark-as-read', [ChatMessageController::class, 'markAsRead'])->name('chat.messages.mark-as-read');
 });
 
 require __DIR__.'/settings.php';
