@@ -10,10 +10,15 @@ use App\Http\Requests\Payment\UpdatePaymentRequest;
 use App\Traits\HandlesImageUpload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Mail;
+use App\Services\NotificationService;
+use App\Mail\PaymentReceived;
+use App\Mail\Admin\NewPaymentNotification;
 
 class PaymentController extends Controller
 {
@@ -52,8 +57,7 @@ class PaymentController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $bookings = Booking::whereIn('status', ['pending', 'confirmed'])
-            ->whereColumn('paid_amount', '<', 'total_amount')
+        $bookings = Booking::whereColumn('paid_amount', '<', 'total_amount')
             ->orderBy('booking_number')
             ->get();
 
@@ -85,10 +89,26 @@ class PaymentController extends Controller
                 'received_by' => auth()->id(),
             ]);
 
-            // Update booking paid amounts (handled by Payment model boot method)
-            // booking->updatePaidAmount() is called automatically
+            // Load relationships for emails
+            $payment->load(['booking', 'paymentAccount', 'receivedByUser']);
 
             DB::commit();
+
+            // Send email notifications
+            try {
+                // Send to customer
+                if ($payment->booking->guest_email) {
+                    Mail::to($payment->booking->guest_email)->send(new PaymentReceived($payment));
+                }
+
+                // Send to admin/staff
+                $adminEmails = NotificationService::getAdminStaffEmails();
+                if (!empty($adminEmails)) {
+                    Mail::to($adminEmails)->send(new NewPaymentNotification($payment));
+                }
+            } catch (\Exception $e) {
+                Log::error('Payment email failed: ' . $e->getMessage());
+            }
 
             // Redirect based on whether it's a rebooking payment or regular payment
             if ($payment->rebooking_id) {

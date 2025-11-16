@@ -10,10 +10,13 @@ use App\Http\Requests\Refund\UpdateRefundRequest;
 use App\Traits\HandlesImageUpload;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\RefundProcessed;
 
 class RefundController extends Controller
 {
@@ -31,7 +34,6 @@ class RefundController extends Controller
     {
         $query = Refund::with(['payment.booking', 'rebooking']);
 
-        // Customers can only see refunds for their own bookings
         if (auth()->user()->hasRole('customer')) {
             $query->whereHas('payment.booking', function ($q) {
                 $q->where('created_by', auth()->id());
@@ -47,18 +49,14 @@ class RefundController extends Controller
 
     public function create(): Response
     {
-        // Customers cannot create refunds (admin/staff only)
         if (auth()->user()->hasRole('customer')) {
             abort(403, 'Unauthorized action.');
         }
 
-        $payments = Payment::with('booking')
-            ->whereHas('booking', function ($query) {
-                $query->whereIn('status', ['confirmed', 'completed', 'cancelled']);
-            })
+        $payments = Payment::with(['booking', 'refunds'])
             ->get()
             ->filter(function ($payment) {
-                return $payment->remainingAmount() > 0;
+                return (float)$payment->remaining_amount > 0;
             })
             ->values();
 
@@ -90,9 +88,18 @@ class RefundController extends Controller
                 'processed_by' => auth()->id(),
             ]);
 
+            $refund->load(['payment.booking', 'refundAccount', 'processedByUser']);
+
             DB::commit();
 
-            // Redirect based on whether it's a rebooking refund or regular refund
+            try {
+                if ($refund->payment->booking->guest_email) {
+                    Mail::to($refund->payment->booking->guest_email)->send(new RefundProcessed($refund));
+                }
+            } catch (\Exception $e) {
+                Log::error('Refund email failed: ' . $e->getMessage());
+            }
+
             if ($refund->rebooking_id) {
                 return redirect()->route('rebookings.show', $refund->rebooking_id)
                     ->with('success', 'Rebooking refund processed successfully.');
@@ -108,7 +115,6 @@ class RefundController extends Controller
 
     public function show(Refund $refund): Response
     {
-        // Check if customer is trying to view someone else's refund
         if (auth()->user()->hasRole('customer') && $refund->payment->booking->created_by !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
@@ -160,7 +166,6 @@ class RefundController extends Controller
 
             DB::commit();
 
-            // Redirect based on whether it's a rebooking refund or regular refund
             if ($refund->rebooking_id) {
                 return redirect()->route('rebookings.show', $refund->rebooking_id)
                     ->with('success', 'Rebooking refund updated successfully.');
@@ -189,7 +194,6 @@ class RefundController extends Controller
 
             DB::commit();
 
-            // Redirect based on whether it's a rebooking refund or regular refund
             if ($rebookingId) {
                 return redirect()->route('rebookings.show', $rebookingId)
                     ->with('success', 'Rebooking refund deleted successfully.');

@@ -12,6 +12,9 @@ export * from './payment-account';
 export * from './feedback';
 export * from './gallery';
 export * from './announcement';
+export * from './dashboard';
+export * from './faq';
+export * from './chat';
 
 // Common types
 export interface BreadcrumbItem {
@@ -113,3 +116,6 @@ export type GalleryIndexProps = PageProps & GalleryIndexData;
 export type AnnouncementIndexProps = PageProps & AnnouncementIndexData;
 export type RefundIndexProps = PageProps & RefundIndexData;
 export type RebookingIndexProps = PageProps & RebookingIndexData;
+export type FAQIndexProps = PageProps & FAQIndexData;
+export type ChatIndexProps = PageProps & ChatIndexData;
+export type ChatShowProps = PageProps & ChatShowData;

@@ -37,6 +37,8 @@ interface WelcomeProps extends PageProps {
     feedbacks: Feedback[];
 }
 
+import { FAQChatbot } from '@/components/faq-chatbot';
+
 export default function Welcome() {
     const { auth, latestAnnouncement, galleries, accommodations, feedbacks } = usePage<WelcomeProps>().props;
     const [showAnnouncement, setShowAnnouncement] = useState(true);
@@ -91,16 +93,6 @@ export default function Welcome() {
             <div className="flex min-h-screen flex-col items-center bg-[#F5F2E8] px-4 py-6 text-[#2C3E50] sm:px-6 lg:px-8">
                 <header className="mb-6 w-full max-w-7xl">
                     <nav className="flex flex-wrap items-center justify-end gap-2 sm:gap-4">
-                        <a
-                            href="#accommodation" className="inline-block rounded-sm border border-[#D4B896] px-3 py-1.5 text-xs sm:px-5 sm:text-sm leading-normal text-[#1F5F5B] hover:border-[#C3A277] hover:bg-[#EBE6D8] transition-all duration-200"
-                        >
-                            Accommodation
-                        </a>
-                        <a
-                            href="#gallery" className="inline-block rounded-sm border border-[#D4B896] px-3 py-1.5 text-xs sm:px-5 sm:text-sm leading-normal text-[#1F5F5B] hover:border-[#C3A277] hover:bg-[#EBE6D8] transition-all duration-200"
-                        >
-                            Gallery
-                        </a>
                         {auth.user ? (
                             <>
                                 <Link
@@ -769,6 +761,8 @@ export default function Welcome() {
                 open={lightboxOpen}
                 onClose={() => setLightboxOpen(false)}
             />
+
+            <FAQChatbot />
         </>
     );
 }

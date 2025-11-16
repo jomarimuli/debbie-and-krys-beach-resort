@@ -22,7 +22,7 @@ class StorePaymentRequest extends FormRequest
             'is_rebooking_payment' => ['boolean'],
             'payment_account_id' => ['nullable', 'exists:payment_accounts,id'],
             'reference_number' => ['nullable', 'string', 'max:255'],
-            'reference_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
+            'reference_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp'],
             'notes' => ['nullable', 'string'],
             'payment_date' => ['required', 'date'],
         ];

@@ -18,7 +18,7 @@ class UpdatePaymentAccountRequest extends FormRequest
             'account_name' => ['required', 'string', 'max:255'],
             'account_number' => ['nullable', 'string', 'max:255'],
             'bank_name' => ['nullable', 'string', 'max:255'],
-            'qr_code' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
+            'qr_code' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp'],
             'remove_qr_code' => ['boolean'],
             'is_active' => ['boolean'],
             'sort_order' => ['integer', 'min:0'],

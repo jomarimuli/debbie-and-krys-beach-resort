@@ -19,7 +19,7 @@ class UpdateRefundRequest extends FormRequest
             'is_rebooking_refund' => ['boolean'],
             'refund_account_id' => ['nullable', 'exists:payment_accounts,id'],
             'reference_number' => ['nullable', 'string', 'max:255'],
-            'reference_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
+            'reference_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp'],
             'remove_reference_image' => ['boolean'],
             'reason' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],

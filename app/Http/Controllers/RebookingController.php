@@ -14,9 +14,16 @@ use App\Http\Requests\Rebooking\ApproveRebookingRequest;
 use App\Http\Requests\Rebooking\RejectRebookingRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Services\NotificationService;
+use App\Mail\RebookingCreated;
+use App\Mail\RebookingApproved;
+use App\Mail\RebookingCompleted;
+use App\Mail\RebookingCancelled;
+use App\Mail\Admin\NewRebookingNotification;
 
 class RebookingController extends Controller
 {
@@ -206,7 +213,26 @@ class RebookingController extends Controller
                 ]);
             }
 
+            // Load relationships for emails
+            $rebooking->load(['originalBooking', 'accommodations.accommodation', 'processedByUser']);
+
             DB::commit();
+
+            // Send email notifications
+            try {
+                // Send to customer
+                if ($originalBooking->guest_email) {
+                    Mail::to($originalBooking->guest_email)->send(new RebookingCreated($rebooking));
+                }
+
+                // Send to admin/staff
+                $adminEmails = NotificationService::getAdminStaffEmails();
+                if (!empty($adminEmails)) {
+                    Mail::to($adminEmails)->send(new NewRebookingNotification($rebooking));
+                }
+            } catch (\Exception $e) {
+                Log::error('Rebooking email failed: ' . $e->getMessage());
+            }
 
             return redirect()->route('rebookings.show', $rebooking)
                 ->with('success', 'Rebooking request created successfully. Rebooking number: ' . $rebooking->rebooking_number);
@@ -394,7 +420,19 @@ class RebookingController extends Controller
                 'approved_at' => now(),
             ]);
 
+            // Load relationships for email
+            $rebooking->load('originalBooking');
+
             DB::commit();
+
+            // Send email notification
+            try {
+                if ($rebooking->originalBooking->guest_email) {
+                    Mail::to($rebooking->originalBooking->guest_email)->send(new RebookingApproved($rebooking));
+                }
+            } catch (\Exception $e) {
+                Log::error('Rebooking approval email failed: ' . $e->getMessage());
+            }
 
             return back()->with('success', 'Rebooking request approved successfully.');
         } catch (\Exception $e) {
@@ -424,6 +462,18 @@ class RebookingController extends Controller
         }
 
         $rebooking->update(['status' => 'cancelled']);
+
+        // Load relationships for email
+        $rebooking->load('originalBooking');
+
+        // Send email notification
+        try {
+            if ($rebooking->originalBooking->guest_email) {
+                Mail::to($rebooking->originalBooking->guest_email)->send(new RebookingCancelled($rebooking));
+            }
+        } catch (\Exception $e) {
+            Log::error('Rebooking cancellation email failed: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'Rebooking request cancelled.');
     }
@@ -493,7 +543,19 @@ class RebookingController extends Controller
                 'completed_at' => now(),
             ]);
 
+            // Load relationships for email
+            $rebooking->load('originalBooking');
+
             DB::commit();
+
+            // Send email notification
+            try {
+                if ($rebooking->originalBooking->guest_email) {
+                    Mail::to($rebooking->originalBooking->guest_email)->send(new RebookingCompleted($rebooking));
+                }
+            } catch (\Exception $e) {
+                Log::error('Rebooking completion email failed: ' . $e->getMessage());
+            }
 
             return redirect()->route('rebookings.show', $rebooking)
                 ->with('success', 'Rebooking completed successfully. Original booking has been updated.');

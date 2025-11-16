@@ -13,7 +13,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, Menu, Search, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw } from 'lucide-react';
+import { LayoutGrid, Users, Shield, Menu, Search, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw, MessageCircleQuestion, MessageCircle } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
@@ -97,6 +97,18 @@ const allNavItems: NavItem[] = [
         href: '/announcements',
         icon: Megaphone,
         requiredPermissions: ['announcement show', 'global access'],
+    },
+    {
+        title: 'FAQs',
+        href: '/faqs',
+        icon: MessageCircleQuestion,
+        requiredPermissions: ['faq show', 'global access'],
+    },
+    {
+        title: 'Chat',
+        href: '/chat',
+        icon: MessageCircle,
+        requiredPermissions: ['chat access', 'global access'],
     },
     {
         title: 'Users',

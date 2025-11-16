@@ -17,16 +17,23 @@ use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\AnnouncementController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FAQController;
+use App\Http\Controllers\FAQSearchController;
+use App\Http\Controllers\ChatConversationController;
+use App\Http\Controllers\ChatMessageController;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
 
 Route::get('/auth/google', [GoogleController::class, 'redirect'])->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name('google.callback');
 
+// Public FAQ search (no auth required)
+Route::post('/faq/search', [FAQSearchController::class, 'search'])->name('faq.search');
+Route::post('/faq-search/{faqSearch}/feedback', [FAQSearchController::class, 'feedback'])->name('faq.feedback');
+
 Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/api/github-updates', [GitHubController::class, 'getUpdates']);
 
@@ -89,6 +96,18 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
 
     // Announcements
     Route::resource('announcements', AnnouncementController::class);
+
+    // FAQs
+    Route::resource('faqs', FAQController::class)->except(['show', 'create', 'edit']);
+    Route::get('/faq/analytics', [FAQSearchController::class, 'analytics'])->name('faq.analytics');
+
+    // Chat
+    Route::resource('chat', ChatConversationController::class)->only(['index', 'store', 'show']);
+    Route::post('/chat/{conversation}/assign', [ChatConversationController::class, 'assign'])->name('chat.assign');
+    Route::post('/chat/{conversation}/close', [ChatConversationController::class, 'close'])->name('chat.close');
+    Route::post('/chat/{conversation}/reopen', [ChatConversationController::class, 'reopen'])->name('chat.reopen');
+    Route::post('/chat/{conversation}/messages', [ChatMessageController::class, 'store'])->name('chat.messages.store');
+    Route::post('/chat/{conversation}/mark-read', [ChatMessageController::class, 'markAsRead'])->name('chat.messages.markRead');
 });
 
 require __DIR__.'/settings.php';

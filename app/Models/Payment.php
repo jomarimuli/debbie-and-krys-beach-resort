@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Payment extends Model
 {
@@ -32,7 +33,7 @@ class Payment extends Model
         'payment_date' => 'datetime',
     ];
 
-    protected $appends = ['payment_method'];
+    protected $appends = ['payment_method', 'refunded_amount', 'remaining_amount'];
 
     public function booking(): BelongsTo
     {
@@ -73,6 +74,30 @@ class Payment extends Model
         return asset('storage/' . $this->reference_image);
     }
 
+    protected function refundedAmount(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => number_format($this->refunds->sum('amount'), 2, '.', '')
+        );
+    }
+
+    protected function remainingAmount(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => number_format($this->amount - $this->refunds->sum('amount'), 2, '.', '')
+        );
+    }
+
+    public function isFullyRefunded(): bool
+    {
+        return (float)$this->remaining_amount <= 0;
+    }
+
+    public function canRefund(float $amount): bool
+    {
+        return $amount > 0 && $amount <= (float)$this->remaining_amount;
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -108,25 +133,5 @@ class Payment extends Model
         $nextNumber = $lastPayment ? ((int) substr($lastPayment->payment_number, -4)) + 1 : 1;
 
         return sprintf('PAY-%s%s-%04d', $year, $month, $nextNumber);
-    }
-
-    public function refundedAmount(): float
-    {
-        return (float) $this->refunds()->sum('amount');
-    }
-
-    public function remainingAmount(): float
-    {
-        return $this->amount - $this->refundedAmount();
-    }
-
-    public function isFullyRefunded(): bool
-    {
-        return $this->remainingAmount() <= 0;
-    }
-
-    public function canRefund(float $amount): bool
-    {
-        return $amount > 0 && $amount <= $this->remainingAmount();
     }
 }

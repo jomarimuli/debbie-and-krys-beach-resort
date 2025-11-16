@@ -5,7 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Announcement;
 use App\Http\Requests\Announcement\StoreAnnouncementRequest;
 use App\Http\Requests\Announcement\UpdateAnnouncementRequest;
+use App\Mail\AnnouncementPublished;
+use App\Services\NotificationService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -37,10 +41,16 @@ class AnnouncementController extends Controller
 
     public function store(StoreAnnouncementRequest $request): RedirectResponse
     {
-        Announcement::create($request->validated());
+        $announcement = Announcement::create($request->validated());
+
+        // Send email notification if announcement is published
+        if ($announcement->published_at) {
+            $this->sendAnnouncementEmail($announcement);
+        }
 
         return redirect()->route('announcements.index')
-            ->with('success', 'Announcement created successfully.');
+            ->with('success', 'Announcement created successfully.' .
+                ($announcement->published_at ? ' Email notifications sent to all active users.' : ''));
     }
 
     public function show(Announcement $announcement): Response
@@ -59,10 +69,18 @@ class AnnouncementController extends Controller
 
     public function update(UpdateAnnouncementRequest $request, Announcement $announcement): RedirectResponse
     {
+        $wasPublished = $announcement->published_at !== null;
         $announcement->update($request->validated());
+        $isNowPublished = $announcement->published_at !== null;
+
+        // Send email if announcement is newly published
+        if (!$wasPublished && $isNowPublished) {
+            $this->sendAnnouncementEmail($announcement);
+        }
 
         return redirect()->route('announcements.show', $announcement)
-            ->with('success', 'Announcement updated successfully.');
+            ->with('success', 'Announcement updated successfully.' .
+                (!$wasPublished && $isNowPublished ? ' Email notifications sent to all active users.' : ''));
     }
 
     public function destroy(Announcement $announcement): RedirectResponse
@@ -71,5 +89,31 @@ class AnnouncementController extends Controller
 
         return redirect()->route('announcements.index')
             ->with('success', 'Announcement deleted successfully.');
+    }
+
+    /**
+     * Send announcement email to all active users
+     */
+    protected function sendAnnouncementEmail(Announcement $announcement): void
+    {
+        try {
+            $recipients = NotificationService::getAllActiveUserEmails();
+
+            if (empty($recipients)) {
+                Log::warning('No active users found to send announcement email.');
+                return;
+            }
+
+            // Send in batches to avoid overwhelming the mail server
+            $totalSent = NotificationService::sendInBatches(
+                $recipients,
+                new AnnouncementPublished($announcement),
+                50 // Batch size: 50 emails at a time
+            );
+
+            Log::info("Announcement email sent to {$totalSent} users for: {$announcement->title}");
+        } catch (\Exception $e) {
+            Log::error('Announcement email failed: ' . $e->getMessage());
+        }
     }
 }

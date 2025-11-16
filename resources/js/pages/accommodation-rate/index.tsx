@@ -19,7 +19,6 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import accommodationRates from '@/routes/accommodation-rates';
-
 import { useAuth } from '@/hooks/use-auth';
 
 export default function Index({ rates }: AccommodationRateIndexProps) {
@@ -32,6 +31,14 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                 onSuccess: () => setDeleteId(null),
             });
         }
+    };
+
+    const getTypeLabel = (type: string) => {
+        return type === 'room' ? 'Room' : 'Cottage';
+    };
+
+    const getSizeLabel = (size: string) => {
+        return size === 'small' ? 'Small' : 'Big';
     };
 
     return (
@@ -60,11 +67,70 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                 </CardHeader>
                 <CardContent className="p-0">
                     <Table>
-                        {/* TableHeader remains the same */}
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Accommodation</TableHead>
+                                <TableHead>Booking Type</TableHead>
+                                <TableHead>Rate</TableHead>
+                                <TableHead>Additional Pax</TableHead>
+                                <TableHead>Entrance Fees</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="w-32 text-right">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
                         <TableBody>
                             {rates.data.map((rate: AccommodationRate) => (
                                 <TableRow key={rate.id}>
-                                    {/* Table cells remain the same */}
+                                    <TableCell>
+                                        <div>
+                                            <p className="font-medium text-sm">{rate.accommodation?.name}</p>
+                                            <div className="flex gap-1 mt-0.5">
+                                                <Badge variant="outline" className="text-xs">
+                                                    {getTypeLabel(rate.accommodation?.type || '')}
+                                                </Badge>
+                                                <Badge variant="outline" className="text-xs">
+                                                    {getSizeLabel(rate.accommodation?.size || '')}
+                                                </Badge>
+                                                {rate.accommodation?.is_air_conditioned && (
+                                                    <Badge variant="outline" className="text-xs">
+                                                        AC
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline" className="text-xs capitalize">
+                                            {rate.booking_type.replace('_', ' ')}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="font-medium text-sm">
+                                        ₱{parseFloat(rate.rate).toLocaleString()}
+                                    </TableCell>
+                                    <TableCell className="text-sm">
+                                        {rate.additional_pax_rate
+                                            ? `₱${parseFloat(rate.additional_pax_rate).toLocaleString()}`
+                                            : '-'}
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="text-xs space-y-0.5">
+                                            <p>Adult: ₱{parseFloat(rate.adult_entrance_fee || '0').toLocaleString()}</p>
+                                            <p>Child: ₱{parseFloat(rate.child_entrance_fee || '0').toLocaleString()}</p>
+                                            {rate.includes_free_entrance && (
+                                                <Badge variant="secondary" className="text-xs mt-1">
+                                                    Free entrance
+                                                </Badge>
+                                            )}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge
+                                            variant={rate.is_active ? 'default' : 'secondary'}
+                                            className="text-xs"
+                                        >
+                                            {rate.is_active ? 'Active' : 'Inactive'}
+                                        </Badge>
+                                    </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
                                             {/* Everyone can view */}
@@ -107,6 +173,7 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                         <div className="flex flex-col items-center justify-center py-16">
                             <Coins className="h-10 w-10 text-muted-foreground mb-3" />
                             <h3 className="text-base font-medium mb-1">No rates found</h3>
+                            <p className="text-sm text-muted-foreground">Get started by adding your first rate</p>
                         </div>
                     )}
                 </CardContent>

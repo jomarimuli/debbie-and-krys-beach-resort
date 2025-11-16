@@ -265,8 +265,6 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                     value={data.guest_name}
                                     onChange={(e) => setData('guest_name', e.target.value)}
                                     className="h-9"
-                                    readOnly={isCustomer()}
-                                    disabled={isCustomer()}
                                 />
                                 {errors.guest_name && <p className="text-xs text-destructive">{errors.guest_name}</p>}
                             </div>
@@ -278,8 +276,6 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                     value={data.guest_phone}
                                     onChange={(e) => setData('guest_phone', e.target.value)}
                                     className="h-9"
-                                    readOnly={isCustomer()}
-                                    disabled={isCustomer()}
                                 />
                                 {errors.guest_phone && <p className="text-xs text-destructive">{errors.guest_phone}</p>}
                             </div>
@@ -292,8 +288,6 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                     value={data.guest_email}
                                     onChange={(e) => setData('guest_email', e.target.value)}
                                     className="h-9"
-                                    readOnly={isCustomer()}
-                                    disabled={isCustomer()}
                                 />
                                 {errors.guest_email && <p className="text-xs text-destructive">{errors.guest_email}</p>}
                             </div>
@@ -305,8 +299,6 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                     value={data.guest_address}
                                     onChange={(e) => setData('guest_address', e.target.value)}
                                     className="h-9"
-                                    readOnly={isCustomer()}
-                                    disabled={isCustomer()}
                                 />
                                 {errors.guest_address && <p className="text-xs text-destructive">{errors.guest_address}</p>}
                             </div>

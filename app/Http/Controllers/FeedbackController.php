@@ -9,6 +9,11 @@ use App\Http\Requests\Feedback\UpdateFeedbackRequest;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Mail;
+use App\Services\NotificationService;
+use App\Mail\FeedbackApproved;
+use App\Mail\Admin\NewFeedbackNotification;
+use Illuminate\Support\Facades\Log;
 
 class FeedbackController extends Controller
 {
@@ -57,7 +62,20 @@ class FeedbackController extends Controller
 
     public function store(StoreFeedbackRequest $request): RedirectResponse
     {
-        Feedback::create($request->validated());
+        $feedback = Feedback::create($request->validated());
+
+        // Load relationships for email
+        $feedback->load('booking');
+
+        // Send notification to admin/staff
+        try {
+            $adminEmails = NotificationService::getAdminStaffEmails();
+            if (!empty($adminEmails)) {
+                Mail::to($adminEmails)->send(new NewFeedbackNotification($feedback));
+            }
+        } catch (\Exception $e) {
+            Log::error('Feedback notification email failed: ' . $e->getMessage());
+        }
 
         return redirect()->route('feedbacks.index')
             ->with('success', 'Feedback submitted successfully.');
@@ -132,6 +150,18 @@ class FeedbackController extends Controller
         }
 
         $feedback->update(['status' => 'approved']);
+
+        // Load relationships for email
+        $feedback->load('booking');
+
+        // Send approval notification to customer
+        try {
+            if ($feedback->booking && $feedback->booking->guest_email) {
+                Mail::to($feedback->booking->guest_email)->send(new FeedbackApproved($feedback));
+            }
+        } catch (\Exception $e) {
+            Log::error('Feedback approval email failed: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'Feedback approved successfully.');
     }

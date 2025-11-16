@@ -11,8 +11,17 @@ use App\Http\Requests\Booking\StoreBookingRequest;
 use App\Http\Requests\Booking\UpdateBookingRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Mail;
+use App\Services\NotificationService;
+use App\Mail\BookingCreated;
+use App\Mail\BookingConfirmed;
+use App\Mail\BookingCheckedIn;
+use App\Mail\BookingCheckedOut;
+use App\Mail\BookingCancelled;
+use App\Mail\Admin\NewBookingNotification;
 
 class BookingController extends Controller
 {
@@ -158,7 +167,27 @@ class BookingController extends Controller
                 'total_amount' => $totalAmount,
             ]);
 
+            // Load relationships for emails
+            $booking->load(['accommodations.accommodation', 'createdBy']);
+
             DB::commit();
+
+            // Send email notifications
+            try {
+                // Send to customer
+                if ($booking->guest_email) {
+                    Mail::to($booking->guest_email)->send(new BookingCreated($booking));
+                }
+
+                // Send to admin/staff
+                $adminEmails = NotificationService::getAdminStaffEmails();
+                if (!empty($adminEmails)) {
+                    Mail::to($adminEmails)->send(new NewBookingNotification($booking));
+                }
+            } catch (\Exception $e) {
+                // Log email error but don't fail the booking
+                Log::error('Booking email failed: ' . $e->getMessage());
+            }
 
             return redirect()->route('bookings.show', $booking)
                 ->with('success', 'Booking created successfully. Booking code: ' . $booking->booking_code);
@@ -229,12 +258,30 @@ class BookingController extends Controller
     {
         $booking->update(['status' => 'confirmed']);
 
+        // Send email notification
+        try {
+            if ($booking->guest_email) {
+                Mail::to($booking->guest_email)->send(new BookingConfirmed($booking));
+            }
+        } catch (\Exception $e) {
+            Log::error('Booking confirmation email failed: ' . $e->getMessage());
+        }
+
         return back()->with('success', 'Booking confirmed successfully.');
     }
 
     public function checkIn(Booking $booking): RedirectResponse
     {
         $booking->update(['status' => 'checked_in']);
+
+        // Send email notification
+        try {
+            if ($booking->guest_email) {
+                Mail::to($booking->guest_email)->send(new BookingCheckedIn($booking));
+            }
+        } catch (\Exception $e) {
+            Log::error('Check-in email failed: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'Guest checked in successfully.');
     }
@@ -243,12 +290,30 @@ class BookingController extends Controller
     {
         $booking->update(['status' => 'checked_out']);
 
+        // Send email notification
+        try {
+            if ($booking->guest_email) {
+                Mail::to($booking->guest_email)->send(new BookingCheckedOut($booking));
+            }
+        } catch (\Exception $e) {
+            Log::error('Check-out email failed: ' . $e->getMessage());
+        }
+
         return back()->with('success', 'Guest checked out successfully.');
     }
 
     public function cancel(Booking $booking): RedirectResponse
     {
         $booking->update(['status' => 'cancelled']);
+
+        // Send email notification
+        try {
+            if ($booking->guest_email) {
+                Mail::to($booking->guest_email)->send(new BookingCancelled($booking));
+            }
+        } catch (\Exception $e) {
+            Log::error('Booking cancellation email failed: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'Booking cancelled successfully.');
     }

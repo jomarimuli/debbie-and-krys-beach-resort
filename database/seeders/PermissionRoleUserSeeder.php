@@ -106,6 +106,17 @@ class PermissionRoleUserSeeder extends Seeder
             'announcement create',
             'announcement edit',
             'announcement delete',
+
+            // faq
+            'faq show',
+            'faq create',
+            'faq edit',
+            'faq delete',
+
+            // chat
+            'chat access',
+            'chat assign',
+            'chat close',
         ];
 
         foreach ($permissions as $permission) {
@@ -123,10 +134,8 @@ class PermissionRoleUserSeeder extends Seeder
             'guard_name' => 'web'
         ]);
 
-        // Admin has global access (all permissions)
         $adminRole->givePermissionTo('global access');
 
-        // Create admin user
         $adminUser = User::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
@@ -151,8 +160,6 @@ class PermissionRoleUserSeeder extends Seeder
         ]);
 
         $staffRole->givePermissionTo([
-            // 'staff access',
-
             // Accommodations - View only
             'accommodation show',
             'accommodation-rate show',
@@ -196,9 +203,16 @@ class PermissionRoleUserSeeder extends Seeder
 
             // Announcements - View only
             'announcement show',
+
+            // FAQ - View only
+            'faq show',
+
+            // Chat - Can respond to customers
+            'chat access',
+            'chat assign',
+            'chat close',
         ]);
 
-        // Create staff user
         $staffUser = User::firstOrCreate(
             ['email' => 'staff@example.com'],
             [
@@ -223,15 +237,13 @@ class PermissionRoleUserSeeder extends Seeder
         ]);
 
         $customerRole->givePermissionTo([
-            // 'customer access',
-
             // Accommodations - View to browse
             'accommodation show',
             'accommodation-rate show',
 
-            // Bookings - Can view own bookings only (controller handles ownership)
+            // Bookings - Can view own bookings only
             'booking show',
-            'booking create', // Can create own bookings
+            'booking create',
 
             // Rebookings - Can request rebooking for own bookings
             'rebooking show',
@@ -252,9 +264,11 @@ class PermissionRoleUserSeeder extends Seeder
 
             // Announcements - View only
             'announcement show',
+
+            // Chat - Can initiate chat with staff
+            'chat access',
         ]);
 
-        // Create customer user
         $customerUser = User::firstOrCreate(
             ['email' => 'customer@example.com'],
             [

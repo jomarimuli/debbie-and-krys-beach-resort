@@ -5,7 +5,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavGroup, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw } from 'lucide-react';
+import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw, MessageCircleQuestion, MessageCircle } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import { GithubUpdatesModal } from '@/components/github-updates-modal';
@@ -107,6 +107,23 @@ const allNavGroups: NavGroup[] = [
                 href: '/announcements',
                 icon: Megaphone,
                 requiredPermissions: ['announcement show', 'global access'],
+            },
+            {
+                title: 'FAQs',
+                href: '/faqs',
+                icon: MessageCircleQuestion,
+                requiredPermissions: ['faq show', 'global access'],
+            },
+        ],
+    },
+    {
+        title: 'Support',
+        items: [
+            {
+                title: 'Chat',
+                href: '/chat',
+                icon: MessageCircle,
+                requiredPermissions: ['chat access', 'global access'],
             },
         ],
     },
