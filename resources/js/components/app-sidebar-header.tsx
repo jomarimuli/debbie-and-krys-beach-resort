@@ -92,7 +92,7 @@ export function AppSidebarHeader({
             {/* Right side controls */}
             <div className="flex items-center gap-2 ml-auto">
                 {/* Notifications Dropdown */}
-                <DropdownMenu>
+                {/* <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative h-8 w-8 cursor-pointer">
                             <Bell className="h-4 w-4" />
@@ -216,7 +216,7 @@ export function AppSidebarHeader({
                             </div>
                         )}
                     </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu> */}
 
                 {/* Fullscreen Toggle */}
                 <Button

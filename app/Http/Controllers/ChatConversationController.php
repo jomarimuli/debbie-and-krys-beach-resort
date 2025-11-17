@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\ChatConversation;
 use App\Models\ChatMessage;
+use App\Models\ChatAutoReply;
 use App\Http\Requests\Chat\StoreConversationRequest;
+use App\Events\MessageSent;
+use App\Events\ConversationUpdated;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
-use App\Events\ConversationUpdated;
 
 class ChatConversationController extends Controller
 {
@@ -21,7 +23,6 @@ class ChatConversationController extends Controller
         $query = ChatConversation::with(['customer', 'staff', 'latestMessage'])
             ->withCount('messages');
 
-        // customer sees only their conversations
         if ($user && $user->hasRole('customer')) {
             $query->forCustomer($user->id);
         }
@@ -37,7 +38,6 @@ class ChatConversationController extends Controller
     {
         $validated = $request->validated();
 
-        // prepare conversation data
         $conversationData = [
             'subject' => $validated['subject'] ?? null,
             'status' => 'open',
@@ -55,13 +55,36 @@ class ChatConversationController extends Controller
 
         $conversation = ChatConversation::create($conversationData);
 
-        // create initial message
-        ChatMessage::create([
+        $userMessage = ChatMessage::create([
             'conversation_id' => $conversation->id,
             'sender_id' => auth()->id(),
             'sender_name' => $validated['guest_name'] ?? null,
             'message' => $validated['message'],
         ]);
+
+        broadcast(new MessageSent($userMessage))->toOthers();
+
+        $autoReply = ChatAutoReply::getWelcomeMessage();
+        if ($autoReply) {
+            $delaySeconds = ChatAutoReply::active()
+                ->where('trigger_type', 'new_conversation')
+                ->first()?->delay_seconds ?? 0;
+
+            if ($delaySeconds > 0) {
+                sleep($delaySeconds);
+            }
+
+            $autoReplyMessage = ChatMessage::create([
+                'conversation_id' => $conversation->id,
+                'sender_id' => null,
+                'sender_name' => 'System',
+                'message' => $autoReply,
+            ]);
+
+            broadcast(new MessageSent($autoReplyMessage))->toOthers();
+        }
+
+        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
 
         return redirect()->route('chat.show', $conversation)
             ->with('success', 'Chat conversation started');
@@ -80,7 +103,6 @@ class ChatConversationController extends Controller
                 abort(403);
             }
 
-            // bulk mark as read
             $conversation->messages()
                 ->where('sender_id', '!=', $user->id)
                 ->where('is_read', false)
@@ -89,7 +111,6 @@ class ChatConversationController extends Controller
                     'read_at' => now(),
                 ]);
         } else {
-            // guest access check
             if ($conversation->guest_session_id !== session('guest_chat_session_id')) {
                 abort(403);
             }
@@ -163,7 +184,6 @@ class ChatConversationController extends Controller
         return back()->with('success', 'Conversation reopened');
     }
 
-    // helper for guest session management
     private function getOrCreateGuestSession(): string
     {
         $sessionId = session('guest_chat_session_id');

@@ -16,24 +16,30 @@ export * from './dashboard';
 export * from './faq';
 export * from './chat';
 
+import { type LucideIcon } from 'lucide-react';
+
 // Common types
 export interface BreadcrumbItem {
     title: string;
     href: string;
 }
 
+export interface NavItem {
+    title: string;
+    href: string;
+    icon?: LucideIcon;
+    isActive?: boolean;
+    isExternal?: boolean;
+    requiredPermissions?: string[];
+    items?: Array<{
+        title: string;
+        href: string;
+    }>;
+}
+
 export interface NavGroup {
     title: string;
     items: NavItem[];
-}
-
-export interface NavItem {
-    title: string;
-    href: NonNullable<InertiaLinkProps['href']>;
-    icon?: LucideIcon | null;
-    isActive?: boolean;
-    requiredPermissions?: string[];
-    isExternal?: boolean;
 }
 
 export interface Flash {

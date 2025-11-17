@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             PermissionRoleUserSeeder::class,
             AccommodationSeeder::class,
             FAQSeeder::class,
+            ChatAutoReplySeeder::class,
         ]);
     }
 }
