@@ -70,7 +70,8 @@ export function FAQChatbot() {
                     },
                 ]);
             }
-        } catch {
+        } catch (error) {
+            console.error('Failed to load FAQs:', error);
             setMessages([
                 {
                     type: 'bot',
@@ -343,17 +344,15 @@ export function FAQChatbot() {
                                     Browse Questions
                                 </Button>
                             )}
-                            {auth.user && (
-                                <Button
-                                    onClick={handleTalkToStaff}
-                                    variant="outline"
-                                    size="sm"
-                                    className="flex-1 h-10 border-[#E55A2B] text-[#E55A2B] hover:bg-[#E55A2B] hover:text-white cursor-pointer active:scale-95 transition-all"
-                                >
-                                    <UserCircle className="h-4 w-4 mr-2" />
-                                    Talk to Staff
-                                </Button>
-                            )}
+                            <Button
+                                onClick={handleTalkToStaff}
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 h-10 border-[#E55A2B] text-[#E55A2B] hover:bg-[#E55A2B] hover:text-white cursor-pointer active:scale-95 transition-all"
+                            >
+                                <UserCircle className="h-4 w-4 mr-2" />
+                                {auth.user ? 'Talk to Staff' : 'Login to Chat'}
+                            </Button>
                         </div>
                         <form onSubmit={handleSubmit} className="flex gap-2">
                             <Input

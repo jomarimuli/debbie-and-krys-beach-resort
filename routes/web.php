@@ -32,6 +32,7 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name
 // Public FAQ search (no auth required)
 Route::post('/faq/search', [FAQSearchController::class, 'search'])->name('faq.search');
 Route::post('/faq-search/{faqSearch}/feedback', [FAQSearchController::class, 'feedback'])->name('faq.feedback');
+Route::get('/faq/popular', [FAQSearchController::class, 'popularQuestions']);
 
 Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -101,7 +102,7 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
     // FAQs
     Route::resource('faqs', FAQController::class)->except(['show', 'create', 'edit']);
     Route::get('/faq/analytics', [FAQSearchController::class, 'analytics'])->name('faq.analytics');
-    Route::get('/faq/popular', [FAQSearchController::class, 'popularQuestions']);
+
 
     // Chat
     Route::get('/chat', [ChatConversationController::class, 'index'])->name('chat.index');
