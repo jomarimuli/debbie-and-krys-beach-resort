@@ -147,7 +147,7 @@ export default function Welcome() {
                     <main className="flex w-full max-w-7xl flex-col space-y-12 sm:space-y-16">
                         {/* Hero Section */}
                         <section className="flex flex-col-reverse lg:flex-row lg:items-center lg:gap-12">
-                            <div className="relative -mb-px aspect-[335/376] w-full shrink-0 overflow-hidden rounded-t-lg bg-[#EBE6D8] sm:aspect-[4/3] lg:mb-0 lg:aspect-[4/5] lg:w-[480px] lg:rounded-lg lg:shadow-2xl">
+                            <div className="relative -mb-px aspect-335/376 w-full shrink-0 overflow-hidden rounded-t-lg bg-[#EBE6D8] sm:aspect-4/3 lg:mb-0 lg:aspect-4/5 lg:w-[480px] lg:rounded-lg lg:shadow-2xl">
                                 <img
                                     src="/dk_bg.jpeg"
                                     alt="Debbie & Krys Beach Resort"
@@ -313,7 +313,7 @@ export default function Welcome() {
                                                 <Card className="overflow-hidden border-[#D4B896] hover:shadow-lg transition-shadow duration-300">
                                                     <CardContent className="p-0">
                                                         <div
-                                                            className="aspect-[4/3] relative overflow-hidden bg-[#EBE6D8] cursor-pointer"
+                                                            className="aspect-4/3 relative overflow-hidden bg-[#EBE6D8] cursor-pointer"
                                                             onClick={() => accommodation.image_urls.length > 0 && openLightbox(accommodation.image_urls, 0)}
                                                         >
                                                             {accommodation.first_image_url ? (

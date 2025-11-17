@@ -157,7 +157,7 @@ export function AppSidebarHeader({
                                         className="flex items-start gap-3 p-3 cursor-pointer"
                                         onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
                                     >
-                                        <div className="flex-shrink-0 mt-1">
+                                        <div className="shrink-0 mt-1">
                                             {getNotificationIcon(notification.type)}
                                         </div>
                                         <div className="flex-1 min-w-0">

@@ -7,6 +7,7 @@ use App\Models\ChatMessage;
 use App\Http\Requests\Chat\StoreConversationRequest;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use App\Events\ConversationUpdated;
 
 class ChatConversationController extends Controller
 {
@@ -113,6 +114,8 @@ class ChatConversationController extends Controller
             'assigned_at' => now(),
         ]);
 
+        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
+
         return back()->with('success', 'Conversation assigned to you');
     }
 
@@ -126,6 +129,8 @@ class ChatConversationController extends Controller
             'status' => 'closed',
             'closed_at' => now(),
         ]);
+
+        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
 
         return back()->with('success', 'Conversation closed');
     }
@@ -152,6 +157,8 @@ class ChatConversationController extends Controller
             'status' => $conversation->staff_id ? 'assigned' : 'open',
             'closed_at' => null,
         ]);
+
+        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
 
         return back()->with('success', 'Conversation reopened');
     }

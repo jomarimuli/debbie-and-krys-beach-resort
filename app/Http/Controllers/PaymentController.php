@@ -229,11 +229,11 @@ class PaymentController extends Controller
 
     public function showReferenceImage(Payment $payment): StreamedResponse
     {
-        if (!$payment->reference_image || !Storage::disk('local')->exists($payment->reference_image)) {
+        if (!$payment->reference_image || !Storage::disk('public')->exists($payment->reference_image)) {
             abort(404);
         }
 
-        return Storage::disk('local')->response($payment->reference_image);
+        return Storage::disk('public')->response($payment->reference_image);
     }
 
     protected function uploadImageToPrivate($file, string $folder): string
@@ -244,13 +244,13 @@ class PaymentController extends Controller
         $timestamp = now()->timestamp;
         $filename = "{$sanitizedName}_{$timestamp}.{$extension}";
 
-        return $file->storeAs($folder, $filename, 'local');
+        return $file->storeAs($folder, $filename, 'public');
     }
 
     protected function deleteImageFromPrivate(?string $path): bool
     {
-        if ($path && Storage::disk('local')->exists($path)) {
-            return Storage::disk('local')->delete($path);
+        if ($path && Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->delete($path);
         }
 
         return false;

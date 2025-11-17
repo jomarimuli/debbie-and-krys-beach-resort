@@ -209,11 +209,11 @@ class RefundController extends Controller
 
     public function showReferenceImage(Refund $refund): StreamedResponse
     {
-        if (!$refund->reference_image || !Storage::disk('local')->exists($refund->reference_image)) {
+        if (!$refund->reference_image || !Storage::disk('public')->exists($refund->reference_image)) {
             abort(404);
         }
 
-        return Storage::disk('local')->response($refund->reference_image);
+        return Storage::disk('public')->response($refund->reference_image);
     }
 
     protected function uploadImageToPrivate($file, string $folder): string
@@ -224,13 +224,13 @@ class RefundController extends Controller
         $timestamp = now()->timestamp;
         $filename = "{$sanitizedName}_{$timestamp}.{$extension}";
 
-        return $file->storeAs($folder, $filename, 'local');
+        return $file->storeAs($folder, $filename, 'public');
     }
 
     protected function deleteImageFromPrivate(?string $path): bool
     {
-        if ($path && Storage::disk('local')->exists($path)) {
-            return Storage::disk('local')->delete($path);
+        if ($path && Storage::disk('public')->exists($path)) {
+            return Storage::disk('public')->delete($path);
         }
 
         return false;

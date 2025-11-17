@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { type ChatIndexProps, type ChatConversation, type ChatStatus } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
 import { MessageCircle, Plus, ArrowRight } from 'lucide-react';
-import { useState, FormEventHandler } from 'react';
+import { useEffect, useState, FormEventHandler } from 'react';
 import { format } from 'date-fns';
 import { useAuth } from '@/hooks/use-auth';
 import {
@@ -26,8 +26,9 @@ const statusVariants: Record<ChatStatus, 'default' | 'secondary' | 'outline'> = 
     closed: 'outline',
 };
 
-export default function Index({ conversations }: ChatIndexProps) {
+export default function Index({ conversations: initialConversations }: ChatIndexProps) {
     const { user } = useAuth();
+    const [conversations, setConversations] = useState(initialConversations);
     const [showNewChat, setShowNewChat] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -51,6 +52,54 @@ export default function Index({ conversations }: ChatIndexProps) {
         setShowNewChat(false);
         reset();
     };
+
+    useEffect(() => {
+        const channel = window.Echo.channel('conversations');
+
+        channel.listen('.ConversationUpdated', (e: { conversation: ChatConversation }) => {
+            setConversations((prev: ChatConversation[]) => {
+                const index = prev.findIndex((c: ChatConversation) => c.id === e.conversation.id);
+                if (index !== -1) {
+                    const updated = [...prev];
+                    updated[index] = e.conversation;
+                    return updated.sort((a: ChatConversation, b: ChatConversation) =>
+                        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+                    );
+                }
+                return [e.conversation, ...prev];
+            });
+        });
+
+        if (user) {
+            const roleChannel = user.roles?.some((r: { name: string }) => r.name === 'customer')
+                ? `conversations.customer.${user.id}`
+                : `conversations.staff.${user.id}`;
+
+            const userChannel = window.Echo.channel(roleChannel);
+            userChannel.listen('.ConversationUpdated', (e: { conversation: ChatConversation }) => {
+                setConversations((prev: ChatConversation[]) => {
+                    const index = prev.findIndex((c: ChatConversation) => c.id === e.conversation.id);
+                    if (index !== -1) {
+                        const updated = [...prev];
+                        updated[index] = e.conversation;
+                        return updated.sort((a: ChatConversation, b: ChatConversation) =>
+                            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+                        );
+                    }
+                    return [e.conversation, ...prev];
+                });
+            });
+
+            return () => {
+                window.Echo.leave('conversations');
+                window.Echo.leave(roleChannel);
+            };
+        }
+
+        return () => {
+            window.Echo.leave('conversations');
+        };
+    }, [user]);
 
     return (
         <div className="space-y-4">

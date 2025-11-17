@@ -98,10 +98,10 @@ export function FAQChatbot() {
                 <Button
                     onClick={() => setIsOpen(true)}
                     size="lg"
-                    className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 bg-[#E55A2B] hover:bg-[#D14D24]"
+                    className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg z-50 bg-[#E55A2B] hover:bg-[#D14D24] hover:scale-110 active:scale-95 transition-all duration-200 cursor-pointer"
                     aria-label="Open help chat"
                 >
-                    <MessageCircle className="h-6 w-6" />
+                    <MessageCircle className="h-7 w-7" />
                 </Button>
             )}
 
@@ -112,11 +112,11 @@ export function FAQChatbot() {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-10 w-10 hover:bg-gray-100 cursor-pointer"
                             onClick={() => setIsOpen(false)}
                             aria-label="Close chat"
                         >
-                            <X className="h-4 w-4" />
+                            <X className="h-5 w-5" />
                         </Button>
                     </CardHeader>
 
@@ -156,19 +156,19 @@ export function FAQChatbot() {
                                             <Button
                                                 size="sm"
                                                 variant="outline"
-                                                className="h-7 text-xs"
+                                                className="h-9 px-4 text-xs hover:bg-gray-50 cursor-pointer active:scale-95 transition-transform"
                                                 onClick={() => handleFeedback(message.searchId!, true)}
                                             >
-                                                <ThumbsUp className="h-3 w-3 mr-1" />
+                                                <ThumbsUp className="h-3.5 w-3.5 mr-1.5" />
                                                 Helpful
                                             </Button>
                                             <Button
                                                 size="sm"
                                                 variant="outline"
-                                                className="h-7 text-xs"
+                                                className="h-9 px-4 text-xs hover:bg-gray-50 cursor-pointer active:scale-95 transition-transform"
                                                 onClick={() => handleFeedback(message.searchId!, false)}
                                             >
-                                                <ThumbsDown className="h-3 w-3 mr-1" />
+                                                <ThumbsDown className="h-3.5 w-3.5 mr-1.5" />
                                                 Not Helpful
                                             </Button>
                                         </div>
@@ -192,7 +192,7 @@ export function FAQChatbot() {
                                 onClick={handleTalkToStaff}
                                 variant="outline"
                                 size="sm"
-                                className="w-full border-[#E55A2B] text-[#E55A2B] hover:bg-[#E55A2B] hover:text-white"
+                                className="w-full h-10 border-[#E55A2B] text-[#E55A2B] hover:bg-[#E55A2B] hover:text-white cursor-pointer active:scale-95 transition-all"
                             >
                                 <UserCircle className="h-4 w-4 mr-2" />
                                 Talk to Staff
@@ -204,9 +204,14 @@ export function FAQChatbot() {
                                 onChange={(e) => setInput(e.target.value)}
                                 placeholder="Ask a question..."
                                 disabled={isLoading}
-                                className="flex-1"
+                                className="flex-1 h-10"
                             />
-                            <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+                            <Button
+                                type="submit"
+                                size="icon"
+                                disabled={isLoading || !input.trim()}
+                                className="h-10 w-10 shrink-0 cursor-pointer active:scale-95 transition-transform disabled:cursor-not-allowed"
+                            >
                                 <Send className="h-4 w-4" />
                             </Button>
                         </form>
