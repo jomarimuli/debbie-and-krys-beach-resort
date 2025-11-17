@@ -66,7 +66,6 @@ export default function DeleteUser() {
                                                 type="password"
                                                 name="password"
                                                 ref={passwordInput}
-                                                placeholder="Password"
                                                 autoComplete="current-password"
                                             />
 

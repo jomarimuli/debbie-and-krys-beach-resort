@@ -82,7 +82,6 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                         autoComplete="new-password"
                         className="mt-1 block w-full"
                         autoFocus
-                        placeholder="Password"
                     />
                     <InputError message={errors.password} />
                     <PasswordRequirements
@@ -100,7 +99,6 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
                         onChange={(e) => handlePasswordConfirmationChange(e.target.value)}
                         autoComplete="new-password"
                         className="mt-1 block w-full"
-                        placeholder="Confirm password"
                     />
                     <InputError message={errors.password_confirmation} className="mt-2" />
                     {passwordConfirmation && !isPasswordMatch && (

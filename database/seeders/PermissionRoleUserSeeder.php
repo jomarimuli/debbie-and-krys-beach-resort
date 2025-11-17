@@ -18,7 +18,7 @@ class PermissionRoleUserSeeder extends Seeder
             // global
             'global access',
 
-            // global
+            // pulse
             'pulse access',
 
             // customer
@@ -38,6 +38,85 @@ class PermissionRoleUserSeeder extends Seeder
             'role create',
             'role edit',
             'role delete',
+
+            // accommodation
+            'accommodation show',
+            'accommodation create',
+            'accommodation edit',
+            'accommodation delete',
+
+            // accommodation rate
+            'accommodation-rate show',
+            'accommodation-rate create',
+            'accommodation-rate edit',
+            'accommodation-rate delete',
+
+            // booking
+            'booking show',
+            'booking create',
+            'booking edit',
+            'booking delete',
+            'booking confirm',
+            'booking checkin',
+            'booking checkout',
+            'booking cancel',
+
+            // rebooking
+            'rebooking show',
+            'rebooking create',
+            'rebooking edit',
+            'rebooking delete',
+            'rebooking approve',
+            'rebooking complete',
+            'rebooking cancel',
+
+            // payment
+            'payment show',
+            'payment create',
+            'payment edit',
+            'payment delete',
+
+            // refund
+            'refund show',
+            'refund create',
+            'refund edit',
+            'refund delete',
+
+            // payment-account
+            'payment-account show',
+            'payment-account create',
+            'payment-account edit',
+            'payment-account delete',
+
+            // feedback
+            'feedback show',
+            'feedback create',
+            'feedback edit',
+            'feedback delete',
+            'feedback approve',
+
+            // gallery
+            'gallery show',
+            'gallery create',
+            'gallery edit',
+            'gallery delete',
+
+            // announcement
+            'announcement show',
+            'announcement create',
+            'announcement edit',
+            'announcement delete',
+
+            // faq
+            'faq show',
+            'faq create',
+            'faq edit',
+            'faq delete',
+
+            // chat
+            'chat access',
+            'chat assign',
+            'chat close',
         ];
 
         foreach ($permissions as $permission) {
@@ -47,65 +126,156 @@ class PermissionRoleUserSeeder extends Seeder
             ]);
         }
 
-        // Create admin role
+        // ============================================
+        // ADMIN ROLE - Full Access
+        // ============================================
         $adminRole = Role::firstOrCreate([
             'name' => 'admin',
             'guard_name' => 'web'
         ]);
 
-        // Give permission/s to admin
-        // $adminRole->givePermissionTo(Permission::all());
         $adminRole->givePermissionTo('global access');
 
-        // Create admin user
         $adminUser = User::firstOrCreate(
-            ['email' => 'admin@example.com'],
+            ['email' => 'jomarisingson04@gmail.com'],
             [
-                'name' => 'admin',
-                'email_verified_at' => now(),
+                'name' => 'Admin User',
+                'phone' => '09278210836',
+                'address' => 'Admin Office',
+                // 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                'password_changed_at' => now(),
+                // 'password_changed_at' => now(),
                 'status' => 'active',
             ]
         );
 
         $adminUser->assignRole($adminRole);
 
-        // Create staff role
+        // ============================================
+        // STAFF ROLE - Operational Access
+        // ============================================
         $staffRole = Role::firstOrCreate([
             'name' => 'staff',
             'guard_name' => 'web'
         ]);
 
-        $staffRole->givePermissionTo('staff access');
+        $staffRole->givePermissionTo([
+            // Accommodations - View only
+            'accommodation show',
+            'accommodation-rate show',
 
-        // Create staff user
+            // Bookings - Full operational control
+            'booking show',
+            'booking create',
+            'booking edit',
+            'booking confirm',
+            'booking checkin',
+            'booking checkout',
+            'booking cancel',
+
+            // Rebookings - Full operational control
+            'rebooking show',
+            'rebooking create',
+            'rebooking edit',
+            'rebooking approve',
+            'rebooking complete',
+            'rebooking cancel',
+
+            // Payments - Full control
+            'payment show',
+            'payment create',
+            'payment edit',
+
+            // Refunds - Full control
+            'refund show',
+            'refund create',
+            'refund edit',
+
+            // Payment Accounts - View only
+            'payment-account show',
+
+            // Feedback - Can view and approve
+            'feedback show',
+            'feedback approve',
+
+            // Gallery - View only
+            'gallery show',
+
+            // Announcements - View only
+            'announcement show',
+
+            // FAQ - View only
+            'faq show',
+
+            // Chat - Can respond to customers
+            'chat access',
+            'chat assign',
+            'chat close',
+        ]);
+
         $staffUser = User::firstOrCreate(
-            ['email' => 'staff@example.com'],
+            ['email' => 'pauljustina11@gmail.com'],
             [
-                'name' => 'staff',
-                'email_verified_at' => now(),
+                'name' => 'Staff User',
+                'phone' => '09123456789',
+                'address' => 'Front Desk',
+                // 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
+                'password_changed_at' => now(),
                 'status' => 'active',
             ]
         );
 
         $staffUser->assignRole($staffRole);
 
-        // Create customer role
+        // ============================================
+        // CUSTOMER ROLE - Limited Access
+        // ============================================
         $customerRole = Role::firstOrCreate([
             'name' => 'customer',
             'guard_name' => 'web'
         ]);
 
-        $customerRole->givePermissionTo('customer access');
+        $customerRole->givePermissionTo([
+            // Accommodations - View to browse
+            'accommodation show',
+            'accommodation-rate show',
 
-        // Create customer user
+            // Bookings - Can view own bookings only
+            'booking show',
+            'booking create',
+
+            // Rebookings - Can request rebooking for own bookings
+            'rebooking show',
+            'rebooking create',
+
+            // Payments - Can view own payments
+            'payment show',
+
+            // Refunds - Can view own refunds
+            'refund show',
+
+            // Feedback - Can create and view
+            'feedback show',
+            'feedback create',
+
+            // Gallery - View only
+            'gallery show',
+
+            // Announcements - View only
+            'announcement show',
+
+            // Chat - Can initiate chat with staff
+            'chat access',
+        ]);
+
         $customerUser = User::firstOrCreate(
-            ['email' => 'customer@example.com'],
+            ['email' => 'macalommark18u@gmail.com'],
             [
-                'name' => 'customer',
-                'email_verified_at' => now(),
+                'name' => 'Customer User',
+                'phone' => '09987654321',
+                'address' => 'Customer Address',
+                // 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
                 'status' => 'active',
             ]

@@ -53,7 +53,7 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                         name="name"
                                         required
                                         autoComplete="name"
-                                        placeholder="Full name"
+                                        placeholder="Surname, Given Name"
                                     />
 
                                     <InputError className="mt-2" message={errors.name} />
@@ -81,6 +81,37 @@ export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: 
                                             Admin email cannot be edited.
                                         </p>
                                     )}
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="phone">Phone number</Label>
+
+                                    <Input
+                                        id="phone"
+                                        type="tel"
+                                        className="mt-1 block w-full"
+                                        defaultValue={auth.user?.phone}
+                                        name="phone"
+                                        autoComplete="tel"
+                                        placeholder="09xxxxxxxxx"
+                                    />
+
+                                    <InputError className="mt-2" message={errors.phone} />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label htmlFor="address">Address</Label>
+
+                                    <Input
+                                        id="address"
+                                        className="mt-1 block w-full"
+                                        defaultValue={auth.user?.address}
+                                        name="address"
+                                        autoComplete="street-address"
+                                        placeholder="City, Province"
+                                    />
+
+                                    <InputError className="mt-2" message={errors.address} />
                                 </div>
 
                                 {mustVerifyEmail && auth.user?.email_verified_at === null && !isAdmin && (

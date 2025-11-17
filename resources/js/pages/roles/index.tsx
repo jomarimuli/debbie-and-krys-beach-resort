@@ -85,11 +85,11 @@ export default function Index({ roles, permissions, filterOptions, queryParams, 
 
     const transformedRoles = {
         ...roles,
-        data: roles.data.map(role => ({
+        data: roles.data.map((role: Role) => ({
             ...role,
             permissions_display: (
                 <div className="flex flex-wrap gap-1 max-w-md">
-                    {role.permissions.slice(0, 3).map((permission) => (
+                    {role.permissions.slice(0, 3).map((permission: string) => (
                         <Badge key={permission} variant="secondary" className="text-xs">
                             {permission}
                         </Badge>
@@ -114,7 +114,7 @@ export default function Index({ roles, permissions, filterOptions, queryParams, 
         </Button>
     ) : null;
 
-    const rawRolesData = roles.data.map(role => ({
+    const rawRolesData = roles.data.map((role: Role) => ({
         name: role.display_name,
         permissions: role.permissions_text,
         users_count: role.users_count_text,

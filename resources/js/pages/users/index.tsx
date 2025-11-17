@@ -21,23 +21,25 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
 
+    const originalUsersMap = new Map<number, UserData>(users.data.map((user: UserData) => [user.id, user]));
+
     const handleShow = (user: UserData) => {
-        setSelectedUser(user);
+        setSelectedUser(originalUsersMap.get(user.id) || user);
         setShowModalOpen(true);
     };
 
     const handleEdit = (user: UserData) => {
-        setSelectedUser(user);
+        setSelectedUser(originalUsersMap.get(user.id) || user);
         setEditModalOpen(true);
     };
 
     const handleLock = (user: UserData) => {
-        setSelectedUser(user);
+        setSelectedUser(originalUsersMap.get(user.id) || user);
         setLockModalOpen(true);
     };
 
     const handleDelete = (user: UserData) => {
-        setSelectedUser(user);
+        setSelectedUser(originalUsersMap.get(user.id) || user);
         setDeleteModalOpen(true);
     };
 
@@ -64,6 +66,22 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
             searchable: true,
             filterable: false,
             width: '250px',
+        },
+        {
+            key: 'phone',
+            label: 'Phone',
+            sortable: true,
+            searchable: true,
+            filterable: false,
+            width: '150px',
+        },
+        {
+            key: 'address',
+            label: 'Address',
+            sortable: true,
+            searchable: true,
+            filterable: false,
+            width: '200px',
         },
         {
             key: 'status_display',
@@ -102,8 +120,10 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
     // Transform data for display
     const transformedUsers = {
         ...users,
-        data: users.data.map(user => ({
+        data: users.data.map((user: UserData) => ({
             ...user,
+            phone: user.phone || <span className="text-gray-400 text-sm">Not provided</span>,
+            address: user.address || <span className="text-gray-400 text-sm">Not provided</span>,
             status_display: (
                 <Badge
                     variant={user.status === 'active' ? 'default' : 'secondary'}
@@ -130,7 +150,7 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
                 <div className="flex flex-wrap gap-1 max-w-md">
                     {user.roles.length > 0 ? (
                         <>
-                            {user.roles.slice(0, 2).map((role) => (
+                            {user.roles.slice(0, 2).map((role: string) => (
                                 <Badge
                                     key={role}
                                     variant={role === 'admin' ? 'destructive' : 'secondary'}
@@ -151,7 +171,7 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
                 </div>
             ),
         }))
-    };
+    } as typeof users;
 
     const createButton = canCreateUser ? (
         <Button onClick={() => setCreateModalOpen(true)}>
@@ -160,9 +180,11 @@ export default function Index({ users, availableRoles, filterOptions, queryParam
         </Button>
     ) : null;
 
-    const rawUsersData = users.data.map(user => ({
+    const rawUsersData = users.data.map((user: UserData) => ({
         name: user.name,
         email: user.email,
+        phone: user.phone || 'N/A',
+        address: user.address || 'N/A',
         status: user.status_label,
         email_verified: user.email_verified,
         roles: user.roles_text,

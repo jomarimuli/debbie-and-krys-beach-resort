@@ -66,6 +66,7 @@ class GoogleController extends Controller
                     'avatar' => $googleUser->avatar,
                     'password' => Hash::make(Str::random(24)),
                     'email_verified_at' => now(),
+                    'password_changed_at' => now(),
                     'status' => 'active',
                 ]);
 

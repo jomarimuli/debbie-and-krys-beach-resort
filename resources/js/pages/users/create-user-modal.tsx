@@ -34,6 +34,8 @@ export default function CreateUserModal({ open, onOpenChange, availableRoles }: 
     const { data, setData, post, processing, errors, reset } = useForm<UserFormData>({
         name: '',
         email: '',
+        phone: '',
+        address: '',
         password: '',
         password_confirmation: '',
         status: 'active',
@@ -95,7 +97,6 @@ export default function CreateUserModal({ open, onOpenChange, availableRoles }: 
                             id="name"
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
-                            placeholder="Enter full name"
                             className={errors.name ? 'border-red-500' : ''}
                         />
                         {errors.name && (
@@ -110,11 +111,37 @@ export default function CreateUserModal({ open, onOpenChange, availableRoles }: 
                             type="email"
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
-                            placeholder="Enter email address"
                             className={errors.email ? 'border-red-500' : ''}
                         />
                         {errors.email && (
                             <p className="text-sm text-red-600">{errors.email}</p>
+                        )}
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                            id="phone"
+                            type="tel"
+                            value={data.phone}
+                            onChange={(e) => setData('phone', e.target.value)}
+                            className={errors.phone ? 'border-red-500' : ''}
+                        />
+                        {errors.phone && (
+                            <p className="text-sm text-red-600">{errors.phone}</p>
+                        )}
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="address">Address</Label>
+                        <Input
+                            id="address"
+                            value={data.address}
+                            onChange={(e) => setData('address', e.target.value)}
+                            className={errors.address ? 'border-red-500' : ''}
+                        />
+                        {errors.address && (
+                            <p className="text-sm text-red-600">{errors.address}</p>
                         )}
                     </div>
 
@@ -124,7 +151,6 @@ export default function CreateUserModal({ open, onOpenChange, availableRoles }: 
                             id="password"
                             value={data.password}
                             onChange={(e) => handlePasswordChange(e.target.value)}
-                            placeholder="Enter password"
                             className={errors.password ? 'border-red-500' : ''}
                         />
                         {errors.password && (
@@ -142,7 +168,6 @@ export default function CreateUserModal({ open, onOpenChange, availableRoles }: 
                             id="password_confirmation"
                             value={data.password_confirmation}
                             onChange={(e) => setData('password_confirmation', e.target.value)}
-                            placeholder="Confirm password"
                             className={errors.password_confirmation ? 'border-red-500' : ''}
                         />
                         {errors.password_confirmation && (
@@ -160,7 +185,7 @@ export default function CreateUserModal({ open, onOpenChange, availableRoles }: 
                         <Label htmlFor="status">Status</Label>
                         <Select value={data.status} onValueChange={(value) => setData('status', value)}>
                             <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
+                                <SelectValue placeholder="Select..." />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="active">Active</SelectItem>
