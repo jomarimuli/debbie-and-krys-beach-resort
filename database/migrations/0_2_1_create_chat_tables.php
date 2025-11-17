@@ -39,8 +39,9 @@ return new class extends Migration
             $table->string('guest_session_id')->nullable();
             $table->timestamp('last_typed_at');
 
-            // composite primary key instead of id
-            $table->primary(['conversation_id', 'user_id', 'guest_session_id']);
+            // use custom short name for unique constraint
+            $table->unique(['conversation_id', 'user_id', 'guest_session_id'], 'chat_typing_unique');
+            $table->index('conversation_id');
         });
     }
 
