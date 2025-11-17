@@ -35,6 +35,9 @@ class ChatMessage extends Model
 
     public function getSenderDisplayNameAttribute(): string
     {
+        if ($this->sender_name === 'System') {
+            return 'Auto-Reply';
+        }
         return $this->sender?->name ?? $this->sender_name ?? 'Guest';
     }
 

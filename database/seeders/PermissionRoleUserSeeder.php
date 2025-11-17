@@ -137,6 +137,7 @@ class PermissionRoleUserSeeder extends Seeder
         $adminRole->givePermissionTo('global access');
 
         $adminUser = User::firstOrCreate(
+            // ['email' => 'admin@example.com'],
             ['email' => 'jomarisingson04@gmail.com'],
             [
                 'name' => 'Admin User',
@@ -221,7 +222,7 @@ class PermissionRoleUserSeeder extends Seeder
                 'address' => 'Front Desk',
                 // 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                'password_changed_at' => now(),
+                // 'password_changed_at' => now(),
                 'status' => 'active',
             ]
         );
@@ -277,6 +278,7 @@ class PermissionRoleUserSeeder extends Seeder
                 'address' => 'Customer Address',
                 // 'email_verified_at' => now(),
                 'password' => Hash::make('password'),
+                // 'password_changed_at' => now(),
                 'status' => 'active',
             ]
         );

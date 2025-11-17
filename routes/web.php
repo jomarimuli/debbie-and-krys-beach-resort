@@ -22,6 +22,7 @@ use App\Http\Controllers\FAQController;
 use App\Http\Controllers\FAQSearchController;
 use App\Http\Controllers\ChatConversationController;
 use App\Http\Controllers\ChatMessageController;
+use App\Http\Controllers\ChatAutoReplyController;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
 
@@ -100,17 +101,22 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
     // FAQs
     Route::resource('faqs', FAQController::class)->except(['show', 'create', 'edit']);
     Route::get('/faq/analytics', [FAQSearchController::class, 'analytics'])->name('faq.analytics');
+    Route::get('/faq/popular', [FAQSearchController::class, 'popularQuestions']);
 
     // Chat
     Route::get('/chat', [ChatConversationController::class, 'index'])->name('chat.index');
     Route::post('/chat', [ChatConversationController::class, 'store'])->name('chat.store');
+
+    Route::get('/chat/auto-replies', [ChatAutoReplyController::class, 'index'])
+        ->name('chat.auto-replies.index');
+    Route::put('/chat/auto-replies/{autoReply}', [ChatAutoReplyController::class, 'update'])
+        ->name('chat.auto-replies.update');
+
     Route::get('/chat/{conversation}', [ChatConversationController::class, 'show'])->name('chat.show');
     Route::post('/chat/{conversation}/assign', [ChatConversationController::class, 'assign'])->name('chat.assign');
     Route::post('/chat/{conversation}/close', [ChatConversationController::class, 'close'])->name('chat.close');
     Route::post('/chat/{conversation}/reopen', [ChatConversationController::class, 'reopen'])->name('chat.reopen');
-
     Route::post('/chat/{conversation}/messages', [ChatMessageController::class, 'store'])->name('chat.messages.store');
-    Route::post('/chat/{conversation}/mark-as-read', [ChatMessageController::class, 'markAsRead'])->name('chat.messages.mark-as-read');
 });
 
 require __DIR__.'/settings.php';

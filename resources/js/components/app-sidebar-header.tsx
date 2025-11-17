@@ -92,7 +92,7 @@ export function AppSidebarHeader({
             {/* Right side controls */}
             <div className="flex items-center gap-2 ml-auto">
                 {/* Notifications Dropdown */}
-                <DropdownMenu>
+                {/* <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="relative h-8 w-8 cursor-pointer">
                             <Bell className="h-4 w-4" />
@@ -157,7 +157,7 @@ export function AppSidebarHeader({
                                         className="flex items-start gap-3 p-3 cursor-pointer"
                                         onClick={() => !notification.isRead && handleMarkAsRead(notification.id)}
                                     >
-                                        <div className="flex-shrink-0 mt-1">
+                                        <div className="shrink-0 mt-1">
                                             {getNotificationIcon(notification.type)}
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -216,7 +216,7 @@ export function AppSidebarHeader({
                             </div>
                         )}
                     </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu> */}
 
                 {/* Fullscreen Toggle */}
                 <Button

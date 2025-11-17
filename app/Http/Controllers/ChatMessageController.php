@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\ChatConversation;
 use App\Models\ChatMessage;
 use App\Http\Requests\Chat\StoreMessageRequest;
+use App\Events\MessageSent;
+use App\Events\ConversationUpdated;
 
 class ChatMessageController extends Controller
 {
@@ -12,7 +14,6 @@ class ChatMessageController extends Controller
     {
         $user = auth()->user();
 
-        // auto-assign logic for staff
         if ($user && !$user->hasRole('customer')) {
             if ($conversation->status === 'open') {
                 $conversation->update([
@@ -20,6 +21,8 @@ class ChatMessageController extends Controller
                     'status' => 'assigned',
                     'assigned_at' => now(),
                 ]);
+
+                broadcast(new ConversationUpdated($conversation))->toOthers();
             } elseif ($conversation->staff_id && $conversation->staff_id !== $user->id) {
                 abort(403, 'This conversation is assigned to another staff member');
             }
@@ -34,6 +37,9 @@ class ChatMessageController extends Controller
 
         $conversation->touch();
 
+        broadcast(new MessageSent($message))->toOthers();
+        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
+
         return response()->json([
             'message' => $message->load('sender'),
         ]);
@@ -44,7 +50,6 @@ class ChatMessageController extends Controller
         $user = auth()->user();
 
         if ($user) {
-            // bulk update instead of each()
             $conversation->messages()
                 ->where('sender_id', '!=', $user->id)
                 ->where('is_read', false)
@@ -52,6 +57,8 @@ class ChatMessageController extends Controller
                     'is_read' => true,
                     'read_at' => now(),
                 ]);
+
+            broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
         }
 
         return response()->json(['success' => true]);

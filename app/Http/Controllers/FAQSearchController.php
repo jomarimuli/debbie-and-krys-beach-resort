@@ -9,6 +9,18 @@ use Illuminate\Http\Request;
 
 class FAQSearchController extends Controller
 {
+    public function popularQuestions()
+    {
+        $faqs = FAQ::active()
+            ->ordered()
+            ->limit(20)
+            ->get();
+
+        return response()->json([
+            'faqs' => $faqs,
+        ]);
+    }
+
     public function search(SearchFAQRequest $request)
     {
         $query = $request->validated()['query'];

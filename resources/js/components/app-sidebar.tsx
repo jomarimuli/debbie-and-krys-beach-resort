@@ -1,11 +1,10 @@
 // resources/js/components/app-sidebar.tsx
-
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavGroup, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw, MessageCircleQuestion, MessageCircle } from 'lucide-react';
+import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw, MessageCircleQuestion, MessageCircle, Settings } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import { GithubUpdatesModal } from '@/components/github-updates-modal';
@@ -124,6 +123,16 @@ const allNavGroups: NavGroup[] = [
                 href: '/chat',
                 icon: MessageCircle,
                 requiredPermissions: ['chat access', 'global access'],
+                items: [
+                    {
+                        title: 'Conversations',
+                        href: '/chat',
+                    },
+                    {
+                        title: 'Auto-Reply',
+                        href: '/chat/auto-replies',
+                    },
+                ],
             },
         ],
     },
@@ -150,24 +159,21 @@ export function AppSidebar() {
     const page = usePage<SharedData>();
     const { auth } = page.props;
 
-    // Filter navigation groups and items based on user permissions
     const mainNavGroups = useMemo(() => {
         return allNavGroups
             .map(group => ({
                 ...group,
                 items: group.items.filter(item => {
-                    // If no permissions required, show the item
                     if (!item.requiredPermissions || item.requiredPermissions.length === 0) {
                         return true;
                     }
 
-                    // Check if user has any of the required permissions
                     return item.requiredPermissions.some(permission =>
                         auth.user?.permissions?.includes(permission)
                     );
                 }),
             }))
-            .filter(group => group.items.length > 0); // Remove empty groups
+            .filter(group => group.items.length > 0);
     }, [auth.user?.permissions]);
 
     return (

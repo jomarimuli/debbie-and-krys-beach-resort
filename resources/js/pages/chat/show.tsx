@@ -1,5 +1,4 @@
 // resources/js/pages/chat/show.tsx
-
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,9 +19,10 @@ const statusVariants: Record<ChatStatus, 'default' | 'secondary' | 'outline'> = 
     closed: 'outline',
 };
 
-export default function Show({ conversation }: ChatShowProps) {
+export default function Show({ conversation: initialConversation }: ChatShowProps) {
     const { user, isAdmin, isStaff } = useAuth();
-    const [messages, setMessages] = useState<ChatMessage[]>(conversation.messages || []);
+    const [conversation, setConversation] = useState(initialConversation);
+    const [messages, setMessages] = useState<ChatMessage[]>(initialConversation.messages || []);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -34,6 +34,37 @@ export default function Show({ conversation }: ChatShowProps) {
     useEffect(() => {
         scrollToBottom();
     }, [messages]);
+
+    useEffect(() => {
+        const channel = window.Echo.channel(`chat.${conversation.id}`);
+
+        channel.listen('.MessageSent', (e: { message: ChatMessage }) => {
+            setMessages(prev => {
+                if (prev.some(m => m.id === e.message.id)) {
+                    return prev;
+                }
+                return [...prev, e.message];
+            });
+        });
+
+        return () => {
+            window.Echo.leave(`chat.${conversation.id}`);
+        };
+    }, [conversation.id]);
+
+    useEffect(() => {
+        const conversationChannel = window.Echo.channel('conversations');
+
+        conversationChannel.listen('.ConversationUpdated', (e: { conversation: typeof initialConversation }) => {
+            if (e.conversation.id === conversation.id) {
+                setConversation(e.conversation);
+            }
+        });
+
+        return () => {
+            window.Echo.leave('conversations');
+        };
+    }, [conversation.id]);
 
     const sendMessage = async (e: FormEvent) => {
         e.preventDefault();
@@ -51,8 +82,13 @@ export default function Show({ conversation }: ChatShowProps) {
             const response = await axios.post(`/chat/${conversation.id}/messages`, {
                 message: messageText,
             });
-            setMessages([...messages, response.data.message]);
-            toast.success('Message sent');
+
+            setMessages(prev => {
+                if (prev.some(m => m.id === response.data.message.id)) {
+                    return prev;
+                }
+                return [...prev, response.data.message];
+            });
         } catch (error) {
             const axiosError = error as AxiosError<{ message?: string; errors?: Record<string, string[]> }>;
 
@@ -83,7 +119,7 @@ export default function Show({ conversation }: ChatShowProps) {
         }
     };
 
-    const handleAction = (action: 'assign' | 'close' | 'reopen', successMessage: string) => {
+    const handleAction = (action: 'assign' | 'close' | 'reopen') => {
         if (!conversation?.id) return;
         router.post(`/chat/${conversation.id}/${action}`, {}, {
             preserveScroll: true,
@@ -126,7 +162,7 @@ export default function Show({ conversation }: ChatShowProps) {
                         <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleAction('assign', 'Conversation assigned to you')}
+                            onClick={() => handleAction('assign')}
                         >
                             <UserCheck className="h-3.5 w-3.5 mr-1.5" />
                             Assign to Me
@@ -136,7 +172,7 @@ export default function Show({ conversation }: ChatShowProps) {
                         <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleAction('close', 'Conversation closed')}
+                            onClick={() => handleAction('close')}
                         >
                             <X className="h-3.5 w-3.5 mr-1.5" />
                             Close
@@ -146,7 +182,7 @@ export default function Show({ conversation }: ChatShowProps) {
                         <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleAction('reopen', 'Conversation reopened')}
+                            onClick={() => handleAction('reopen')}
                         >
                             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
                             Reopen

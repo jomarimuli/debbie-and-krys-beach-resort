@@ -1,5 +1,4 @@
-// resources\js\components\app-header.tsx
-
+// resources/js/components/app-header.tsx
 import { Breadcrumbs } from '@/components/breadcrumbs';
 import { Icon } from '@/components/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,7 +12,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, Menu, Search, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw, MessageCircleQuestion, MessageCircle } from 'lucide-react';
+import { LayoutGrid, Users, Shield, Menu, Search, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw, MessageCircleQuestion, MessageCircle, Settings } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
@@ -180,7 +179,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                         <div className="flex flex-col space-y-4">
                                             {mainNavItems.map((item) => (
                                                 item.isExternal ? (
-                                                    <a key={item.title} href={typeof item.href === 'string' ? item.href : item.href.url} className="flex items-center space-x-2 font-medium">
+                                                    <a key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
                                                         {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
                                                         <span>{item.title}</span>
                                                     </a>
@@ -224,7 +223,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                 href={item.href}
                                                 className={cn(
                                                     navigationMenuTriggerStyle(),
-                                                    page.url === (typeof item.href === 'string' ? item.href : item.href.url) && activeItemStyles,
+                                                    page.url === item.href && activeItemStyles,
                                                     'h-9 cursor-pointer px-3',
                                                 )}
                                             >
@@ -236,7 +235,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                 href={item.href}
                                                 className={cn(
                                                     navigationMenuTriggerStyle(),
-                                                    page.url === (typeof item.href === 'string' ? item.href : item.href.url) && activeItemStyles,
+                                                    page.url === item.href && activeItemStyles,
                                                     'h-9 cursor-pointer px-3',
                                                 )}
                                             >
