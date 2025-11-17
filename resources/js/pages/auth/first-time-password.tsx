@@ -80,7 +80,6 @@ export default function FirstTimePassword({ email }: FirstTimePasswordProps) {
                         autoComplete="new-password"
                         className="mt-1 block w-full"
                         autoFocus
-                        placeholder="Enter new password"
                     />
                     <InputError message={errors.password} />
                     <PasswordRequirements
@@ -98,7 +97,6 @@ export default function FirstTimePassword({ email }: FirstTimePasswordProps) {
                         onChange={(e) => handlePasswordConfirmationChange(e.target.value)}
                         autoComplete="new-password"
                         className="mt-1 block w-full"
-                        placeholder="Confirm new password"
                     />
                     <InputError message={errors.password_confirmation} className="mt-2" />
                     {passwordConfirmation && !isPasswordMatch && (

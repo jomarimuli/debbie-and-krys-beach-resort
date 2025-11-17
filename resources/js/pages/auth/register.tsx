@@ -18,6 +18,8 @@ export default function Register() {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        phone: '',
+        address: '',
         password: '',
         password_confirmation: '',
         recaptcha_token: ''
@@ -79,6 +81,8 @@ export default function Register() {
             router.post('/register', {
                 name: formData.name,
                 email: formData.email,
+                phone: formData.phone,
+                address: formData.address,
                 password: formData.password,
                 password_confirmation: formData.password_confirmation,
                 recaptcha_token: token
@@ -121,7 +125,7 @@ export default function Register() {
                             autoFocus
                             tabIndex={1}
                             autoComplete="name"
-                            placeholder="Full name"
+                            placeholder="Surname, Given Name"
                         />
                         <InputError message={errors.name} className="mt-2" />
                     </div>
@@ -144,6 +148,36 @@ export default function Register() {
                     </div>
 
                     <div className="grid gap-2">
+                        <Label htmlFor="phone">Phone number (optional)</Label>
+                        <Input
+                            id="phone"
+                            type="tel"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={(e) => handleInputChange('phone', e.target.value)}
+                            tabIndex={3}
+                            autoComplete="tel"
+                            placeholder="09xxxxxxxxx"
+                        />
+                        <InputError message={errors.phone} />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="address">Address (optional)</Label>
+                        <Input
+                            id="address"
+                            type="text"
+                            name="address"
+                            value={formData.address}
+                            onChange={(e) => handleInputChange('address', e.target.value)}
+                            tabIndex={4}
+                            autoComplete="street-address"
+                            placeholder="City, Province"
+                        />
+                        <InputError message={errors.address} />
+                    </div>
+
+                    <div className="grid gap-2">
                         <Label htmlFor="password">Password</Label>
                         <PasswordInput
                             id="password"
@@ -151,7 +185,7 @@ export default function Register() {
                             value={formData.password}
                             onChange={(e) => handleInputChange('password', e.target.value)}
                             required
-                            tabIndex={3}
+                            tabIndex={5}
                             autoComplete="new-password"
                             placeholder="Password"
                         />
@@ -170,7 +204,7 @@ export default function Register() {
                             value={formData.password_confirmation}
                             onChange={(e) => handleInputChange('password_confirmation', e.target.value)}
                             required
-                            tabIndex={4}
+                            tabIndex={6}
                             autoComplete="new-password"
                             placeholder="Confirm password"
                         />
@@ -186,7 +220,7 @@ export default function Register() {
                     <Button
                         type="submit"
                         className="mt-2 w-full cursor-pointer"
-                        tabIndex={5}
+                        tabIndex={7}
                         disabled={
                             isSubmitting ||
                             !isPasswordValid ||
@@ -221,7 +255,7 @@ export default function Register() {
                     variant="outline"
                     className="w-full cursor-pointer"
                     onClick={handleGoogleLogin}
-                    tabIndex={6}
+                    tabIndex={8}
                 >
                     <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                         <path
@@ -246,7 +280,7 @@ export default function Register() {
 
                 <div className="text-center text-sm text-muted-foreground">
                     Already have an account?{' '}
-                    <TextLink href={login()} tabIndex={7}>
+                    <TextLink href={login()} tabIndex={9}>
                         Login
                     </TextLink>
                 </div>

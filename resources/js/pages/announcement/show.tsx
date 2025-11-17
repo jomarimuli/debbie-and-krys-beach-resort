@@ -1,0 +1,125 @@
+import AppLayout from '@/layouts/app-layout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { type Announcement, type PageProps } from '@/types';
+import { Link } from '@inertiajs/react';
+import { ArrowLeft, Edit } from 'lucide-react';
+import { format } from 'date-fns';
+import announcements from '@/routes/announcements';
+
+import { useAuth } from '@/hooks/use-auth';
+
+export default function Show({ announcement }: PageProps & { announcement: Announcement }) {
+    const { can, isAdmin, isStaff } = useAuth();
+
+    return (
+        <div className="space-y-4">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <Link href={announcements.index.url()}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <ArrowLeft className="h-4 w-4" />
+                        </Button>
+                    </Link>
+                    <div>
+                        <h1 className="text-xl font-semibold">{announcement.title}</h1>
+                        <p className="text-sm text-muted-foreground">Announcement details</p>
+                    </div>
+                </div>
+                {/* Only admin/staff can edit */}
+                {(isAdmin() || isStaff()) && can('announcement edit') && (
+                    <Link href={announcements.edit.url({ announcement: announcement.id })}>
+                        <Button size="sm" variant="outline">
+                            <Edit className="h-3.5 w-3.5 mr-1.5" />
+                            Edit
+                        </Button>
+                    </Link>
+                )}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+                {/* Content */}
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Content</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <div>
+                            <p className="text-xs text-muted-foreground mb-0.5">Title</p>
+                            <p className="text-sm font-medium">{announcement.title}</p>
+                        </div>
+
+                        <div>
+                            <p className="text-xs text-muted-foreground mb-0.5">Message</p>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                                {announcement.content}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* Details */}
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Details</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        <div>
+                            <p className="text-xs text-muted-foreground mb-0.5">Status</p>
+                            <Badge variant={announcement.is_active ? 'default' : 'secondary'} className="text-xs">
+                                {announcement.is_active ? 'Active' : 'Inactive'}
+                            </Badge>
+                        </div>
+
+                        <div>
+                            <p className="text-xs text-muted-foreground mb-0.5">Published At</p>
+                            <p className="text-sm font-medium">
+                                {announcement.published_at
+                                    ? format(new Date(announcement.published_at), 'MMMM dd, yyyy HH:mm')
+                                    : 'Not published yet'}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p className="text-xs text-muted-foreground mb-0.5">Expires At</p>
+                            <p className="text-sm font-medium">
+                                {announcement.expires_at
+                                    ? format(new Date(announcement.expires_at), 'MMMM dd, yyyy HH:mm')
+                                    : 'No expiry'}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p className="text-xs text-muted-foreground mb-0.5">Created</p>
+                            <p className="text-sm font-medium">
+                                {format(new Date(announcement.created_at), 'MMMM dd, yyyy HH:mm')}
+                            </p>
+                        </div>
+
+                        <div>
+                            <p className="text-xs text-muted-foreground mb-0.5">Last Updated</p>
+                            <p className="text-sm font-medium">
+                                {format(new Date(announcement.updated_at), 'MMMM dd, yyyy HH:mm')}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    );
+}
+
+Show.layout = (page: React.ReactNode) => (
+    <AppLayout
+        breadcrumbs={[
+            { title: 'Dashboard', href: '/dashboard' },
+            { title: 'Announcements', href: '/announcements' },
+            { title: 'Show', href: '#' },
+        ]}
+    >
+        <div className="p-4">
+            {page}
+        </div>
+    </AppLayout>
+);

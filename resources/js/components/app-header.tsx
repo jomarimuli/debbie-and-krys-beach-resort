@@ -13,13 +13,19 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, Menu, Search, GitBranch, HeartPulse } from 'lucide-react';
+import { LayoutGrid, Users, Shield, Menu, Search, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw, MessageCircleQuestion, MessageCircle } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 import { GithubUpdatesModal } from '@/components/github-updates-modal';
 
 const allNavItems: NavItem[] = [
+    {
+        title: 'Home',
+        href: '/',
+        icon: Home,
+        requiredPermissions: [],
+    },
     {
         title: 'Dashboard',
         href: '/dashboard',
@@ -31,6 +37,78 @@ const allNavItems: NavItem[] = [
         href: '/pulse',
         icon: HeartPulse,
         requiredPermissions: ['pulse access', 'global access'],
+    },
+    {
+        title: 'Accommodations',
+        href: '/accommodations',
+        icon: Hotel,
+        requiredPermissions: ['accommodation show', 'global access'],
+    },
+    {
+        title: 'Rates',
+        href: '/accommodation-rates',
+        icon: Coins,
+        requiredPermissions: ['accommodation-rate show', 'global access'],
+    },
+    {
+        title: 'Bookings',
+        href: '/bookings',
+        icon: Ticket,
+        requiredPermissions: ['booking show', 'global access'],
+    },
+    {
+        title: 'Rebookings',
+        href: '/rebookings',
+        icon: RefreshCw,
+        requiredPermissions: ['booking show', 'global access'],
+    },
+    {
+        title: 'Payments',
+        href: '/payments',
+        icon: Banknote,
+        requiredPermissions: ['payment show', 'global access'],
+    },
+    {
+        title: 'Refunds',
+        href: '/refunds',
+        icon: ReceiptText,
+        requiredPermissions: ['refund show', 'global access'],
+    },
+    {
+        title: 'Payment Accounts',
+        href: '/payment-accounts',
+        icon: Wallet,
+        requiredPermissions: ['payment-account show', 'global access'],
+    },
+    {
+        title: 'Feedbacks',
+        href: '/feedbacks',
+        icon: MessageSquare,
+        requiredPermissions: ['feedback show', 'global access'],
+    },
+    {
+        title: 'Gallery',
+        href: '/galleries',
+        icon: ImageIcon,
+        requiredPermissions: ['gallery show', 'global access'],
+    },
+    {
+        title: 'Announcements',
+        href: '/announcements',
+        icon: Megaphone,
+        requiredPermissions: ['announcement show', 'global access'],
+    },
+    {
+        title: 'FAQs',
+        href: '/faqs',
+        icon: MessageCircleQuestion,
+        requiredPermissions: ['faq show', 'global access'],
+    },
+    {
+        title: 'Chat',
+        href: '/chat',
+        icon: MessageCircle,
+        requiredPermissions: ['chat access', 'global access'],
     },
     {
         title: 'Users',
@@ -166,7 +244,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                 {item.title}
                                             </Link>
                                         )}
-                                        {page.url === item.href && (
+                                        {(item.href === '/' ? page.url === '/' : page.url.startsWith(item.href)) && (
                                             <div className="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black"></div>
                                         )}
                                     </NavigationMenuItem>
@@ -178,7 +256,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     <div className="ml-auto flex items-center space-x-2">
                         <div className="relative flex items-center space-x-1">
                             <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer">
-                                <Search className="!size-5 opacity-80 group-hover:opacity-100" />
+                                <Search className="size-5! opacity-80 group-hover:opacity-100" />
                             </Button>
                             <div className="hidden lg:flex">
                                 {rightNavItems.map((item) => (
