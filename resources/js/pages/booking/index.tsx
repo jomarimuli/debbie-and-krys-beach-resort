@@ -1,3 +1,5 @@
+// resources/js/pages/booking/index.tsx - Update the canEditBooking function
+
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,7 +25,7 @@ import bookings from '@/routes/bookings';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function Index({ bookings: bookingData }: BookingIndexProps) {
-    const { can, user, isAdmin, isStaff } = useAuth();
+    const { can, user, isAdmin, isStaff, isCustomer } = useAuth();
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const handleDelete = () => {
@@ -50,17 +52,33 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
         );
     };
 
-    // Add permission check helper
+    // Updated permission check - customer can only edit pending bookings they own
     const canEditBooking = (booking: Booking) => {
-        if (!can('booking edit')) return false;
-        if (isAdmin() || isStaff()) return true;
-        return booking.created_by === user?.id;
+        if (!can('booking edit')) {
+            return false;
+        }
+
+        if (isAdmin() || isStaff()) {
+            return true;
+        }
+
+        if (isCustomer()) {
+            // Handle both number and object cases
+            const bookingUserId = typeof booking.created_by === 'object'
+                ? (booking.created_by as any)?.id
+                : booking.created_by;
+
+            return bookingUserId === user?.id && booking.status === 'pending';
+        }
+
+        return false;
     };
 
     const canDeleteBooking = (booking: Booking) => {
         if (!can('booking delete')) return false;
-        if (isAdmin() || isStaff()) return true;
-        return booking.created_by === user?.id;
+
+        // Only admin can delete
+        return isAdmin();
     };
 
     return (
@@ -70,7 +88,6 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                     <h1 className="text-xl font-semibold">Bookings</h1>
                     <p className="text-sm text-muted-foreground">Manage guest reservations</p>
                 </div>
-                {/* Check create permission */}
                 {can('booking create') && (
                     <Link href={bookings.create.url()}>
                         <Button size="sm">
@@ -157,7 +174,6 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
-                                            {/* Always show view if user can view bookings */}
                                             {can('booking show') && (
                                                 <Link href={bookings.show.url({ booking: booking.id })}>
                                                     <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -166,7 +182,6 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                                                 </Link>
                                             )}
 
-                                            {/* Check edit permission */}
                                             {canEditBooking(booking) && (
                                                 <Link href={bookings.edit.url({ booking: booking.id })}>
                                                     <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -175,8 +190,7 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                                                 </Link>
                                             )}
 
-                                            {/* Check delete permission */}
-                                            {(isAdmin() && can('booking delete')) && (
+                                            {canDeleteBooking(booking) && (
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"

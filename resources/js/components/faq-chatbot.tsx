@@ -217,7 +217,7 @@ export function FAQChatbot() {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-10 w-10 hover:bg-gray-100 cursor-pointer"
+                            className="h-10 w-10 hover:bg-[#E55A2B] hover:text-white transition-colors cursor-pointer"
                             onClick={() => setIsOpen(false)}
                             aria-label="Close chat"
                         >
@@ -337,7 +337,7 @@ export function FAQChatbot() {
                                     onClick={addSuggestionsToChat}
                                     variant="outline"
                                     size="sm"
-                                    className="flex-1 h-10 border-gray-300 text-gray-700 hover:bg-gray-50 cursor-pointer active:scale-95 transition-all"
+                                    className="flex-1 h-10 border-[#E55A2B] text-[#E55A2B] hover:bg-[#E55A2B] hover:text-white cursor-pointer active:scale-95 transition-all"
                                     disabled={isLoading}
                                 >
                                     <RefreshCw className="h-4 w-4 mr-2" />
