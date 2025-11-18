@@ -7,6 +7,7 @@ use App\Models\Accommodation;
 use App\Models\AccommodationRate;
 use App\Models\BookingAccommodation;
 use App\Models\BookingEntranceFee;
+use App\Models\User;
 use App\Http\Requests\Booking\StoreBookingRequest;
 use App\Http\Requests\Booking\UpdateBookingRequest;
 use Illuminate\Http\RedirectResponse;
@@ -217,12 +218,37 @@ class BookingController extends Controller
 
     public function edit(Booking $booking): Response
     {
-        if (auth()->user()->hasRole('customer') && $booking->created_by !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
+        // Check permissions
+        if (auth()->user()->hasRole('customer')) {
+            // Customer can only edit their own pending bookings
+            if ($booking->created_by !== auth()->id()) {
+                abort(403, 'Unauthorized action.');
+            }
+
+            if ($booking->status !== 'pending') {
+                abort(403, 'You can only edit pending bookings.');
+            }
         }
+
+        // Admin/Staff can edit any booking
+
+        $booking->load([
+            'accommodations.accommodation',
+            'accommodations.accommodationRate',
+            'entranceFees',
+        ]);
+
+        $accommodations = Accommodation::with('rates')->active()->orderBy('name')->get();
+
+        $users = User::query()
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
 
         return Inertia::render('booking/edit', [
             'booking' => $booking,
+            'accommodations' => $accommodations,
+            'users' => $users,
         ]);
     }
 
@@ -282,6 +308,38 @@ class BookingController extends Controller
         $booking->update(['status' => 'checked_out']);
 
         return back()->with('success', 'Guest checked out successfully.');
+    }
+
+    public function revertStatus(Booking $booking): RedirectResponse
+    {
+        // Only admin and staff can revert status
+        if (!auth()->user()->hasAnyRole(['admin', 'staff'])) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if (!$booking->canRevertStatus()) {
+            return back()->with('error', 'Cannot revert status from current state.');
+        }
+
+        $previousStatus = $booking->getPreviousStatus();
+
+        if (!$previousStatus) {
+            return back()->with('error', 'No previous status available.');
+        }
+
+        DB::beginTransaction();
+        try {
+            $oldStatus = $booking->status;
+            $booking->update(['status' => $previousStatus]);
+
+            DB::commit();
+
+            return redirect()->route('bookings.show', $booking)
+                ->with('success', "Booking status reverted from {$oldStatus} to {$previousStatus}.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to revert booking status: ' . $e->getMessage());
+        }
     }
 
     public function cancel(Booking $booking): RedirectResponse

@@ -193,7 +193,7 @@ export default function Welcome() {
                                     <div className="flex items-center gap-2 sm:gap-3">
                                         <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
                                         <a
-                                            href="tel:+639278210836"
+                                            href="#"
                                             className="font-mono tracking-wider hover:text-[#E55A2B] transition-colors duration-200 cursor-pointer"
                                             title="Click to call"
                                         >
@@ -203,7 +203,7 @@ export default function Welcome() {
                                     <div className="flex items-center gap-2 sm:gap-3">
                                         <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
                                         <a
-                                            href="mailto:debbiekrysb@gmail.com"
+                                            href="#"
                                             className="break-all hover:text-[#E55A2B] transition-colors duration-200 cursor-pointer"
                                             title="Click to send email"
                                         >
@@ -662,7 +662,7 @@ export default function Welcome() {
                                 <div className="flex items-center gap-2 sm:gap-3">
                                     <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
                                     <a
-                                        href="tel:+639278210836"
+                                        href="#"
                                         className="text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200 font-mono"
                                     >
                                         0927 821 0836
@@ -671,7 +671,7 @@ export default function Welcome() {
                                 <div className="flex items-center gap-2 sm:gap-3">
                                     <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
                                     <a
-                                        href="mailto:debbiekrysb@gmail.com"
+                                        href="#"
                                         className="text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200 break-all"
                                     >
                                         debbiekrysb@gmail.com
@@ -701,7 +701,7 @@ export default function Welcome() {
                             </h4>
                             <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                                 <Link
-                                    href="/guest-bookings/create"
+                                    href="/login"
                                     className="block text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200"
                                 >
                                     Book Now

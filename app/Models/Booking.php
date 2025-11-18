@@ -195,4 +195,23 @@ class Booking extends Model
 
         return $code;
     }
+
+    // Methods
+    public function canRevertStatus(): bool
+    {
+        // Can only revert if not in initial or final states
+        return !in_array($this->status, ['pending', 'cancelled']);
+    }
+
+    public function getPreviousStatus(): ?string
+    {
+        // Define the status flow and their previous states
+        $statusFlow = [
+            'confirmed' => 'pending',
+            'checked_in' => 'confirmed',
+            'checked_out' => 'checked_in',
+        ];
+
+        return $statusFlow[$this->status] ?? null;
+    }
 }

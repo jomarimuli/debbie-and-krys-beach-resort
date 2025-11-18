@@ -71,6 +71,8 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
         ->name('rebookings.reject');
     Route::post('rebookings/{rebooking}/complete', [RebookingController::class, 'complete'])
         ->name('rebookings.complete');
+    Route::post('/bookings/{booking}/revert-status', [BookingController::class, 'revertStatus'])
+        ->name('bookings.revert-status');
     Route::post('rebookings/{rebooking}/cancel', [RebookingController::class, 'cancel'])
         ->name('rebookings.cancel');
 

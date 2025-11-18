@@ -176,7 +176,7 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                                             )}
 
                                             {/* Check delete permission */}
-                                            {canDeleteBooking(booking) && (
+                                            {(isAdmin() && can('booking delete')) && (
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
