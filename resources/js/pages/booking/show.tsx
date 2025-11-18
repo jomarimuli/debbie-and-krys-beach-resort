@@ -119,11 +119,16 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    {/* Add permission checks for status buttons */}
-                    {booking.status === 'pending' && canConfirm && (
+                    {booking.status === 'pending' && !existingRebooking && canConfirm && (
                         <Button size="sm" onClick={() => handleStatusChange('confirm')}>
                             <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
                             Confirm
+                        </Button>
+                    )}
+                    {booking.status === 'pending' && existingRebooking && (
+                        <Button size="sm" disabled className="cursor-not-allowed" title={`Booking has ${existingRebooking.status} rebooking`}>
+                            <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                            Cannot Confirm
                         </Button>
                     )}
                     {booking.status === 'confirmed' && canCheckIn && (

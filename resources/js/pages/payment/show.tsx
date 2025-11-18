@@ -10,6 +10,7 @@ import { useState } from 'react';
 import payments from '@/routes/payments';
 import bookings from '@/routes/bookings';
 import rebookings from '@/routes/rebookings';
+import refunds from '@/routes/refunds';
 
 const paymentMethodLabels: Record<string, string> = {
     cash: 'Cash',
@@ -249,6 +250,47 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                         )}
                     </CardContent>
                 </Card>
+
+                {payment.refunds && payment.refunds.length > 0 && (
+                    <Card>
+                        <CardHeader className="pb-3">
+                            <CardTitle className="text-base font-medium">Refunds</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                {payment.refunds.map((refund) => (
+                                    <Link
+                                        key={refund.id}
+                                        href={refunds.show.url({ refund: refund.id })}
+                                        className="flex justify-between items-center p-2 border rounded hover:bg-muted/50 transition-colors"
+                                    >
+                                        <div className="text-sm">
+                                            <p className="font-medium">{refund.refund_number}</p>
+                                            <p className="text-xs text-muted-foreground">
+                                                {format(new Date(refund.refund_date), 'MMM dd, yyyy')} · {refund.refund_method.replace('_', ' ')}
+                                            </p>
+                                        </div>
+                                        <p className="font-medium text-sm text-red-600">-₱{parseFloat(refund.amount).toLocaleString()}</p>
+                                    </Link>
+                                ))}
+                            </div>
+                            <div className="mt-3 pt-3 border-t">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Total Refunded:</span>
+                                    <span className="font-medium text-red-600">
+                                        ₱{parseFloat(payment.refunded_amount || '0').toLocaleString()}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between text-sm mt-1">
+                                    <span className="font-semibold">Remaining Amount:</span>
+                                    <span className="font-semibold text-green-600">
+                                        ₱{parseFloat(payment.remaining_amount || payment.amount).toLocaleString()}
+                                    </span>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
 
             {payment.notes && (

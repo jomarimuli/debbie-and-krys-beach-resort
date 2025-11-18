@@ -34,6 +34,7 @@ export interface NavItem {
     items?: Array<{
         title: string;
         href: string;
+        requiredPermissions?: string[];
     }>;
 }
 

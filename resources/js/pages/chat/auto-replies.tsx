@@ -51,13 +51,10 @@ export default function AutoReplies({ autoReplies }: AutoRepliesProps) {
             </div>
 
             <Card>
-                <CardHeader>
-                    <CardTitle className="text-base font-medium">Welcome Message</CardTitle>
-                </CardHeader>
                 <CardContent>
                     <form onSubmit={submit} className="space-y-4">
                         <div className="space-y-1.5">
-                            <Label htmlFor="message">Auto-Reply Message</Label>
+                            <Label htmlFor="message">Message</Label>
                             <Textarea
                                 id="message"
                                 value={data.message}
@@ -71,7 +68,7 @@ export default function AutoReplies({ autoReplies }: AutoRepliesProps) {
                             )}
                         </div>
 
-                        <div className="space-y-1.5">
+                        {/* <div className="space-y-1.5">
                             <Label htmlFor="delay_seconds">Delay (seconds)</Label>
                             <Input
                                 id="delay_seconds"
@@ -88,7 +85,7 @@ export default function AutoReplies({ autoReplies }: AutoRepliesProps) {
                             {errors.delay_seconds && (
                                 <p className="text-xs text-destructive">{errors.delay_seconds}</p>
                             )}
-                        </div>
+                        </div> */}
 
                         <div className="flex items-center space-x-2">
                             <Switch
@@ -97,7 +94,7 @@ export default function AutoReplies({ autoReplies }: AutoRepliesProps) {
                                 onCheckedChange={(checked) => setData('is_active', checked as boolean)}
                             />
                             <Label htmlFor="is_active" className="cursor-pointer">
-                                Enable auto-reply
+                                Enable
                             </Label>
                         </div>
 

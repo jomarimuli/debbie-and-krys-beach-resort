@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Booking;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Services\AccommodationAvailabilityService;
 
 class UpdateBookingRequest extends FormRequest
 {
@@ -29,14 +30,12 @@ class UpdateBookingRequest extends FormRequest
             'status' => ['required', 'in:pending,confirmed,checked_in,checked_out,cancelled'],
         ];
 
-        // Check-out date is required for overnight bookings
         if ($booking->booking_type === 'overnight') {
             $rules['check_out_date'] = ['required', 'date', 'after:check_in_date'];
         } else {
             $rules['check_out_date'] = ['nullable', 'date', 'after:check_in_date'];
         }
 
-        // Down payment amount is required if down payment is enabled
         if ($this->input('down_payment_required')) {
             $rules['down_payment_amount'] = ['required', 'numeric', 'min:0.01'];
         }
@@ -51,5 +50,42 @@ class UpdateBookingRequest extends FormRequest
             'check_out_date.after' => 'Check-out date must be after check-in date.',
             'down_payment_amount.required' => 'Down payment amount is required when down payment is enabled.',
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $booking = $this->route('booking');
+
+            // Check if dates are being changed
+            $datesChanged = $booking->check_in_date->format('Y-m-d') !== $this->check_in_date ||
+                ($booking->check_out_date && $booking->check_out_date->format('Y-m-d') !== $this->check_out_date);
+
+            if ($datesChanged) {
+                // Check accommodation availability excluding current booking
+                $availabilityService = app(AccommodationAvailabilityService::class);
+
+                $accommodationIds = $booking->accommodations()
+                    ->pluck('accommodation_id')
+                    ->unique()
+                    ->toArray();
+
+                if (!empty($accommodationIds)) {
+                    $conflicts = $availabilityService->checkAvailability(
+                        $accommodationIds,
+                        $this->check_in_date,
+                        $this->check_out_date,
+                        $booking->id
+                    );
+
+                    if (!empty($conflicts)) {
+                        $messages = $availabilityService->formatConflictMessages($conflicts);
+                        foreach ($messages as $message) {
+                            $validator->errors()->add('check_in_date', $message);
+                        }
+                    }
+                }
+            }
+        });
     }
 }

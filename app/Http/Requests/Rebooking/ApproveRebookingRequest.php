@@ -14,15 +14,8 @@ class ApproveRebookingRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'rebooking_fee' => ['nullable', 'numeric', 'min:0'],
             'admin_notes' => ['nullable', 'string', 'max:1000'],
-            'rebooking_fee' => ['required', 'numeric', 'min:0'],
-        ];
-    }
-
-    public function messages(): array
-    {
-        return [
-            'rebooking_fee.min' => 'Rebooking fee cannot be negative.',
         ];
     }
 }

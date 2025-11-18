@@ -72,15 +72,68 @@ class Refund extends Model
 
         static::created(function ($refund) {
             $refund->payment->booking->updatePaidAmount();
+
+            // Update rebooking payment status if applicable
+            if ($refund->rebooking_id) {
+                self::updateRebookingPaymentStatus($refund->rebooking_id);
+            }
         });
 
         static::updated(function ($refund) {
             $refund->payment->booking->updatePaidAmount();
+
+            if ($refund->rebooking_id) {
+                self::updateRebookingPaymentStatus($refund->rebooking_id);
+            }
         });
 
         static::deleted(function ($refund) {
             $refund->payment->booking->updatePaidAmount();
+
+            if ($refund->rebooking_id) {
+                self::updateRebookingPaymentStatus($refund->rebooking_id);
+            }
         });
+    }
+
+    private static function updateRebookingPaymentStatus(int $rebookingId): void
+    {
+        $rebooking = \App\Models\Rebooking::find($rebookingId);
+
+        if (!$rebooking) {
+            return;
+        }
+
+        $totalAdjustment = (float)$rebooking->total_adjustment;
+
+        // If adjustment is 0, mark as paid
+        if ($totalAdjustment == 0) {
+            $rebooking->update(['payment_status' => 'paid']);
+            return;
+        }
+
+        // For positive adjustments (guest owes money)
+        if ($totalAdjustment > 0) {
+            $totalPaid = $rebooking->payments()->sum('amount');
+
+            if ($totalPaid >= $totalAdjustment) {
+                $rebooking->update(['payment_status' => 'paid']);
+            } else {
+                $rebooking->update(['payment_status' => 'pending']);
+            }
+        }
+
+        // For negative adjustments (refund needed)
+        if ($totalAdjustment < 0) {
+            $totalRefunded = $rebooking->refunds()->sum('amount');
+            $requiredRefund = abs($totalAdjustment);
+
+            if ($totalRefunded >= $requiredRefund) {
+                $rebooking->update(['payment_status' => 'refunded']);
+            } else {
+                $rebooking->update(['payment_status' => 'pending']);
+            }
+        }
     }
 
     private static function generateRefundNumber(): string

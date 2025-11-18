@@ -12,6 +12,7 @@ import { Link } from '@inertiajs/react';
 import { type Feedback, type Booking, type PageProps } from '@/types';
 import feedbacks from '@/routes/feedbacks';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Edit({
     feedback,
@@ -20,6 +21,7 @@ export default function Edit({
     feedback: Feedback;
     bookings: Booking[];
 }) {
+    const { isCustomer } = useAuth();
     const { data, setData, put, processing, errors } = useForm({
         booking_id: feedback.booking_id?.toString() || '',
         guest_name: feedback.guest_name,
@@ -30,6 +32,23 @@ export default function Edit({
         comment: feedback.comment || '',
         status: feedback.status,
     });
+
+    const selectedBooking = bookings.find((b) => b.id === parseInt(data.booking_id));
+
+    const handleBookingChange = (value: string) => {
+        setData('booking_id', value);
+        const booking = bookings.find((b) => b.id === parseInt(value));
+        if (booking) {
+            setData((prev) => ({
+                ...prev,
+                booking_id: value,
+                guest_name: booking.guest_name,
+                guest_email: booking.guest_email || '',
+                guest_phone: booking.guest_phone || '',
+                guest_address: booking.guest_address || '',
+            }));
+        }
+    };
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -60,7 +79,7 @@ export default function Edit({
                             <Label htmlFor="booking_id" className="text-sm cursor-text select-text">
                                 Booking (Optional)
                             </Label>
-                            <Select value={data.booking_id} onValueChange={(value) => setData('booking_id', value)}>
+                            <Select value={data.booking_id} onValueChange={handleBookingChange}>
                                 <SelectTrigger className="h-9">
                                     <SelectValue placeholder="Select or leave empty" />
                                 </SelectTrigger>
@@ -75,6 +94,39 @@ export default function Edit({
                             </Select>
                             {errors.booking_id && <p className="text-xs text-destructive">{errors.booking_id}</p>}
                         </div>
+
+                        {selectedBooking && (
+                            <div className="rounded border p-3 bg-muted/30 space-y-2">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Check-in:</span>
+                                    <span className="font-medium">
+                                        {new Date(selectedBooking.check_in_date).toLocaleDateString('en-US', {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric'
+                                        })}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Type:</span>
+                                    <span className="font-medium capitalize">
+                                        {selectedBooking.booking_type.replace('_', ' ')}
+                                    </span>
+                                </div>
+                                {selectedBooking.accommodations && selectedBooking.accommodations.length > 0 && (
+                                    <div className="text-sm">
+                                        <span className="text-muted-foreground">Accommodations:</span>
+                                        <ul className="mt-1 space-y-0.5">
+                                            {selectedBooking.accommodations.map((acc) => (
+                                                <li key={acc.id} className="ml-2 text-xs">
+                                                    • {acc.accommodation?.name}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="space-y-1.5">
@@ -181,6 +233,7 @@ export default function Edit({
                                 onValueChange={(value: 'pending' | 'approved' | 'rejected') =>
                                     setData('status', value)
                                 }
+                                disabled={isCustomer()}
                             >
                                 <SelectTrigger className="h-9">
                                     <SelectValue />

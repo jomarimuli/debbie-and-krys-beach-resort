@@ -685,7 +685,7 @@ export default function Welcome() {
                                         rel="noopener noreferrer"
                                         className="text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200"
                                     >
-                                        Facebook Page
+                                        Debbie & Krys Beach Resort
                                     </a>
                                 </div>
                             </div>

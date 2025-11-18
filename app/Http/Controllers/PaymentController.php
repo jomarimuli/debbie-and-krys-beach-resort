@@ -34,7 +34,7 @@ class PaymentController extends Controller
 
     public function index(): Response
     {
-        $query = Payment::with(['booking', 'rebooking']);
+        $query = Payment::with(['booking', 'rebooking', 'paymentAccount', 'receivedByUser']);
 
         // Customers can only see payments for their own bookings
         if (auth()->user()->hasRole('customer')) {
@@ -52,22 +52,40 @@ class PaymentController extends Controller
 
     public function create(): Response
     {
-        // Customers cannot create payments (admin/staff only)
         if (auth()->user()->hasRole('customer')) {
             abort(403, 'Unauthorized action.');
         }
 
-        $bookings = Booking::whereColumn('paid_amount', '<', 'total_amount')
-            ->orderBy('booking_number')
+        $bookings = Booking::with(['rebookings' => function ($q) {
+                $q->whereIn('status', ['approved'])
+                    ->where('payment_status', 'pending')
+                    ->latest();
+            }])
+            ->get()
+            ->filter(function ($booking) {
+                return $booking->balance > 0;
+            })
+            ->values();
+
+        $rebookings = \App\Models\Rebooking::with(['originalBooking'])
+            ->where('status', 'approved')
+            ->where('payment_status', 'pending')
+            ->where('total_adjustment', '>', 0)
+            ->latest()
             ->get();
 
         $paymentAccounts = PaymentAccount::active()
             ->ordered()
             ->get();
 
+        // Get query params for pre-selection
+        $rebookingId = request()->query('rebooking_id');
+
         return Inertia::render('payment/create', [
             'bookings' => $bookings,
+            'rebookings' => $rebookings,
             'payment_accounts' => $paymentAccounts,
+            'preselected_rebooking_id' => $rebookingId,
         ]);
     }
 

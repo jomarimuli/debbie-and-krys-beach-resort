@@ -11,8 +11,8 @@ class Rebooking extends Model
     protected $table = 'rebookings';
 
     protected $fillable = [
-        'original_booking_id',
         'rebooking_number',
+        'original_booking_id',
         'processed_by',
         'new_check_in_date',
         'new_check_out_date',
@@ -45,15 +45,20 @@ class Rebooking extends Model
         'completed_at' => 'datetime',
     ];
 
-    protected $appends = ['new_total_guests'];
+    protected $appends = [
+        'new_total_guests',
+        'total_paid',
+        'total_refunded',
+        'remaining_payment',
+        'remaining_refund'
+    ];
 
-    // Relationships
     public function originalBooking(): BelongsTo
     {
         return $this->belongsTo(Booking::class, 'original_booking_id');
     }
 
-    public function processedBy(): BelongsTo
+    public function processedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'processed_by');
     }
@@ -78,31 +83,72 @@ class Rebooking extends Model
         return $this->hasMany(Refund::class);
     }
 
-    public function processedByUser(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'processed_by');
-    }
-
-    // Accessors
     protected function newTotalGuests(): Attribute
     {
         return Attribute::make(
-            get: fn() => $this->new_total_adults + $this->new_total_children,
+            get: fn() => $this->new_total_adults + $this->new_total_children
         );
     }
 
-    // Scopes
-    public function scopePending($query)
+    protected function totalPaid(): Attribute
     {
-        return $query->where('status', 'pending');
+        return Attribute::make(
+            get: fn() => $this->payments()->sum('amount')
+        );
     }
 
-    public function scopeApproved($query)
+    protected function totalRefunded(): Attribute
     {
-        return $query->where('status', 'approved');
+        return Attribute::make(
+            get: fn() => $this->refunds()->sum('amount')
+        );
     }
 
-    // Boot
+    protected function remainingPayment(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if ((float)$this->total_adjustment <= 0) {
+                    return 0;
+                }
+
+                $remaining = (float)$this->total_adjustment - (float)$this->total_paid;
+                return max(0, $remaining);
+            }
+        );
+    }
+
+    protected function remainingRefund(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if ((float)$this->total_adjustment >= 0) {
+                    return 0;
+                }
+
+                $requiredRefund = abs((float)$this->total_adjustment);
+                $remaining = $requiredRefund - (float)$this->total_refunded;
+                return max(0, $remaining);
+            }
+        );
+    }
+
+    public function isPaymentComplete(): bool
+    {
+        $totalAdjustment = (float)$this->total_adjustment;
+
+        if ($totalAdjustment == 0) {
+            return true;
+        }
+
+        if ($totalAdjustment > 0) {
+            return (float)$this->total_paid >= $totalAdjustment;
+        }
+
+        $requiredRefund = abs($totalAdjustment);
+        return (float)$this->total_refunded >= $requiredRefund;
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -111,19 +157,24 @@ class Rebooking extends Model
             if (!$rebooking->rebooking_number) {
                 $rebooking->rebooking_number = self::generateRebookingNumber();
             }
+
+            if (!$rebooking->processed_by) {
+                $rebooking->processed_by = auth()->id();
+            }
         });
     }
 
-    // Static Methods
-    public static function generateRebookingNumber(): string
+    private static function generateRebookingNumber(): string
     {
-        $yearMonth = now()->format('Ym');
-        $latest = self::where('rebooking_number', 'like', "RB-{$yearMonth}-%")
+        $year = now()->format('Y');
+        $month = now()->format('m');
+        $lastRebooking = self::whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
             ->latest('id')
             ->first();
 
-        $number = $latest ? intval(substr($latest->rebooking_number, -4)) + 1 : 1;
+        $nextNumber = $lastRebooking ? ((int) substr($lastRebooking->rebooking_number, -4)) + 1 : 1;
 
-        return 'RB-' . $yearMonth . '-' . str_pad($number, 4, '0', STR_PAD_LEFT);
+        return sprintf('REB-%s%s-%04d', $year, $month, $nextNumber);
     }
 }

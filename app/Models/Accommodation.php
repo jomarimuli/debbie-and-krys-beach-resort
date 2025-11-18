@@ -33,7 +33,6 @@ class Accommodation extends Model
 
     protected $appends = ['image_urls', 'first_image_url'];
 
-    // Relationships
     public function rates(): HasMany
     {
         return $this->hasMany(AccommodationRate::class);
@@ -44,13 +43,11 @@ class Accommodation extends Model
         return $this->hasMany(BookingAccommodation::class);
     }
 
-    // Scopes
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
     }
 
-    // Methods
     public function getRateForBookingType(string $bookingType)
     {
         return $this->rates()
@@ -59,31 +56,78 @@ class Accommodation extends Model
             ->first();
     }
 
-    // Availability check
-    public function isAvailableForDates($checkIn, $checkOut): bool
+    /**
+     * Check availability considering rebookings
+     */
+    public function isAvailableForDates($checkIn, $checkOut, $excludeBookingId = null): bool
     {
         if (!$this->is_active) {
             return false;
         }
 
-        $hasConflict = $this->bookingAccommodations()
-            ->whereHas('booking', function($query) use ($checkIn, $checkOut) {
-                $query->whereIn('status', ['confirmed', 'checked-in'])
-                    ->where(function($q) use ($checkIn, $checkOut) {
-                        $q->whereBetween('check_in_date', [$checkIn, $checkOut])
-                        ->orWhereBetween('check_out_date', [$checkIn, $checkOut])
-                        ->orWhere(function($sub) use ($checkIn, $checkOut) {
-                            $sub->where('check_in_date', '<=', $checkIn)
-                                ->where('check_out_date', '>=', $checkOut);
-                        });
+        $checkInDate = is_string($checkIn) ? \Carbon\Carbon::parse($checkIn) : $checkIn;
+        $checkOutDate = $checkOut ? (is_string($checkOut) ? \Carbon\Carbon::parse($checkOut) : $checkOut) : $checkInDate->copy();
+
+        // Get bookings for this accommodation
+        $conflictingBookings = $this->bookingAccommodations()
+            ->whereHas('booking', function($query) use ($checkInDate, $checkOutDate, $excludeBookingId) {
+                $query->whereIn('status', ['pending', 'confirmed', 'checked_in'])
+                    ->when($excludeBookingId, fn($q) => $q->where('id', '!=', $excludeBookingId))
+                    ->where(function($q) use ($checkInDate, $checkOutDate) {
+                        $q->whereBetween('check_in_date', [$checkInDate, $checkOutDate])
+                            ->orWhereBetween('check_out_date', [$checkInDate, $checkOutDate])
+                            ->orWhere(function($sub) use ($checkInDate, $checkOutDate) {
+                                $sub->where('check_in_date', '<=', $checkInDate)
+                                    ->where('check_out_date', '>=', $checkOutDate);
+                            });
                     });
             })
-            ->exists();
+            ->with('booking.rebookings')
+            ->get();
 
-        return !$hasConflict;
+        foreach ($conflictingBookings as $bookingAccommodation) {
+            $booking = $bookingAccommodation->booking;
+
+            // Check if there's an approved rebooking
+            $approvedRebooking = $booking->rebookings()
+                ->where('status', 'approved')
+                ->latest()
+                ->first();
+
+            if ($approvedRebooking) {
+                // Use rebooking dates
+                $rebookCheckIn = \Carbon\Carbon::parse($approvedRebooking->new_check_in_date);
+                $rebookCheckOut = $approvedRebooking->new_check_out_date
+                    ? \Carbon\Carbon::parse($approvedRebooking->new_check_out_date)
+                    : $rebookCheckIn->copy();
+
+                if ($this->datesOverlap($checkInDate, $checkOutDate, $rebookCheckIn, $rebookCheckOut)) {
+                    return false;
+                }
+            } else {
+                // Use original booking dates
+                $bookingCheckIn = \Carbon\Carbon::parse($booking->check_in_date);
+                $bookingCheckOut = $booking->check_out_date
+                    ? \Carbon\Carbon::parse($booking->check_out_date)
+                    : $bookingCheckIn->copy();
+
+                if ($this->datesOverlap($checkInDate, $checkOutDate, $bookingCheckIn, $bookingCheckOut)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
-    // Accessors
+    /**
+     * Check if two date ranges overlap
+     */
+    private function datesOverlap($start1, $end1, $start2, $end2): bool
+    {
+        return $start1->lte($end2) && $end1->gte($start2);
+    }
+
     public function getImageUrlsAttribute(): array
     {
         if (!$this->images) {

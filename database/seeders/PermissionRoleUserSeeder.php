@@ -117,6 +117,7 @@ class PermissionRoleUserSeeder extends Seeder
             'chat access',
             'chat assign',
             'chat close',
+            'chat auto reply'
         ];
 
         foreach ($permissions as $permission) {
@@ -138,14 +139,15 @@ class PermissionRoleUserSeeder extends Seeder
 
         $adminUser = User::firstOrCreate(
             // ['email' => 'admin@example.com'],
-            ['email' => 'jomarisingson04@gmail.com'],
+            // ['email' => 'jomarisingson04@gmail.com'],
+            ['email' => 'castillolanzlaurence@gmail.com'],
             [
                 'name' => 'Admin User',
                 'phone' => '09278210836',
                 'address' => 'Admin Office',
-                // 'email_verified_at' => now(),
+                'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                // 'password_changed_at' => now(),
+                'password_changed_at' => now(),
                 'status' => 'active',
             ]
         );
@@ -215,14 +217,16 @@ class PermissionRoleUserSeeder extends Seeder
         ]);
 
         $staffUser = User::firstOrCreate(
-            ['email' => 'pauljustina11@gmail.com'],
+            // ['email' => 'staff@example.com'],
+            // ['email' => 'pauljustina11@gmail.com'],
+            ['email' => 'castillolanz2001@gmail.com'],
             [
                 'name' => 'Staff User',
                 'phone' => '09123456789',
                 'address' => 'Front Desk',
-                // 'email_verified_at' => now(),
+                'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                // 'password_changed_at' => now(),
+                'password_changed_at' => now(),
                 'status' => 'active',
             ]
         );
@@ -271,14 +275,16 @@ class PermissionRoleUserSeeder extends Seeder
         ]);
 
         $customerUser = User::firstOrCreate(
-            ['email' => 'macalommark18u@gmail.com'],
+            // ['email' => 'customer@example.com'],
+            // ['email' => 'macalommark18u@gmail.com'],
+            ['email' => 'lanzlac3231@gmail.com'],
             [
                 'name' => 'Customer User',
                 'phone' => '09987654321',
                 'address' => 'Customer Address',
-                // 'email_verified_at' => now(),
+                'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                // 'password_changed_at' => now(),
+                'password_changed_at' => now(),
                 'status' => 'active',
             ]
         );
