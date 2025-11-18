@@ -29,8 +29,12 @@ class ChatConversationController extends Controller
 
         $conversations = $query->latest('updated_at')->get();
 
+        // Calculate total unread count
+        $totalUnreadCount = $conversations->sum('unread_messages_count');
+
         return Inertia::render('chat/index', [
             'conversations' => $conversations,
+            'totalUnreadCount' => $totalUnreadCount,
         ]);
     }
 
@@ -103,6 +107,7 @@ class ChatConversationController extends Controller
                 abort(403);
             }
 
+            // Mark messages as read
             $conversation->messages()
                 ->where('sender_id', '!=', $user->id)
                 ->where('is_read', false)
@@ -114,6 +119,15 @@ class ChatConversationController extends Controller
             if ($conversation->guest_session_id !== session('guest_chat_session_id')) {
                 abort(403);
             }
+
+            // Mark messages as read for guest (system/staff messages)
+            $conversation->messages()
+                ->whereNotNull('sender_id')
+                ->where('is_read', false)
+                ->update([
+                    'is_read' => true,
+                    'read_at' => now(),
+                ]);
         }
 
         $conversation->load(['customer', 'staff', 'messages.sender']);

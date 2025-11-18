@@ -31,6 +31,7 @@ export interface NavItem {
     isActive?: boolean;
     isExternal?: boolean;
     requiredPermissions?: string[];
+    badge?: number;
     items?: Array<{
         title: string;
         href: string;

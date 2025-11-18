@@ -105,7 +105,6 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
     Route::resource('faqs', FAQController::class)->except(['show', 'create', 'edit']);
     Route::get('/faq/analytics', [FAQSearchController::class, 'analytics'])->name('faq.analytics');
 
-
     // Chat
     Route::get('/chat', [ChatConversationController::class, 'index'])->name('chat.index');
     Route::post('/chat', [ChatConversationController::class, 'store'])->name('chat.store');

@@ -25,13 +25,13 @@ const allNavGroups: NavGroup[] = [
                 icon: LayoutGrid,
                 requiredPermissions: [],
             },
-            {
-                title: 'Pulse',
-                href: '/pulse',
-                icon: HeartPulse,
-                requiredPermissions: ['pulse access', 'global access'],
-                isExternal: true,
-            },
+            // {
+            //     title: 'Pulse',
+            //     href: '/pulse',
+            //     icon: HeartPulse,
+            //     requiredPermissions: ['pulse access', 'global access'],
+            //     isExternal: true,
+            // },
         ],
     },
     {
@@ -164,7 +164,15 @@ export function AppSidebar() {
         return allNavGroups
             .map(group => ({
                 ...group,
-                items: group.items.filter(item => {
+                items: group.items.map(item => {
+                    if (item.href === '/chat' && auth.user?.unread_chat_count) {
+                        return {
+                            ...item,
+                            badge: auth.user.unread_chat_count,
+                        };
+                    }
+                    return item;
+                }).filter(item => {
                     if (!item.requiredPermissions || item.requiredPermissions.length === 0) {
                         return true;
                     }
@@ -175,7 +183,7 @@ export function AppSidebar() {
                 }),
             }))
             .filter(group => group.items.length > 0);
-    }, [auth.user?.permissions]);
+    }, [auth.user?.permissions, auth.user?.unread_chat_count]);
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -197,7 +205,7 @@ export function AppSidebar() {
 
             <SidebarFooter>
                 <div className="border-t pt-2">
-                    <SidebarMenu>
+                    {/* <SidebarMenu>
                         <SidebarMenuItem>
                             <GithubUpdatesModal>
                                 <SidebarMenuButton className="w-full cursor-pointer animate-pulse-glow" asChild>
@@ -208,7 +216,7 @@ export function AppSidebar() {
                                 </SidebarMenuButton>
                             </GithubUpdatesModal>
                         </SidebarMenuItem>
-                    </SidebarMenu>
+                    </SidebarMenu> */}
                 </div>
                 <NavUser />
             </SidebarFooter>

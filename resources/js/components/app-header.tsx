@@ -17,6 +17,7 @@ import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 import { GithubUpdatesModal } from '@/components/github-updates-modal';
+import { Badge } from '@/components/ui/badge';
 
 const allNavItems: NavItem[] = [
     {
@@ -31,12 +32,12 @@ const allNavItems: NavItem[] = [
         icon: LayoutGrid,
         requiredPermissions: [],
     },
-    {
-        title: 'Pulse',
-        href: '/pulse',
-        icon: HeartPulse,
-        requiredPermissions: ['pulse access', 'global access'],
-    },
+    // {
+    //     title: 'Pulse',
+    //     href: '/pulse',
+    //     icon: HeartPulse,
+    //     requiredPermissions: ['pulse access', 'global access'],
+    // },
     {
         title: 'Accommodations',
         href: '/accommodations',
@@ -124,11 +125,11 @@ const allNavItems: NavItem[] = [
 ];
 
 const rightNavItems: NavItem[] = [
-    {
-        title: 'Updates',
-        href: '#',
-        icon: GitBranch,
-    },
+    // {
+    //     title: 'Updates',
+    //     href: '#',
+    //     icon: GitBranch,
+    // },
 ];
 
 const activeItemStyles = 'text-neutral-900';
@@ -144,18 +145,24 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
     // Filter navigation items based on user permissions
     const mainNavItems = useMemo(() => {
-        return allNavItems.filter(item => {
-            // If no permissions required, show the item
+        return allNavItems.map(item => {
+            if (item.href === '/chat' && auth.user?.unread_chat_count) {
+                return {
+                    ...item,
+                    badge: auth.user.unread_chat_count,
+                };
+            }
+            return item;
+        }).filter(item => {
             if (!item.requiredPermissions || item.requiredPermissions.length === 0) {
                 return true;
             }
 
-            // Check if user has any of the required permissions
             return item.requiredPermissions.some(permission =>
                 auth.user?.permissions?.includes(permission)
             );
         });
-    }, [auth.user?.permissions]);
+    }, [auth.user?.permissions, auth.user?.unread_chat_count]);
 
     return (
         <>
@@ -179,14 +186,28 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                         <div className="flex flex-col space-y-4">
                                             {mainNavItems.map((item) => (
                                                 item.isExternal ? (
-                                                    <a key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
-                                                        {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                        <span>{item.title}</span>
+                                                    <a key={item.title} href={item.href} className="flex items-center justify-between font-medium">
+                                                        <div className="flex items-center space-x-2">
+                                                            {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                            <span>{item.title}</span>
+                                                        </div>
+                                                        {item.badge && item.badge > 0 && (
+                                                            <Badge variant="destructive" className="h-6 min-w-5 px-1.5 text-xs">
+                                                                {item.badge}
+                                                            </Badge>
+                                                        )}
                                                     </a>
                                                 ) : (
-                                                    <Link key={item.title} href={item.href} className="flex items-center space-x-2 font-medium">
-                                                        {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
-                                                        <span>{item.title}</span>
+                                                    <Link key={item.title} href={item.href} className="flex items-center justify-between font-medium">
+                                                        <div className="flex items-center space-x-2">
+                                                            {item.icon && <Icon iconNode={item.icon} className="h-5 w-5" />}
+                                                            <span>{item.title}</span>
+                                                        </div>
+                                                        {item.badge && item.badge > 0 && (
+                                                            <Badge variant="destructive" className="h-6 min-w-5 px-1.5 text-xs">
+                                                                {item.badge}
+                                                            </Badge>
+                                                        )}
                                                     </Link>
                                                 )
                                             ))}
@@ -224,11 +245,16 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                 className={cn(
                                                     navigationMenuTriggerStyle(),
                                                     page.url === item.href && activeItemStyles,
-                                                    'h-9 cursor-pointer px-3',
+                                                    'h-9 cursor-pointer px-3 flex items-center gap-1.5',
                                                 )}
                                             >
-                                                {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
+                                                {item.icon && <Icon iconNode={item.icon} className="h-4 w-4" />}
                                                 {item.title}
+                                                {item.badge && item.badge > 0 && (
+                                                    <Badge variant="destructive" className="h-6 min-w-5 px-1.5 text-xs">
+                                                        {item.badge}
+                                                    </Badge>
+                                                )}
                                             </a>
                                         ) : (
                                             <Link
@@ -236,11 +262,16 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                                 className={cn(
                                                     navigationMenuTriggerStyle(),
                                                     page.url === item.href && activeItemStyles,
-                                                    'h-9 cursor-pointer px-3',
+                                                    'h-9 cursor-pointer px-3 flex items-center gap-1.5',
                                                 )}
                                             >
-                                                {item.icon && <Icon iconNode={item.icon} className="mr-2 h-4 w-4" />}
+                                                {item.icon && <Icon iconNode={item.icon} className="h-4 w-4" />}
                                                 {item.title}
+                                                {item.badge && item.badge > 0 && (
+                                                    <Badge variant="destructive" className="h-6 min-w-5 px-1.5 text-xs">
+                                                        {item.badge}
+                                                    </Badge>
+                                                )}
                                             </Link>
                                         )}
                                         {(item.href === '/' ? page.url === '/' : page.url.startsWith(item.href)) && (

@@ -26,7 +26,7 @@ const statusVariants: Record<ChatStatus, 'default' | 'secondary' | 'outline'> = 
     closed: 'outline',
 };
 
-export default function Index({ conversations: initialConversations }: ChatIndexProps) {
+export default function Index({ conversations: initialConversations, totalUnreadCount: initialUnreadCount }: ChatIndexProps) {
     const { user } = useAuth();
     const [conversations, setConversations] = useState(initialConversations);
     const [showNewChat, setShowNewChat] = useState(false);
@@ -105,7 +105,14 @@ export default function Index({ conversations: initialConversations }: ChatIndex
         <div className="space-y-4">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-xl font-semibold">Chat</h1>
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-xl font-semibold">Chat</h1>
+                        {initialUnreadCount > 0 && (
+                            <Badge variant="destructive" className="h-6 px-1.5 text-xs">
+                                {initialUnreadCount}
+                            </Badge>
+                        )}
+                    </div>
                     <p className="text-sm text-muted-foreground">
                         {user ? 'Your conversations' : 'Talk to our staff'}
                     </p>
@@ -138,6 +145,11 @@ export default function Index({ conversations: initialConversations }: ChatIndex
                                         <Badge variant={statusVariants[conversation.status as ChatStatus]}>
                                             {conversation.status}
                                         </Badge>
+                                        {conversation.unread_messages_count > 0 && (
+                                            <Badge variant="destructive" className="h-6 px-1.5 text-xs">
+                                                <span>{conversation.unread_messages_count}</span>
+                                            </Badge>
+                                        )}
                                     </div>
                                     <p className="text-xs text-muted-foreground">
                                         {conversation.participant_name} · {format(new Date(conversation.updated_at), 'MMM dd, yyyy HH:mm')}

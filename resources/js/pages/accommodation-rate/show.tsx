@@ -52,9 +52,14 @@ export default function Show({ rate }: PageProps & { rate: AccommodationRate }) 
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Booking Type</p>
-                            <Badge variant="outline" className="capitalize text-xs">
-                                {rate.booking_type.replace('_', ' ')}
-                            </Badge>
+                            <div className="flex flex-col gap-1">
+                                <Badge variant="outline" className="capitalize text-xs w-fit">
+                                    {rate.booking_type.replace('_', ' ')}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                    {rate.booking_type === 'overnight' ? '22 hours' : '8 hours'}
+                                </span>
+                            </div>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Rate</p>

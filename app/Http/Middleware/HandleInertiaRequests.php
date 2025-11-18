@@ -39,6 +39,7 @@ class HandleInertiaRequests extends Middleware
                     'updated_at' => $request->user()->updated_at,
                     'roles' => $request->user()->getRoleNames()->toArray(),
                     'permissions' => $request->user()->getAllPermissions()->pluck('name')->toArray(),
+                    'unread_chat_count' => $this->getUnreadChatCount($request),
                 ] : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
@@ -49,5 +50,25 @@ class HandleInertiaRequests extends Middleware
                 'info' => $request->session()->get('info'),
             ],
         ];
+    }
+
+    private function getUnreadChatCount($request): int
+    {
+        if (!$request->user()) {
+            return 0;
+        }
+
+        $query = \App\Models\ChatConversation::query();
+
+        if ($request->user()->hasRole('customer')) {
+            $query->forCustomer($request->user()->id);
+        }
+
+        return $query->get()->sum(function ($conversation) use ($request) {
+            return $conversation->messages()
+                ->where('sender_id', '!=', $request->user()->id)
+                ->where('is_read', false)
+                ->count();
+        });
     }
 }

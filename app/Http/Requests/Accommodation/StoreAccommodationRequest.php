@@ -21,8 +21,8 @@ class StoreAccommodationRequest extends FormRequest
             'is_air_conditioned' => ['boolean'],
             'images' => ['nullable', 'array'],
             'images.*' => ['image', 'mimes:jpeg,jpg,png,webp'],
-            'min_capacity' => ['nullable', 'integer', 'min:1'],
-            'max_capacity' => ['nullable', 'integer', 'min:1', 'gte:min_capacity'],
+            'min_capacity' => ['required', 'integer', 'min:1'],
+            'max_capacity' => ['required', 'integer', 'min:1', 'gte:min_capacity'],
             'is_active' => ['boolean'],
             'sort_order' => ['integer', 'min:0'],
         ];

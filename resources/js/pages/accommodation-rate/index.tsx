@@ -100,9 +100,14 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" className="text-xs capitalize">
-                                            {rate.booking_type.replace('_', ' ')}
-                                        </Badge>
+                                        <div className="flex flex-col gap-1">
+                                            <Badge variant="outline" className="text-xs capitalize w-fit">
+                                                {rate.booking_type.replace('_', ' ')}
+                                            </Badge>
+                                            <span className="text-xs text-muted-foreground">
+                                                {rate.booking_type === 'overnight' ? '22 hrs' : '8 hrs'}
+                                            </span>
+                                        </div>
                                     </TableCell>
                                     <TableCell className="font-medium text-sm">
                                         ₱{parseFloat(rate.rate).toLocaleString()}
