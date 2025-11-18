@@ -36,34 +36,34 @@ export default function Show({ conversation: initialConversation }: ChatShowProp
     }, [messages]);
 
     useEffect(() => {
-        const channel = window.Echo.channel(`chat.${conversation.id}`);
+        // const channel = window.Echo.channel(`chat.${conversation.id}`);
 
-        channel.listen('.MessageSent', (e: { message: ChatMessage }) => {
-            setMessages(prev => {
-                if (prev.some(m => m.id === e.message.id)) {
-                    return prev;
-                }
-                return [...prev, e.message];
-            });
-        });
+        // channel.listen('.MessageSent', (e: { message: ChatMessage }) => {
+        //     setMessages(prev => {
+        //         if (prev.some(m => m.id === e.message.id)) {
+        //             return prev;
+        //         }
+        //         return [...prev, e.message];
+        //     });
+        // });
 
-        return () => {
-            window.Echo.leave(`chat.${conversation.id}`);
-        };
+        // return () => {
+        //     window.Echo.leave(`chat.${conversation.id}`);
+        // };
     }, [conversation.id]);
 
     useEffect(() => {
-        const conversationChannel = window.Echo.channel('conversations');
+        // const conversationChannel = window.Echo.channel('conversations');
 
-        conversationChannel.listen('.ConversationUpdated', (e: { conversation: typeof initialConversation }) => {
-            if (e.conversation.id === conversation.id) {
-                setConversation(e.conversation);
-            }
-        });
+        // conversationChannel.listen('.ConversationUpdated', (e: { conversation: typeof initialConversation }) => {
+        //     if (e.conversation.id === conversation.id) {
+        //         setConversation(e.conversation);
+        //     }
+        // });
 
-        return () => {
-            window.Echo.leave('conversations');
-        };
+        // return () => {
+        //     window.Echo.leave('conversations');
+        // };
     }, [conversation.id]);
 
     const sendMessage = async (e: FormEvent) => {
@@ -123,8 +123,10 @@ export default function Show({ conversation: initialConversation }: ChatShowProp
         if (!conversation?.id) return;
         router.post(`/chat/${conversation.id}/${action}`, {}, {
             preserveScroll: true,
-            onSuccess: () => {
-                router.reload({ only: ['conversation'] });
+            onSuccess: (page) => {
+                // Update local conversation state from the fresh page props
+                const freshConversation = page.props.conversation as typeof initialConversation;
+                setConversation(freshConversation);
             },
             onError: (errors) => {
                 toast.error(Object.values(errors)[0] as string);

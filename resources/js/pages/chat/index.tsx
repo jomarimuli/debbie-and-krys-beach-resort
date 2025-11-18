@@ -54,51 +54,51 @@ export default function Index({ conversations: initialConversations }: ChatIndex
     };
 
     useEffect(() => {
-        const channel = window.Echo.channel('conversations');
+        // const channel = window.Echo.channel('conversations');
 
-        channel.listen('.ConversationUpdated', (e: { conversation: ChatConversation }) => {
-            setConversations((prev: ChatConversation[]) => {
-                const index = prev.findIndex((c: ChatConversation) => c.id === e.conversation.id);
-                if (index !== -1) {
-                    const updated = [...prev];
-                    updated[index] = e.conversation;
-                    return updated.sort((a: ChatConversation, b: ChatConversation) =>
-                        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-                    );
-                }
-                return [e.conversation, ...prev];
-            });
-        });
+        // channel.listen('.ConversationUpdated', (e: { conversation: ChatConversation }) => {
+        //     setConversations((prev: ChatConversation[]) => {
+        //         const index = prev.findIndex((c: ChatConversation) => c.id === e.conversation.id);
+        //         if (index !== -1) {
+        //             const updated = [...prev];
+        //             updated[index] = e.conversation;
+        //             return updated.sort((a: ChatConversation, b: ChatConversation) =>
+        //                 new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        //             );
+        //         }
+        //         return [e.conversation, ...prev];
+        //     });
+        // });
 
         if (user) {
             const roleChannel = user.roles?.some((r: { name: string }) => r.name === 'customer')
                 ? `conversations.customer.${user.id}`
                 : `conversations.staff.${user.id}`;
 
-            const userChannel = window.Echo.channel(roleChannel);
-            userChannel.listen('.ConversationUpdated', (e: { conversation: ChatConversation }) => {
-                setConversations((prev: ChatConversation[]) => {
-                    const index = prev.findIndex((c: ChatConversation) => c.id === e.conversation.id);
-                    if (index !== -1) {
-                        const updated = [...prev];
-                        updated[index] = e.conversation;
-                        return updated.sort((a: ChatConversation, b: ChatConversation) =>
-                            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-                        );
-                    }
-                    return [e.conversation, ...prev];
-                });
-            });
+            // const userChannel = window.Echo.channel(roleChannel);
+            // userChannel.listen('.ConversationUpdated', (e: { conversation: ChatConversation }) => {
+            //     setConversations((prev: ChatConversation[]) => {
+            //         const index = prev.findIndex((c: ChatConversation) => c.id === e.conversation.id);
+            //         if (index !== -1) {
+            //             const updated = [...prev];
+            //             updated[index] = e.conversation;
+            //             return updated.sort((a: ChatConversation, b: ChatConversation) =>
+            //                 new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+            //             );
+            //         }
+            //         return [e.conversation, ...prev];
+            //     });
+            // });
 
-            return () => {
-                window.Echo.leave('conversations');
-                window.Echo.leave(roleChannel);
-            };
+            // return () => {
+            //     window.Echo.leave('conversations');
+            //     window.Echo.leave(roleChannel);
+            // };
         }
 
-        return () => {
-            window.Echo.leave('conversations');
-        };
+        // return () => {
+        //     window.Echo.leave('conversations');
+        // };
     }, [user]);
 
     return (
