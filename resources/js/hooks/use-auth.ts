@@ -41,11 +41,11 @@ export function useAuth() {
     };
 
     const isStaff = (): boolean => {
-        return hasRole('staff') || hasPermission('staff access');
+        return hasRole('staff');
     };
 
     const isCustomer = (): boolean => {
-        return hasRole('customer') || hasPermission('customer access');
+        return hasRole('customer');
     };
 
     const can = (permission: string): boolean => {
