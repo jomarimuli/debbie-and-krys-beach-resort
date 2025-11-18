@@ -5,7 +5,7 @@ A customer has submitted feedback.
 
 ## Feedback Details
 
-- **Rating:** @for($i = 0; $i < $feedback->rating; $i++)⭐@endfor ({{ $feedback->rating }}/5)
+- **Rating:** {{ $feedback->rating }}/5
 - **Status:** {{ ucfirst($feedback->status) }}
 - **Submitted:** {{ $feedback->created_at->format('F d, Y h:i A') }}
 

@@ -7,7 +7,7 @@ Thank you for sharing your feedback with us! Your review has been approved and i
 
 ## Your Feedback
 
-**Rating:** @for($i = 0; $i < $feedback->rating; $i++)⭐@endfor ({{ $feedback->rating }}/5)
+**Rating:** {{ $feedback->rating }}/5
 
 @if($feedback->comment)
 **Comment:**

@@ -46,15 +46,29 @@ class StorePaymentRequest extends FormRequest
                 $booking = \App\Models\Booking::find($this->booking_id);
 
                 if ($booking) {
-                    // Skip booking balance validation if this is a rebooking payment
-                    if ($this->is_rebooking_payment) {
-                        // Rebooking payment validation would be handled by rebooking logic
+                    // Handle rebooking payment validation
+                    if ($this->is_rebooking_payment && $this->rebooking_id) {
+                        $rebooking = \App\Models\Rebooking::find($this->rebooking_id);
+
+                        if ($rebooking) {
+                            $totalAdjustment = (float)$rebooking->total_adjustment;
+
+                            if ($totalAdjustment <= 0) {
+                                $validator->errors()->add('rebooking_id', 'This rebooking does not require payment.');
+                            } else {
+                                $totalPaid = $rebooking->payments()->sum('amount');
+                                $remaining = $totalAdjustment - $totalPaid;
+
+                                if ($this->amount > $remaining) {
+                                    $validator->errors()->add('amount', 'Payment amount cannot exceed remaining rebooking adjustment of ₱' . number_format($remaining, 2) . '.');
+                                }
+                            }
+                        }
                         return;
                     }
 
                     // Check if this is a down payment
                     if ($this->is_down_payment) {
-                        // Validate down payment
                         if (!$booking->down_payment_required) {
                             $validator->errors()->add('is_down_payment', 'This booking does not require a down payment.');
                         } elseif ($this->amount > $booking->down_payment_balance) {

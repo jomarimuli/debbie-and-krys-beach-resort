@@ -15,7 +15,7 @@ import payments from '@/routes/payments';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function Show({ booking }: PageProps & { booking: Booking }) {
-    const { can, user, isAdmin, isStaff } = useAuth();
+    const { can, user, isAdmin, isStaff, isCustomer } = useAuth();
 
     const getStatusBadge = (status: string) => {
         const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -104,26 +104,23 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                         </Button>
                     </Link>
                     <div>
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-xl font-semibold">{booking.booking_number}</h1>
-                            <Badge
-                                variant="outline"
-                                className="font-mono text-xs cursor-pointer hover:bg-muted"
-                                onClick={copyBookingCode}
-                            >
-                                {booking.booking_code}
-                                <Copy className="ml-1 h-3 w-3" />
-                            </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{booking.guest_name}</p>
+                        <h1 className="text-xl font-semibold">{booking.booking_number}</h1>
+                        <p className="text-sm text-muted-foreground">
+                            {booking.guest_name} · {format(new Date(booking.check_in_date), 'MMM dd, yyyy')}
+                        </p>
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    {/* Add permission checks for status buttons */}
-                    {booking.status === 'pending' && canConfirm && (
+                    {booking.status === 'pending' && !existingRebooking && canConfirm && (
                         <Button size="sm" onClick={() => handleStatusChange('confirm')}>
                             <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
                             Confirm
+                        </Button>
+                    )}
+                    {booking.status === 'pending' && existingRebooking && (
+                        <Button size="sm" disabled className="cursor-not-allowed" title={`Booking has ${existingRebooking.status} rebooking`}>
+                            <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                            Cannot Confirm
                         </Button>
                     )}
                     {booking.status === 'confirmed' && canCheckIn && (
@@ -159,6 +156,21 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                         </Button>
                     )}
 
+                    {booking.status !== 'pending' && booking.status !== 'cancelled' && (isAdmin() || isStaff()) && can('booking edit') && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                                if (confirm(`Revert booking status from ${booking.status} to previous state?`)) {
+                                    router.post(bookings.revertStatus.url({ booking: booking.id }));
+                                }
+                            }}
+                        >
+                            <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+                            Revert Status
+                        </Button>
+                    )}
+
                     {!['cancelled', 'checked_out'].includes(booking.status) && canCancel && (
                         <Button size="sm" variant="destructive" onClick={() => handleStatusChange('cancel')}>
                             <XCircle className="h-3.5 w-3.5 mr-1.5" />
@@ -166,8 +178,17 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                         </Button>
                     )}
 
-                    {/* Add permission check for edit */}
-                    {canEdit && (
+                    {booking.status === 'pending' && isCustomer() && isOwner && can('booking edit') && (
+                        <Link href={bookings.edit.url({ booking: booking.id })}>
+                            <Button size="sm" variant="outline">
+                                <Edit className="h-3.5 w-3.5 mr-1.5" />
+                                Edit Booking
+                            </Button>
+                        </Link>
+                    )}
+
+                    {/* Admin/Staff can always edit */}
+                    {(isAdmin() || isStaff()) && can('booking edit') && (
                         <Link href={bookings.edit.url({ booking: booking.id })}>
                             <Button size="sm" variant="outline">
                                 <Edit className="h-3.5 w-3.5 mr-1.5" />

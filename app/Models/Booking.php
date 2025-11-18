@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Booking extends Model
@@ -51,7 +53,6 @@ class Booking extends Model
 
     protected $appends = ['balance', 'is_fully_paid', 'total_guests', 'down_payment_balance'];
 
-    // Relationships
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -77,7 +78,11 @@ class Booking extends Model
         return $this->hasMany(Rebooking::class, 'original_booking_id');
     }
 
-    // Accessors
+    public function feedback(): HasOne
+    {
+        return $this->hasOne(Feedback::class);
+    }
+
     protected function balance(): Attribute
     {
         return Attribute::make(
@@ -111,7 +116,6 @@ class Booking extends Model
         );
     }
 
-    // Helper Methods
     public function isDownPaymentPaid(): bool
     {
         if (!$this->down_payment_required || !$this->down_payment_amount) {
@@ -131,7 +135,6 @@ class Booking extends Model
         ]);
     }
 
-    // Scopes
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
@@ -154,7 +157,6 @@ class Booking extends Model
             ->where('check_in_date', '>', now()->toDateString());
     }
 
-    // Boot
     protected static function boot()
     {
         parent::boot();
@@ -169,7 +171,6 @@ class Booking extends Model
         });
     }
 
-    // Static Methods
     public static function generateBookingNumber(): string
     {
         $yearMonth = now()->format('Ym');
@@ -185,7 +186,6 @@ class Booking extends Model
     public static function generateBookingCode(): string
     {
         do {
-            // Generate 8-character alphanumeric code (no confusing chars: 0/O, 1/I/L)
             $characters = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
             $code = '';
             for ($i = 0; $i < 8; $i++) {
@@ -194,5 +194,24 @@ class Booking extends Model
         } while (self::where('booking_code', $code)->exists());
 
         return $code;
+    }
+
+    // Methods
+    public function canRevertStatus(): bool
+    {
+        // Can only revert if not in initial or final states
+        return !in_array($this->status, ['pending', 'cancelled']);
+    }
+
+    public function getPreviousStatus(): ?string
+    {
+        // Define the status flow and their previous states
+        $statusFlow = [
+            'confirmed' => 'pending',
+            'checked_in' => 'confirmed',
+            'checked_out' => 'checked_in',
+        ];
+
+        return $statusFlow[$this->status] ?? null;
     }
 }

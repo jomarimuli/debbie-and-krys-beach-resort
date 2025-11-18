@@ -30,7 +30,6 @@ class FeedbackController extends Controller
     {
         $query = Feedback::with(['booking.accommodations.accommodation']);
 
-        // Customers can only see their own feedback
         if (auth()->user()->hasRole('customer')) {
             $query->whereHas('booking', function ($q) {
                 $q->where('created_by', auth()->id());
@@ -46,9 +45,9 @@ class FeedbackController extends Controller
 
     public function create(): Response
     {
-        $query = Booking::whereIn('status', ['checked_out']);
+        $query = Booking::whereIn('status', ['checked_out'])
+            ->whereDoesntHave('feedback');
 
-        // Customers can only create feedback for their own bookings
         if (auth()->user()->hasRole('customer')) {
             $query->where('created_by', auth()->id());
         }
@@ -62,12 +61,16 @@ class FeedbackController extends Controller
 
     public function store(StoreFeedbackRequest $request): RedirectResponse
     {
-        $feedback = Feedback::create($request->validated());
+        $validated = $request->validated();
 
-        // Load relationships for email
+        if (auth()->user()->hasRole('customer')) {
+            $validated['status'] = 'pending';
+        }
+
+        $feedback = Feedback::create($validated);
+
         $feedback->load('booking');
 
-        // Send notification to admin/staff
         try {
             $adminEmails = NotificationService::getAdminStaffEmails();
             if (!empty($adminEmails)) {
@@ -83,8 +86,7 @@ class FeedbackController extends Controller
 
     public function show(Feedback $feedback): Response
     {
-        // Customers can only view their own feedback
-        if (auth()->user()->hasRole('customer') && $feedback->booking->created_by !== auth()->id()) {
+        if (auth()->user()->hasRole('customer') && $feedback->booking && $feedback->booking->created_by !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -97,12 +99,15 @@ class FeedbackController extends Controller
 
     public function edit(Feedback $feedback): Response
     {
-        // Customers can only edit their own feedback
-        if (auth()->user()->hasRole('customer') && $feedback->booking->created_by !== auth()->id()) {
+        if (auth()->user()->hasRole('customer') && $feedback->booking && $feedback->booking->created_by !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $query = Booking::whereIn('status', ['checked_out']);
+        $query = Booking::whereIn('status', ['checked_out'])
+            ->where(function ($q) use ($feedback) {
+                $q->whereDoesntHave('feedback')
+                    ->orWhere('id', $feedback->booking_id);
+            });
 
         if (auth()->user()->hasRole('customer')) {
             $query->where('created_by', auth()->id());
@@ -118,12 +123,17 @@ class FeedbackController extends Controller
 
     public function update(UpdateFeedbackRequest $request, Feedback $feedback): RedirectResponse
     {
-        // Customers can only update their own feedback
-        if (auth()->user()->hasRole('customer') && $feedback->booking->created_by !== auth()->id()) {
+        if (auth()->user()->hasRole('customer') && $feedback->booking && $feedback->booking->created_by !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $feedback->update($request->validated());
+        $validated = $request->validated();
+
+        if (auth()->user()->hasRole('customer')) {
+            $validated['status'] = 'pending';
+        }
+
+        $feedback->update($validated);
 
         return redirect()->route('feedbacks.show', $feedback)
             ->with('success', 'Feedback updated successfully.');
@@ -131,8 +141,7 @@ class FeedbackController extends Controller
 
     public function destroy(Feedback $feedback): RedirectResponse
     {
-        // Customers can only delete their own feedback
-        if (auth()->user()->hasRole('customer') && $feedback->booking->created_by !== auth()->id()) {
+        if (auth()->user()->hasRole('customer') && $feedback->booking && $feedback->booking->created_by !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -142,7 +151,6 @@ class FeedbackController extends Controller
             ->with('success', 'Feedback deleted successfully.');
     }
 
-    // Customers cannot approve/reject feedback
     public function approve(Feedback $feedback): RedirectResponse
     {
         if (auth()->user()->hasRole('customer')) {
@@ -151,10 +159,8 @@ class FeedbackController extends Controller
 
         $feedback->update(['status' => 'approved']);
 
-        // Load relationships for email
         $feedback->load('booking');
 
-        // Send approval notification to customer
         try {
             if ($feedback->booking && $feedback->booking->guest_email) {
                 Mail::to($feedback->booking->guest_email)->send(new FeedbackApproved($feedback));

@@ -1,3 +1,4 @@
+// resources/js/pages/payment/create.tsx
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,20 +7,33 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, useState } from 'react';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { FormEventHandler, useState, useEffect } from 'react';
+import { ArrowLeft, Upload, X, RefreshCw } from 'lucide-react';
 import { Link } from '@inertiajs/react';
-import { type Booking, type PaymentAccount, type PageProps } from '@/types';
+import { type Booking, type Rebooking, type PaymentAccount, type PageProps } from '@/types';
 import { format } from 'date-fns';
 import payments from '@/routes/payments';
 
-export default function Create({ bookings, payment_accounts }: PageProps & { bookings: Booking[]; payment_accounts: PaymentAccount[] }) {
+export default function Create({
+    bookings,
+    rebookings,
+    payment_accounts,
+    preselected_rebooking_id
+}: PageProps & {
+    bookings: Booking[];
+    rebookings?: Rebooking[];
+    payment_accounts: PaymentAccount[];
+    preselected_rebooking_id?: number;
+}) {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [paymentType, setPaymentType] = useState<'booking' | 'rebooking'>('booking');
 
     const { data, setData, post, processing, errors } = useForm({
         booking_id: '',
+        rebooking_id: '',
         amount: '',
         is_down_payment: false,
+        is_rebooking_payment: false,
         payment_account_id: '',
         reference_number: '',
         reference_image: null as File | null,
@@ -28,6 +42,41 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
     });
 
     const selectedBooking = bookings.find((b) => b.id === parseInt(data.booking_id));
+    const selectedRebooking = rebookings?.find((r) => r.id === parseInt(data.rebooking_id));
+
+    useEffect(() => {
+        if (paymentType === 'booking') {
+            setData({
+                ...data,
+                rebooking_id: '',
+                is_rebooking_payment: false,
+            });
+        } else {
+            setData({
+                ...data,
+                is_down_payment: false,
+                is_rebooking_payment: true,
+            });
+        }
+    }, [paymentType]);
+
+    // Auto-set booking_id when rebooking is selected
+    useEffect(() => {
+        if (selectedRebooking) {
+            setData({
+                ...data,
+                booking_id: selectedRebooking.original_booking_id.toString(),
+            });
+        }
+    }, [data.rebooking_id]);
+
+    // for preselection
+    useEffect(() => {
+        if (preselected_rebooking_id && rebookings) {
+            setPaymentType('rebooking');
+            setData('rebooking_id', preselected_rebooking_id.toString());
+        }
+    }, [preselected_rebooking_id]);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -70,94 +119,181 @@ export default function Create({ bookings, payment_accounts }: PageProps & { boo
 
             <Card>
                 <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-medium">Payment Type</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex gap-2">
+                        <Button
+                            type="button"
+                            variant={paymentType === 'booking' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setPaymentType('booking')}
+                        >
+                            Booking Payment
+                        </Button>
+                        {rebookings && rebookings.length > 0 && (
+                            <Button
+                                type="button"
+                                variant={paymentType === 'rebooking' ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setPaymentType('rebooking')}
+                            >
+                                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                                Rebooking Payment
+                            </Button>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader className="pb-3">
                     <CardTitle className="text-base font-medium">Payment Details</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={submit} className="space-y-5">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="booking_id" className="text-sm cursor-text select-text">Booking</Label>
-                            <Select value={data.booking_id} onValueChange={(value) => setData('booking_id', value)}>
-                                <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Select booking" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {bookings.map((booking) => (
-                                        <SelectItem key={booking.id} value={booking.id.toString()}>
-                                            {booking.booking_number} - {booking.guest_name} (Balance: ₱
-                                            {parseFloat(booking.balance).toLocaleString()})
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {errors.booking_id && <p className="text-xs text-destructive">{errors.booking_id}</p>}
-                        </div>
+                        {paymentType === 'booking' ? (
+                            <>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="booking_id" className="text-sm cursor-text select-text">Booking</Label>
+                                    <Select value={data.booking_id} onValueChange={(value) => setData('booking_id', value)}>
+                                        <SelectTrigger className="h-9">
+                                            <SelectValue placeholder="Select booking" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {bookings.map((booking) => (
+                                                <SelectItem key={booking.id} value={booking.id.toString()}>
+                                                    {booking.booking_number} - {booking.guest_name} (Balance: ₱
+                                                    {parseFloat(booking.balance).toLocaleString()})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.booking_id && <p className="text-xs text-destructive">{errors.booking_id}</p>}
+                                </div>
 
-                        {selectedBooking && (
-                            <div className="rounded border p-3 bg-muted/30 space-y-2">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Guest:</span>
-                                    <span className="font-medium">{selectedBooking.guest_name}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Total:</span>
-                                    <span className="font-medium">
-                                        ₱{parseFloat(selectedBooking.total_amount).toLocaleString()}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Paid:</span>
-                                    <span className="font-medium text-green-600">
-                                        ₱{parseFloat(selectedBooking.paid_amount).toLocaleString()}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between text-sm border-t pt-2">
-                                    <span className="font-semibold">Balance:</span>
-                                    <span className="font-semibold text-red-600">
-                                        ₱{parseFloat(selectedBooking.balance).toLocaleString()}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
+                                {selectedBooking && (
+                                    <>
+                                        <div className="rounded border p-3 bg-muted/30 space-y-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Guest:</span>
+                                                <span className="font-medium">{selectedBooking.guest_name}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Total:</span>
+                                                <span className="font-medium">
+                                                    ₱{parseFloat(selectedBooking.total_amount).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Paid:</span>
+                                                <span className="font-medium text-green-600">
+                                                    ₱{parseFloat(selectedBooking.paid_amount).toLocaleString()}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between text-sm border-t pt-2">
+                                                <span className="font-semibold">Balance:</span>
+                                                <span className="font-semibold text-red-600">
+                                                    ₱{parseFloat(selectedBooking.balance).toLocaleString()}
+                                                </span>
+                                            </div>
+                                        </div>
 
-                        {selectedBooking && selectedBooking.down_payment_required && (
-                            <div className="space-y-1.5">
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="checkbox"
-                                        id="is_down_payment"
-                                        checked={data.is_down_payment}
-                                        onChange={(e) => setData('is_down_payment', e.target.checked)}
-                                        className="h-4 w-4 rounded border-gray-300"
-                                    />
-                                    <Label htmlFor="is_down_payment" className="text-sm cursor-pointer">
-                                        This is a down payment
+                                        {selectedBooking.down_payment_required && (
+                                            <>
+                                                <div className="space-y-1.5">
+                                                    <div className="flex items-center space-x-2">
+                                                        <input
+                                                            type="checkbox"
+                                                            id="is_down_payment"
+                                                            checked={data.is_down_payment}
+                                                            onChange={(e) => setData('is_down_payment', e.target.checked)}
+                                                            className="h-4 w-4 rounded border-gray-300"
+                                                        />
+                                                        <Label htmlFor="is_down_payment" className="text-sm cursor-pointer">
+                                                            This is a down payment
+                                                        </Label>
+                                                    </div>
+                                                    {errors.is_down_payment && <p className="text-xs text-destructive">{errors.is_down_payment}</p>}
+                                                </div>
+
+                                                <div className="rounded border p-3 bg-blue-50 space-y-2">
+                                                    <div className="flex justify-between text-sm">
+                                                        <span className="text-muted-foreground">Down Payment Required:</span>
+                                                        <span className="font-medium">
+                                                            ₱{parseFloat(selectedBooking.down_payment_amount || '0').toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between text-sm">
+                                                        <span className="text-muted-foreground">Down Payment Paid:</span>
+                                                        <span className="font-medium text-green-600">
+                                                            ₱{parseFloat(selectedBooking.down_payment_paid).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between text-sm border-t pt-2">
+                                                        <span className="font-semibold">Down Payment Balance:</span>
+                                                        <span className="font-semibold text-red-600">
+                                                            ₱{parseFloat(selectedBooking.down_payment_balance).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+                                    </>
+                                )}
+                            </>
+                        ) : (
+                            <>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="rebooking_id" className="text-sm cursor-text select-text">
+                                        <RefreshCw className="h-3.5 w-3.5 inline mr-1" />
+                                        Rebooking
                                     </Label>
+                                    <Select value={data.rebooking_id} onValueChange={(value) => setData('rebooking_id', value)}>
+                                        <SelectTrigger className="h-9">
+                                            <SelectValue placeholder="Select rebooking" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {rebookings?.map((rebooking) => (
+                                                <SelectItem key={rebooking.id} value={rebooking.id.toString()}>
+                                                    {rebooking.rebooking_number} - {rebooking.original_booking?.guest_name} (Remaining: ₱
+                                                    {parseFloat(rebooking.remaining_payment || '0').toLocaleString()})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.rebooking_id && <p className="text-xs text-destructive">{errors.rebooking_id}</p>}
                                 </div>
-                                {errors.is_down_payment && <p className="text-xs text-destructive">{errors.is_down_payment}</p>}
-                            </div>
-                        )}
 
-                        {selectedBooking && selectedBooking.down_payment_required && (
-                            <div className="rounded border p-3 bg-blue-50 space-y-2">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Down Payment Required:</span>
-                                    <span className="font-medium">
-                                        ₱{parseFloat(selectedBooking.down_payment_amount || '0').toLocaleString()}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Down Payment Paid:</span>
-                                    <span className="font-medium text-green-600">
-                                        ₱{parseFloat(selectedBooking.down_payment_paid).toLocaleString()}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between text-sm border-t pt-2">
-                                    <span className="font-semibold">Down Payment Balance:</span>
-                                    <span className="font-semibold text-red-600">
-                                        ₱{parseFloat(selectedBooking.down_payment_balance).toLocaleString()}
-                                    </span>
-                                </div>
-                            </div>
+                                {selectedRebooking && (
+                                    <div className="rounded border p-3 bg-purple-50 space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Guest:</span>
+                                            <span className="font-medium">{selectedRebooking.original_booking?.guest_name}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Total Adjustment:</span>
+                                            <span className="font-medium text-green-600">
+                                                +₱{parseFloat(selectedRebooking.total_adjustment).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        {selectedRebooking.total_paid && parseFloat(selectedRebooking.total_paid) > 0 && (
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Already Paid:</span>
+                                                <span className="font-medium text-green-600">
+                                                    ₱{parseFloat(selectedRebooking.total_paid).toLocaleString()}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between text-sm border-t pt-2">
+                                            <span className="font-semibold">Remaining Payment:</span>
+                                            <span className="font-semibold text-red-600">
+                                                ₱{parseFloat(selectedRebooking.remaining_payment || '0').toLocaleString()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
 
                         <div className="grid gap-4 md:grid-cols-2">

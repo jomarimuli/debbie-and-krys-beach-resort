@@ -131,6 +131,7 @@ const allNavGroups: NavGroup[] = [
                     {
                         title: 'Auto-Reply',
                         href: '/chat/auto-replies',
+                        requiredPermissions: ['chat auto reply', 'global access'],
                     },
                 ],
             },

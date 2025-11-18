@@ -21,7 +21,7 @@ class RejectRebookingRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'admin_notes.required' => 'Please provide a reason for rejection.',
+            'admin_notes.required' => 'Please provide a reason for rejecting this rebooking request.',
         ];
     }
 }

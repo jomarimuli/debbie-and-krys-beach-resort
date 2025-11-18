@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Booking;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Services\AccommodationAvailabilityService;
 
 class StoreBookingRequest extends FormRequest
 {
@@ -32,14 +33,12 @@ class StoreBookingRequest extends FormRequest
             'accommodations.*.guests' => ['required', 'integer', 'min:1'],
         ];
 
-        // Check-out date is required for overnight bookings
         if ($this->input('booking_type') === 'overnight') {
             $rules['check_out_date'] = ['required', 'date', 'after:check_in_date'];
         } else {
             $rules['check_out_date'] = ['nullable', 'date', 'after:check_in_date'];
         }
 
-        // Down payment amount is required if down payment is enabled
         if ($this->input('down_payment_required')) {
             $rules['down_payment_amount'] = ['required', 'numeric', 'min:0.01'];
         }
@@ -54,5 +53,44 @@ class StoreBookingRequest extends FormRequest
             'check_out_date.after' => 'Check-out date must be after check-in date.',
             'down_payment_amount.required' => 'Down payment amount is required when down payment is enabled.',
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            // Validate guest count matches accommodations
+            $totalGuests = $this->total_adults + $this->total_children;
+            $accommodationGuests = collect($this->accommodations)->sum('guests');
+
+            if ($accommodationGuests !== $totalGuests) {
+                $validator->errors()->add(
+                    'accommodations',
+                    "Total accommodation guests ({$accommodationGuests}) must equal total party size ({$totalGuests})"
+                );
+            }
+
+            // Check accommodation availability
+            if ($this->check_in_date && $this->accommodations) {
+                $availabilityService = app(AccommodationAvailabilityService::class);
+
+                $accommodationIds = collect($this->accommodations)
+                    ->pluck('accommodation_id')
+                    ->unique()
+                    ->toArray();
+
+                $conflicts = $availabilityService->checkAvailability(
+                    $accommodationIds,
+                    $this->check_in_date,
+                    $this->check_out_date
+                );
+
+                if (!empty($conflicts)) {
+                    $messages = $availabilityService->formatConflictMessages($conflicts);
+                    foreach ($messages as $message) {
+                        $validator->errors()->add('accommodations', $message);
+                    }
+                }
+            }
+        });
     }
 }

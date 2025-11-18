@@ -35,14 +35,6 @@ export default function Index({ feedbacks: feedbackData }: FeedbackIndexProps) {
         }
     };
 
-    const handleApprove = (id: number) => {
-        router.post(feedbacks.approve.url({ feedback: id }));
-    };
-
-    const handleReject = (id: number) => {
-        router.post(feedbacks.reject.url({ feedback: id }));
-    };
-
     const getStatusBadge = (status: string) => {
         const variants: Record<string, 'default' | 'secondary' | 'destructive'> = {
             pending: 'secondary',
@@ -162,28 +154,6 @@ export default function Index({ feedbacks: feedbackData }: FeedbackIndexProps) {
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
-                                            {/* Only admin/staff can approve/reject */}
-                                            {feedback.status === 'pending' && (isAdmin() || isStaff()) && can('feedback approve') && (
-                                                <>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-green-600"
-                                                        onClick={() => handleApprove(feedback.id)}
-                                                    >
-                                                        <CheckCircle className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-8 w-8 text-red-600"
-                                                        onClick={() => handleReject(feedback.id)}
-                                                    >
-                                                        <XCircle className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                </>
-                                            )}
-
                                             {/* Everyone can view their own feedback */}
                                             {can('feedback show') && (
                                                 <Link href={feedbacks.show.url({ feedback: feedback.id })}>

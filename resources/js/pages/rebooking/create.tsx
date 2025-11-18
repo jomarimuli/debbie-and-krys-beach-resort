@@ -1,4 +1,4 @@
-// resources/js/pages/rebooking/create.tsx
+// resources/js/pages/rebooking/create.tsx - Update to use minRebookDate
 
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useMemo } from 'react';
 import { ArrowLeft, Plus, Trash2, AlertCircle } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Accommodation, type Booking, type PageProps } from '@/types';
@@ -26,14 +26,16 @@ interface AccommodationItem {
 
 export default function Create({
     booking,
-    accommodations
+    accommodations,
+    minRebookDate
 }: PageProps & {
     booking: Booking;
     accommodations: Accommodation[];
+    minRebookDate: string;
 }) {
     const { data, setData, post, processing, errors } = useForm({
         original_booking_id: booking.id,
-        new_check_in_date: format(new Date(), 'yyyy-MM-dd'),
+        new_check_in_date: minRebookDate,
         new_check_out_date: booking.booking_type === 'overnight' ? '' : undefined,
         new_total_adults: booking.total_adults.toString(),
         new_total_children: booking.total_children.toString(),
@@ -46,6 +48,16 @@ export default function Create({
             { accommodation_id: '', accommodation_rate_id: '', guests: '1' }
         ] as AccommodationItem[],
     });
+
+    // Calculate min check-out date
+    const minCheckOutDate = useMemo(() => {
+        if (data.new_check_in_date) {
+            const checkIn = new Date(data.new_check_in_date);
+            checkIn.setDate(checkIn.getDate() + 1);
+            return format(checkIn, 'yyyy-MM-dd');
+        }
+        return minRebookDate;
+    }, [data.new_check_in_date, minRebookDate]);
 
     const addAccommodation = () => {
         setData('accommodations', [
@@ -83,13 +95,11 @@ export default function Create({
         return accommodation?.rates?.find(r => r.id.toString() === rateId);
     };
 
-    // Calculate rebooking totals
     const calculateRebookingTotal = () => {
         let accommodationTotal = 0;
         let entranceFeeTotal = 0;
         let totalFreeEntrances = 0;
 
-        // Calculate number of nights
         let numberOfNights = 1;
         if (booking.booking_type === 'overnight' && data.new_check_in_date && data.new_check_out_date) {
             const checkIn = new Date(data.new_check_in_date);
@@ -98,13 +108,11 @@ export default function Create({
             numberOfNights = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
         }
 
-        // Calculate accommodation costs
         data.accommodations.forEach(item => {
             const accommodation = getSelectedAccommodation(item.accommodation_id);
             const rate = getSelectedRate(item.accommodation_id, item.accommodation_rate_id);
 
             if (accommodation && rate && item.guests) {
-                // Base rate (multiplied by nights for overnight)
                 let baseRate = parseFloat(rate.rate);
                 if (booking.booking_type === 'overnight') {
                     baseRate = baseRate * numberOfNights;
@@ -112,7 +120,6 @@ export default function Create({
 
                 let subtotal = baseRate;
 
-                // Additional pax charges
                 if (accommodation.min_capacity && parseInt(item.guests) > accommodation.min_capacity) {
                     const additionalGuests = parseInt(item.guests) - accommodation.min_capacity;
                     let additionalPaxRate = rate.additional_pax_rate ? parseFloat(rate.additional_pax_rate) : 0;
@@ -126,18 +133,15 @@ export default function Create({
 
                 accommodationTotal += subtotal;
 
-                // Count free entrances
                 if (rate.includes_free_entrance) {
                     totalFreeEntrances += Math.min(parseInt(item.guests), accommodation.min_capacity || 0);
                 }
             }
         });
 
-        // Calculate entrance fees
         const adultsNeedingEntrance = Math.max(0, parseInt(data.new_total_adults || '0') - totalFreeEntrances);
         const childrenNeedingEntrance = parseInt(data.new_total_children || '0');
 
-        // Get first selected rate for entrance fees
         const firstAccom = data.accommodations[0];
         if (firstAccom?.accommodation_rate_id) {
             const firstRate = getSelectedRate(firstAccom.accommodation_id, firstAccom.accommodation_rate_id);
@@ -242,12 +246,18 @@ export default function Create({
                     <CardContent>
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="space-y-1.5">
-                                <Label htmlFor="new_check_in_date" className="text-sm cursor-text select-text">New Check-in Date</Label>
+                                <Label htmlFor="new_check_in_date" className="text-sm cursor-text select-text">
+                                    New Check-in Date
+                                    <span className="text-xs text-muted-foreground ml-1">
+                                        (Min: {format(new Date(minRebookDate), 'MMM dd, yyyy')})
+                                    </span>
+                                </Label>
                                 <Input
                                     id="new_check_in_date"
                                     type="date"
                                     value={data.new_check_in_date}
                                     onChange={(e) => setData('new_check_in_date', e.target.value)}
+                                    min={minRebookDate}
                                     className="h-9"
                                 />
                                 {errors.new_check_in_date && <p className="text-xs text-destructive">{errors.new_check_in_date}</p>}
@@ -255,13 +265,17 @@ export default function Create({
 
                             {booking.booking_type === 'overnight' && (
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="new_check_out_date" className="text-sm cursor-text select-text">New Check-out Date</Label>
+                                    <Label htmlFor="new_check_out_date" className="text-sm cursor-text select-text">
+                                        New Check-out Date <span className="text-destructive">*</span>
+                                    </Label>
                                     <Input
                                         id="new_check_out_date"
                                         type="date"
                                         value={data.new_check_out_date || ''}
                                         onChange={(e) => setData('new_check_out_date', e.target.value)}
+                                        min={minCheckOutDate}
                                         className="h-9"
+                                        required
                                     />
                                     {errors.new_check_out_date && <p className="text-xs text-destructive">{errors.new_check_out_date}</p>}
                                 </div>
@@ -492,17 +506,17 @@ export default function Create({
 
                             {summary.amountDifference > 0 && (
                                 <p className="text-xs text-green-700 bg-green-100 p-2 rounded">
-                                    ✓ Guest needs to pay additional amount
+                                    Guest needs to pay additional amount
                                 </p>
                             )}
                             {summary.amountDifference < 0 && (
                                 <p className="text-xs text-red-700 bg-red-100 p-2 rounded">
-                                    ✓ Guest will receive a refund
+                                    Guest will receive a refund
                                 </p>
                             )}
                             {summary.amountDifference === 0 && (
                                 <p className="text-xs text-blue-700 bg-blue-100 p-2 rounded">
-                                    ✓ No payment or refund needed
+                                    No payment or refund needed
                                 </p>
                             )}
                         </CardContent>

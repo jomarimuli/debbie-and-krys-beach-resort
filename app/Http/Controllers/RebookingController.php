@@ -56,14 +56,33 @@ class RebookingController extends Controller
         ]);
     }
 
-    public function create(Booking $booking): Response
+    public function create(Booking $booking): Response|RedirectResponse
     {
-        // Check if customer is trying to rebook someone else's booking
         if (auth()->user()->hasRole('customer') && $booking->created_by !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        // Load booking relationships
+        // Check if booking can be rebooked
+        if (!in_array($booking->status, ['pending', 'confirmed'])) {
+            return redirect()->route('bookings.show', $booking)
+                ->with('error', "Only pending or confirmed bookings can be rebooked. Current status: {$booking->status}");
+        }
+
+        if ($booking->check_in_date <= now()->toDateString()) {
+            return redirect()->route('bookings.show', $booking)
+                ->with('error', 'Cannot rebook a past or current booking.');
+        }
+
+        // Check for existing pending rebooking
+        $existingRebooking = $booking->rebookings()
+            ->whereIn('status', ['pending', 'approved'])
+            ->first();
+
+        if ($existingRebooking) {
+            return redirect()->route('bookings.show', $booking)
+                ->with('error', "This booking already has a {$existingRebooking->status} rebooking request ({$existingRebooking->rebooking_number}). Please complete or cancel it first.");
+        }
+
         $booking->load([
             'accommodations.accommodation',
             'accommodations.accommodationRate',
@@ -72,9 +91,15 @@ class RebookingController extends Controller
 
         $accommodations = Accommodation::with('rates')->active()->orderBy('name')->get();
 
+        // Calculate minimum date: greater of (tomorrow or original check-in date)
+        $tomorrow = now()->addDay()->format('Y-m-d');
+        $originalCheckIn = $booking->check_in_date->format('Y-m-d');
+        $minDate = $tomorrow > $originalCheckIn ? $tomorrow : $originalCheckIn;
+
         return Inertia::render('rebooking/create', [
             'booking' => $booking,
             'accommodations' => $accommodations,
+            'minRebookDate' => $minDate,
         ]);
     }
 
@@ -396,10 +421,8 @@ class RebookingController extends Controller
         }
     }
 
-    // Customers should not be able to approve/reject/complete rebookings
     public function approve(ApproveRebookingRequest $request, Rebooking $rebooking): RedirectResponse
     {
-        // Only admin/staff can approve
         if (auth()->user()->hasRole('customer')) {
             abort(403, 'Unauthorized action.');
         }
@@ -410,22 +433,21 @@ class RebookingController extends Controller
 
         DB::beginTransaction();
         try {
-            $totalAdjustment = $rebooking->amount_difference + $request->rebooking_fee;
+            $rebookingFee = $request->rebooking_fee ?? 0;
+            $totalAdjustment = $rebooking->amount_difference + $rebookingFee;
 
             $rebooking->update([
                 'status' => 'approved',
-                'rebooking_fee' => $request->rebooking_fee,
+                'rebooking_fee' => $rebookingFee,
                 'total_adjustment' => $totalAdjustment,
                 'admin_notes' => $request->admin_notes,
                 'approved_at' => now(),
             ]);
 
-            // Load relationships for email
             $rebooking->load('originalBooking');
 
             DB::commit();
 
-            // Send email notification
             try {
                 if ($rebooking->originalBooking->guest_email) {
                     Mail::to($rebooking->originalBooking->guest_email)->send(new RebookingApproved($rebooking));
@@ -443,6 +465,10 @@ class RebookingController extends Controller
 
     public function reject(RejectRebookingRequest $request, Rebooking $rebooking): RedirectResponse
     {
+        if (auth()->user()->hasRole('customer')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         if ($rebooking->status !== 'pending') {
             return back()->with('error', 'Only pending rebookings can be rejected.');
         }
@@ -480,7 +506,6 @@ class RebookingController extends Controller
 
     public function complete(Rebooking $rebooking): RedirectResponse
     {
-        // Only admin/staff can complete
         if (auth()->user()->hasRole('customer')) {
             abort(403, 'Unauthorized action.');
         }
@@ -489,9 +514,19 @@ class RebookingController extends Controller
             return back()->with('error', 'Only approved rebookings can be completed.');
         }
 
+        // Check if payment/refund is complete
+        if (!$rebooking->isPaymentComplete()) {
+            $totalAdjustment = (float)$rebooking->total_adjustment;
+
+            if ($totalAdjustment > 0) {
+                return back()->with('error', 'Cannot complete rebooking. Payment of ₱' . number_format($rebooking->remaining_payment, 2) . ' is still required.');
+            } else {
+                return back()->with('error', 'Cannot complete rebooking. Refund of ₱' . number_format($rebooking->remaining_refund, 2) . ' is still required.');
+            }
+        }
+
         DB::beginTransaction();
         try {
-            // Update the original booking with new details
             $originalBooking = $rebooking->originalBooking;
 
             $originalBooking->update([
@@ -499,17 +534,14 @@ class RebookingController extends Controller
                 'check_out_date' => $rebooking->new_check_out_date,
                 'total_adults' => $rebooking->new_total_adults,
                 'total_children' => $rebooking->new_total_children,
-                'total_guests' => $rebooking->new_total_guests,
                 'accommodation_total' => $rebooking->accommodations->sum('subtotal'),
                 'entrance_fee_total' => $rebooking->entranceFees->sum('subtotal'),
                 'total_amount' => $rebooking->new_amount,
             ]);
 
-            // Delete old accommodations and entrance fees
             $originalBooking->accommodations()->delete();
             $originalBooking->entranceFees()->delete();
 
-            // Copy rebooking accommodations to booking
             foreach ($rebooking->accommodations as $rebookingAccom) {
                 $originalBooking->accommodations()->create([
                     'accommodation_id' => $rebookingAccom->accommodation_id,
@@ -522,7 +554,6 @@ class RebookingController extends Controller
                 ]);
             }
 
-            // Copy rebooking entrance fees to booking
             foreach ($rebooking->entranceFees as $rebookingFee) {
                 $originalBooking->entranceFees()->create([
                     'type' => $rebookingFee->type,
@@ -532,23 +563,19 @@ class RebookingController extends Controller
                 ]);
             }
 
-            // Recalculate booking balance
-            $originalBooking->balance = $originalBooking->total_amount - $originalBooking->paid_amount;
-            $originalBooking->is_fully_paid = $originalBooking->balance <= 0;
-            $originalBooking->save();
+            // Update booking's paid amount to reflect new total
+            $originalBooking->updatePaidAmount();
 
-            // Update rebooking status
             $rebooking->update([
                 'status' => 'completed',
+                'payment_status' => 'paid', // or 'refunded' depending on adjustment
                 'completed_at' => now(),
             ]);
 
-            // Load relationships for email
             $rebooking->load('originalBooking');
 
             DB::commit();
 
-            // Send email notification
             try {
                 if ($rebooking->originalBooking->guest_email) {
                     Mail::to($rebooking->originalBooking->guest_email)->send(new RebookingCompleted($rebooking));

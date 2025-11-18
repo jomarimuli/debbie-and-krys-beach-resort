@@ -56,17 +56,29 @@ class RefundController extends Controller
         $payments = Payment::with(['booking', 'refunds'])
             ->get()
             ->filter(function ($payment) {
-                return (float)$payment->remaining_amount > 0;
+                return $payment->remaining_amount > 0;
             })
             ->values();
+
+        $rebookings = \App\Models\Rebooking::with(['originalBooking', 'payments'])
+            ->where('status', 'approved')
+            ->where('payment_status', 'pending')
+            ->where('total_adjustment', '<', 0)
+            ->latest()
+            ->get();
 
         $paymentAccounts = PaymentAccount::active()
             ->ordered()
             ->get();
 
+        // Get query params for pre-selection
+        $rebookingId = request()->query('rebooking_id');
+
         return Inertia::render('refund/create', [
             'payments' => $payments,
+            'rebookings' => $rebookings,
             'payment_accounts' => $paymentAccounts,
+            'preselected_rebooking_id' => $rebookingId,
         ]);
     }
 

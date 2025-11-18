@@ -4,11 +4,16 @@ import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { type Rebooking, type PageProps } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Edit, CheckCircle, XCircle, FileText, Plus, Banknote, ReceiptText } from 'lucide-react';
 import { format } from 'date-fns';
 import { router } from '@inertiajs/react';
+import { useState } from 'react';
 import rebookings from '@/routes/rebookings';
 import bookings from '@/routes/bookings';
 import payments from '@/routes/payments';
@@ -17,6 +22,17 @@ import { useAuth } from '@/hooks/use-auth';
 
 export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }) {
     const { can, user, isAdmin, isStaff } = useAuth();
+    const [showApproveDialog, setShowApproveDialog] = useState(false);
+    const [showRejectDialog, setShowRejectDialog] = useState(false);
+
+    const { data: approveData, setData: setApproveData, post: postApprove, processing: approving, errors: approveErrors } = useForm({
+        rebooking_fee: '0',
+        admin_notes: '',
+    });
+
+    const { data: rejectData, setData: setRejectData, post: postReject, processing: rejecting, errors: rejectErrors } = useForm({
+        admin_notes: '',
+    });
 
     const getStatusBadge = (status: string) => {
         const variants: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
@@ -47,9 +63,20 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
         );
     };
 
+    const handleApprove = () => {
+        postApprove(rebookings.approve.url({ rebooking: rebooking.id }), {
+            onSuccess: () => setShowApproveDialog(false),
+        });
+    };
+
+    const handleReject = () => {
+        postReject(rebookings.reject.url({ rebooking: rebooking.id }), {
+            onSuccess: () => setShowRejectDialog(false),
+        });
+    };
+
     const handleStatusChange = (action: string) => {
         const routes: Record<string, string> = {
-            approve: rebookings.approve.url({ rebooking: rebooking.id }),
             complete: rebookings.complete.url({ rebooking: rebooking.id }),
             cancel: rebookings.cancel.url({ rebooking: rebooking.id }),
         };
@@ -59,11 +86,9 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
         }
     };
 
-    // Check if rebooking needs payment or refund
     const needsPayment = parseFloat(rebooking.total_adjustment) > 0 && rebooking.payment_status === 'pending';
     const needsRefund = parseFloat(rebooking.total_adjustment) < 0 && rebooking.payment_status === 'pending';
 
-    // Permission checks
     const isOwner = user?.id === rebooking.original_booking?.created_by;
     const canEdit = (isAdmin() || isStaff() || isOwner) && can('booking edit') && rebooking.status === 'pending';
     const canApprove = (isAdmin() || isStaff()) && can('booking edit');
@@ -91,9 +116,13 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                 <div className="flex gap-2">
                     {rebooking.status === 'pending' && canApprove && (
                         <>
-                            <Button size="sm" onClick={() => handleStatusChange('approve')}>
+                            <Button size="sm" onClick={() => setShowApproveDialog(true)}>
                                 <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
                                 Approve
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => setShowRejectDialog(true)}>
+                                <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                                Reject
                             </Button>
                             {canEdit && (
                                 <Link href={rebookings.edit.url({ rebooking: rebooking.id })}>
@@ -121,7 +150,6 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-                {/* Original Booking Information */}
                 <Card>
                     <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
@@ -176,7 +204,6 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                     </CardContent>
                 </Card>
 
-                {/* Rebooking Details */}
                 <Card>
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base font-medium">Rebooking Details</CardTitle>
@@ -231,7 +258,6 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                 </Card>
             </div>
 
-            {/* New Accommodations */}
             {rebooking.accommodations && rebooking.accommodations.length > 0 && (
                 <Card>
                     <CardHeader className="pb-3">
@@ -265,7 +291,6 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                 </Card>
             )}
 
-            {/* New Entrance Fees */}
             {rebooking.entrance_fees && rebooking.entrance_fees.length > 0 && (
                 <Card>
                     <CardHeader className="pb-3">
@@ -289,7 +314,6 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                 </Card>
             )}
 
-            {/* Financial Summary */}
             <Card>
                 <CardHeader className="pb-3">
                     <CardTitle className="text-base font-medium">Financial Summary</CardTitle>
@@ -324,7 +348,6 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                 </CardContent>
             </Card>
 
-            {/* Rebooking Payments */}
             {rebooking.payments && rebooking.payments.length > 0 && (
                 <Card>
                     <CardHeader className="pb-3">
@@ -364,11 +387,34 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                                 </Link>
                             ))}
                         </div>
+                        {rebooking.total_paid && parseFloat(rebooking.total_paid) > 0 && (
+                            <div className="mt-3 pt-3 border-t">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Required Payment:</span>
+                                    <span className="font-medium">
+                                        ₱{parseFloat(rebooking.total_adjustment).toLocaleString()}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between text-sm mt-1">
+                                    <span className="text-muted-foreground">Total Paid:</span>
+                                    <span className="font-medium text-green-600">
+                                        ₱{parseFloat(rebooking.total_paid).toLocaleString()}
+                                    </span>
+                                </div>
+                                {rebooking.remaining_payment && parseFloat(rebooking.remaining_payment) > 0 && (
+                                    <div className="flex justify-between text-sm mt-1">
+                                        <span className="font-semibold">Remaining:</span>
+                                        <span className="font-semibold text-red-600">
+                                            ₱{parseFloat(rebooking.remaining_payment).toLocaleString()}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             )}
 
-            {/* Rebooking Refunds */}
             {rebooking.refunds && rebooking.refunds.length > 0 && (
                 <Card>
                     <CardHeader className="pb-3">
@@ -408,11 +454,34 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                                 </Link>
                             ))}
                         </div>
+                        {rebooking.total_refunded && parseFloat(rebooking.total_refunded) > 0 && (
+                            <div className="mt-3 pt-3 border-t">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-muted-foreground">Required Refund:</span>
+                                    <span className="font-medium">
+                                        ₱{Math.abs(parseFloat(rebooking.total_adjustment)).toLocaleString()}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between text-sm mt-1">
+                                    <span className="text-muted-foreground">Total Refunded:</span>
+                                    <span className="font-medium text-red-600">
+                                        ₱{parseFloat(rebooking.total_refunded).toLocaleString()}
+                                    </span>
+                                </div>
+                                {rebooking.remaining_refund && parseFloat(rebooking.remaining_refund) > 0 && (
+                                    <div className="flex justify-between text-sm mt-1">
+                                        <span className="font-semibold">Remaining:</span>
+                                        <span className="font-semibold text-red-600">
+                                            ₱{parseFloat(rebooking.remaining_refund).toLocaleString()}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             )}
 
-            {/* Show payment/refund needed message */}
             {rebooking.status === 'approved' && rebooking.payment_status === 'pending' && (
                 <>
                     {needsPayment && (!rebooking.payments || rebooking.payments.length === 0) && canRecordPayment && (
@@ -454,7 +523,6 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                 </>
             )}
 
-            {/* Reason & Notes */}
             {(rebooking.reason || rebooking.admin_notes) && (
                 <div className="grid gap-4 md:grid-cols-2">
                     {rebooking.reason && (
@@ -479,6 +547,85 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                     )}
                 </div>
             )}
+
+            <Dialog open={showApproveDialog} onOpenChange={setShowApproveDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Approve Rebooking</DialogTitle>
+                        <DialogDescription>
+                            Approve rebooking request {rebooking.rebooking_number}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="rebooking_fee" className="text-sm">Rebooking Fee (Optional)</Label>
+                            <Input
+                                id="rebooking_fee"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={approveData.rebooking_fee}
+                                onChange={(e) => setApproveData('rebooking_fee', e.target.value)}
+                                className="h-9"
+                                placeholder="0.00"
+                            />
+                            {approveErrors.rebooking_fee && <p className="text-xs text-destructive">{approveErrors.rebooking_fee}</p>}
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="admin_notes" className="text-sm">Admin Notes (Optional)</Label>
+                            <Textarea
+                                id="admin_notes"
+                                value={approveData.admin_notes}
+                                onChange={(e) => setApproveData('admin_notes', e.target.value)}
+                                rows={3}
+                                className="resize-none"
+                                placeholder="Optional notes..."
+                            />
+                            {approveErrors.admin_notes && <p className="text-xs text-destructive">{approveErrors.admin_notes}</p>}
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowApproveDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleApprove} disabled={approving}>
+                            Approve
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={showRejectDialog} onOpenChange={setShowRejectDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Reject Rebooking</DialogTitle>
+                        <DialogDescription>
+                            Provide a reason for rejecting rebooking request {rebooking.rebooking_number}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="reject_notes" className="text-sm">Reason <span className="text-destructive">*</span></Label>
+                        <Textarea
+                            id="reject_notes"
+                            value={rejectData.admin_notes}
+                            onChange={(e) => setRejectData('admin_notes', e.target.value)}
+                            rows={3}
+                            className="resize-none"
+                            placeholder="Explain why this request is being rejected..."
+                            required
+                        />
+                        {rejectErrors.admin_notes && <p className="text-xs text-destructive">{rejectErrors.admin_notes}</p>}
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setShowRejectDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleReject} disabled={rejecting || !rejectData.admin_notes}>
+                            Reject
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

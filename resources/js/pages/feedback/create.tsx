@@ -6,14 +6,16 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useEffect } from 'react';
 import { ArrowLeft, Star } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Booking, type PageProps } from '@/types';
 import feedbacks from '@/routes/feedbacks';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function Create({ bookings }: PageProps & { bookings: Booking[] }) {
+    const { isCustomer } = useAuth();
     const { data, setData, post, processing, errors } = useForm({
         booking_id: '',
         guest_name: '',
@@ -27,7 +29,12 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
 
     const selectedBooking = bookings.find((b) => b.id === parseInt(data.booking_id));
 
-    // Auto-fill guest info when booking is selected
+    useEffect(() => {
+        if (isCustomer()) {
+            setData('status', 'pending');
+        }
+    }, []);
+
     const handleBookingChange = (value: string) => {
         setData('booking_id', value);
         const booking = bookings.find((b) => b.id === parseInt(value));
@@ -91,7 +98,9 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                             <div className="rounded border p-3 bg-muted/30 space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Check-in:</span>
-                                    <span className="font-medium">{selectedBooking.check_in_date}</span>
+                                    <span className="font-medium">
+                                        {new Date(selectedBooking.check_in_date).toLocaleDateString()}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Type:</span>
@@ -220,6 +229,7 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                                 onValueChange={(value: 'pending' | 'approved' | 'rejected') =>
                                     setData('status', value)
                                 }
+                                disabled={isCustomer()}
                             >
                                 <SelectTrigger className="h-9">
                                     <SelectValue />

@@ -28,6 +28,9 @@ return new class extends Migration
             $table->index('payment_id', 'idx_refund_payment_id');
             $table->index('rebooking_id', 'idx_refund_rebooking_id');
             $table->index('refund_account_id', 'idx_refund_account_id');
+
+            $table->index(['is_rebooking_refund', 'rebooking_id'], 'idx_refund_rebooking_flag');
+            $table->index('refund_date', 'idx_refund_date');
         });
     }
 

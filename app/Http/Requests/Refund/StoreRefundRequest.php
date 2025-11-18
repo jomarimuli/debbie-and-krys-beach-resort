@@ -21,7 +21,7 @@ class StoreRefundRequest extends FormRequest
             'is_rebooking_refund' => ['boolean'],
             'refund_account_id' => ['nullable', 'exists:payment_accounts,id'],
             'reference_number' => ['nullable', 'string', 'max:255'],
-            'reference_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp'],
+            'reference_image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
             'reason' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
             'refund_date' => ['required', 'date'],
@@ -33,6 +33,7 @@ class StoreRefundRequest extends FormRequest
         return [
             'reference_image.image' => 'The file must be an image.',
             'reference_image.mimes' => 'Image must be jpeg, jpg, png, or webp.',
+            'reference_image.max' => 'Image size must not exceed 2MB.',
         ];
     }
 
@@ -40,11 +41,43 @@ class StoreRefundRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             if ($this->payment_id) {
-                $payment = \App\Models\Payment::find($this->payment_id);
-                if ($payment && !$payment->canRefund($this->amount)) {
-                    $remaining = $payment->remainingAmount();
-                    $validator->errors()->add('amount', "Refund amount cannot exceed remaining amount of {$remaining}.");
+                $payment = \App\Models\Payment::with('refunds')->find($this->payment_id);
+
+                if ($payment) {
+                    // Handle rebooking refund validation
+                    if ($this->is_rebooking_refund && $this->rebooking_id) {
+                        $rebooking = \App\Models\Rebooking::find($this->rebooking_id);
+
+                        if ($rebooking) {
+                            $totalAdjustment = (float)$rebooking->total_adjustment;
+
+                            if ($totalAdjustment >= 0) {
+                                $validator->errors()->add('rebooking_id', 'This rebooking does not require a refund.');
+                            } else {
+                                $requiredRefund = abs($totalAdjustment);
+                                $totalRefunded = $rebooking->refunds()->sum('amount');
+                                $remaining = $requiredRefund - $totalRefunded;
+
+                                if ($this->amount > $remaining) {
+                                    $validator->errors()->add('amount', 'Refund amount cannot exceed remaining rebooking refund of ₱' . number_format($remaining, 2) . '.');
+                                }
+                            }
+                        }
+                        return;
+                    }
+
+                    // Regular refund validation
+                    $remainingAmount = (float)$payment->remaining_amount;
+
+                    if ($this->amount > $remainingAmount) {
+                        $validator->errors()->add('amount', "Refund amount cannot exceed remaining payment amount of ₱" . number_format($remainingAmount, 2) . ".");
+                    }
                 }
+            }
+
+            // Validate rebooking_id is provided when is_rebooking_refund is true
+            if ($this->is_rebooking_refund && !$this->rebooking_id) {
+                $validator->errors()->add('rebooking_id', 'Rebooking ID is required for rebooking refunds.');
             }
         });
     }

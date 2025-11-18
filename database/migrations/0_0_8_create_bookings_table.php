@@ -31,20 +31,16 @@ return new class extends Migration
             $table->date('check_out_date')->nullable();
             $table->integer('total_adults')->default(0);
             $table->integer('total_children')->default(0);
-            $table->integer('total_guests')->default(0);
 
             // Totals
             $table->decimal('accommodation_total', 10, 2)->default(0);
             $table->decimal('entrance_fee_total', 10, 2)->default(0);
             $table->decimal('total_amount', 10, 2)->default(0);
             $table->decimal('paid_amount', 10, 2)->default(0);
-            $table->decimal('balance', 10, 2)->default(0);
-            $table->boolean('is_fully_paid')->default(false);
 
             // Down payment
             $table->decimal('down_payment_amount', 10, 2)->nullable();
             $table->decimal('down_payment_paid', 10, 2)->default(0);
-            $table->decimal('down_payment_balance', 10, 2)->default(0);
             $table->boolean('down_payment_required')->default(false);
 
             // Status
@@ -56,7 +52,7 @@ return new class extends Migration
             $table->index(['check_in_date', 'check_out_date', 'status'], 'idx_booking_dates_status');
             $table->index('booking_number', 'idx_booking_number');
             $table->index('booking_code', 'idx_booking_code');
-            $table->index(['is_fully_paid', 'status'], 'idx_booking_payment_status'); // ADD THIS
+            $table->index(['status'], 'idx_status');
         });
     }
 

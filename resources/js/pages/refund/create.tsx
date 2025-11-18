@@ -7,20 +7,33 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, useState } from 'react';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { FormEventHandler, useState, useEffect } from 'react';
+import { ArrowLeft, Upload, X, RefreshCw } from 'lucide-react';
 import { Link } from '@inertiajs/react';
-import { type Payment, type PaymentAccount, type PageProps } from '@/types';
+import { type Payment, type Rebooking, type PaymentAccount, type PageProps } from '@/types';
 import { format } from 'date-fns';
 import refunds from '@/routes/refunds';
 
-export default function Create({ payments, payment_accounts }: PageProps & { payments: Payment[]; payment_accounts: PaymentAccount[] }) {
+export default function Create({
+    payments,
+    rebookings,
+    payment_accounts,
+    preselected_rebooking_id
+}: PageProps & {
+    payments: Payment[];
+    rebookings?: Rebooking[];
+    payment_accounts: PaymentAccount[];
+    preselected_rebooking_id?: number;
+}) {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [refundType, setRefundType] = useState<'payment' | 'rebooking'>('payment');
 
     const { data, setData, post, processing, errors } = useForm({
         payment_id: '',
+        rebooking_id: '',
         amount: '',
         refund_method: 'cash' as 'cash' | 'bank' | 'gcash' | 'maya' | 'original_method' | 'other',
+        is_rebooking_refund: false,
         refund_account_id: '',
         reference_number: '',
         reference_image: null as File | null,
@@ -30,8 +43,42 @@ export default function Create({ payments, payment_accounts }: PageProps & { pay
     });
 
     const selectedPayment = payments.find((p) => p.id === parseInt(data.payment_id));
+    const selectedRebooking = rebookings?.find((r) => r.id === parseInt(data.rebooking_id));
 
-    // Filter refund accounts by selected refund method
+    useEffect(() => {
+        if (refundType === 'payment') {
+            setData({
+                ...data,
+                rebooking_id: '',
+                is_rebooking_refund: false,
+            });
+        } else {
+            setData({
+                ...data,
+                is_rebooking_refund: true,
+            });
+        }
+    }, [refundType]);
+
+    // Auto-set payment_id when rebooking is selected (use first payment from original booking)
+    useEffect(() => {
+        if (selectedRebooking && selectedRebooking.original_booking?.payments && selectedRebooking.original_booking.payments.length > 0) {
+            const firstPayment = selectedRebooking.original_booking.payments[0];
+            setData({
+                ...data,
+                payment_id: firstPayment.id.toString(),
+            });
+        }
+    }, [data.rebooking_id]);
+
+    // for preselection
+    useEffect(() => {
+        if (preselected_rebooking_id && rebookings) {
+            setRefundType('rebooking');
+            setData('rebooking_id', preselected_rebooking_id.toString());
+        }
+    }, [preselected_rebooking_id]);
+
     const filteredAccounts = payment_accounts.filter(
         (account) => account.type === data.refund_method && account.is_active
     );
@@ -77,55 +124,140 @@ export default function Create({ payments, payment_accounts }: PageProps & { pay
 
             <Card>
                 <CardHeader className="pb-3">
+                    <CardTitle className="text-base font-medium">Refund Type</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex gap-2">
+                        <Button
+                            type="button"
+                            variant={refundType === 'payment' ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => setRefundType('payment')}
+                        >
+                            Payment Refund
+                        </Button>
+                        {rebookings && rebookings.length > 0 && (
+                            <Button
+                                type="button"
+                                variant={refundType === 'rebooking' ? 'default' : 'outline'}
+                                size="sm"
+                                onClick={() => setRefundType('rebooking')}
+                            >
+                                <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                                Rebooking Refund
+                            </Button>
+                        )}
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader className="pb-3">
                     <CardTitle className="text-base font-medium">Refund Details</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={submit} className="space-y-5">
-                        <div className="space-y-1.5">
-                            <Label htmlFor="payment_id" className="text-sm cursor-text select-text">Payment</Label>
-                            <Select value={data.payment_id} onValueChange={(value) => setData('payment_id', value)}>
-                                <SelectTrigger className="h-9">
-                                    <SelectValue placeholder="Select payment" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {payments.map((payment) => (
-                                        <SelectItem key={payment.id} value={payment.id.toString()}>
-                                            {payment.payment_number} - {payment.booking?.guest_name} (Remaining: ₱
-                                            {parseFloat(payment.remaining_amount || payment.amount).toLocaleString()})
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {errors.payment_id && <p className="text-xs text-destructive">{errors.payment_id}</p>}
-                        </div>
+                        {refundType === 'payment' ? (
+                            <>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="payment_id" className="text-sm cursor-text select-text">Payment</Label>
+                                    <Select value={data.payment_id} onValueChange={(value) => setData('payment_id', value)}>
+                                        <SelectTrigger className="h-9">
+                                            <SelectValue placeholder="Select payment" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {payments.map((payment) => (
+                                                <SelectItem key={payment.id} value={payment.id.toString()}>
+                                                    {payment.payment_number} - {payment.booking?.guest_name} (Remaining: ₱
+                                                    {parseFloat(payment.remaining_amount || payment.amount).toLocaleString()})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.payment_id && <p className="text-xs text-destructive">{errors.payment_id}</p>}
+                                </div>
 
-                        {selectedPayment && (
-                            <div className="rounded border p-3 bg-muted/30 space-y-2">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Guest:</span>
-                                    <span className="font-medium">{selectedPayment.booking?.guest_name}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Payment Amount:</span>
-                                    <span className="font-medium">
-                                        ₱{parseFloat(selectedPayment.amount).toLocaleString()}
-                                    </span>
-                                </div>
-                                {selectedPayment.refunded_amount && parseFloat(selectedPayment.refunded_amount) > 0 && (
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Already Refunded:</span>
-                                        <span className="font-medium text-red-600">
-                                            ₱{parseFloat(selectedPayment.refunded_amount).toLocaleString()}
-                                        </span>
+                                {selectedPayment && (
+                                    <div className="rounded border p-3 bg-muted/30 space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Guest:</span>
+                                            <span className="font-medium">{selectedPayment.booking?.guest_name}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Payment Amount:</span>
+                                            <span className="font-medium">
+                                                ₱{parseFloat(selectedPayment.amount).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        {selectedPayment.refunded_amount && parseFloat(selectedPayment.refunded_amount) > 0 && (
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Already Refunded:</span>
+                                                <span className="font-medium text-red-600">
+                                                    ₱{parseFloat(selectedPayment.refunded_amount).toLocaleString()}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between text-sm border-t pt-2">
+                                            <span className="font-semibold">Available to Refund:</span>
+                                            <span className="font-semibold text-green-600">
+                                                ₱{parseFloat(selectedPayment.remaining_amount || selectedPayment.amount).toLocaleString()}
+                                            </span>
+                                        </div>
                                     </div>
                                 )}
-                                <div className="flex justify-between text-sm border-t pt-2">
-                                    <span className="font-semibold">Available to Refund:</span>
-                                    <span className="font-semibold text-green-600">
-                                        ₱{parseFloat(selectedPayment.remaining_amount || selectedPayment.amount).toLocaleString()}
-                                    </span>
+                            </>
+                        ) : (
+                            <>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="rebooking_id" className="text-sm cursor-text select-text">
+                                        <RefreshCw className="h-3.5 w-3.5 inline mr-1" />
+                                        Rebooking
+                                    </Label>
+                                    <Select value={data.rebooking_id} onValueChange={(value) => setData('rebooking_id', value)}>
+                                        <SelectTrigger className="h-9">
+                                            <SelectValue placeholder="Select rebooking" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {rebookings?.map((rebooking) => (
+                                                <SelectItem key={rebooking.id} value={rebooking.id.toString()}>
+                                                    {rebooking.rebooking_number} - {rebooking.original_booking?.guest_name} (Remaining: ₱
+                                                    {Math.abs(parseFloat(rebooking.remaining_refund || '0')).toLocaleString()})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {errors.rebooking_id && <p className="text-xs text-destructive">{errors.rebooking_id}</p>}
                                 </div>
-                            </div>
+
+                                {selectedRebooking && (
+                                    <div className="rounded border p-3 bg-purple-50 space-y-2">
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Guest:</span>
+                                            <span className="font-medium">{selectedRebooking.original_booking?.guest_name}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm">
+                                            <span className="text-muted-foreground">Total Adjustment:</span>
+                                            <span className="font-medium text-red-600">
+                                                -₱{Math.abs(parseFloat(selectedRebooking.total_adjustment)).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        {selectedRebooking.total_refunded && parseFloat(selectedRebooking.total_refunded) > 0 && (
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Already Refunded:</span>
+                                                <span className="font-medium text-red-600">
+                                                    ₱{parseFloat(selectedRebooking.total_refunded).toLocaleString()}
+                                                </span>
+                                            </div>
+                                        )}
+                                        <div className="flex justify-between text-sm border-t pt-2">
+                                            <span className="font-semibold">Remaining Refund:</span>
+                                            <span className="font-semibold text-red-600">
+                                                ₱{Math.abs(parseFloat(selectedRebooking.remaining_refund || '0')).toLocaleString()}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
 
                         <div className="grid gap-4 md:grid-cols-2">

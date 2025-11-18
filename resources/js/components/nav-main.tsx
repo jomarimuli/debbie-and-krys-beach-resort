@@ -14,12 +14,13 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { type NavGroup } from '@/types';
+import { type NavGroup, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
 
 export function NavMain({ groups = [] }: { groups: NavGroup[] }) {
-    const page = usePage();
+    const page = usePage<SharedData>();
+    const { auth } = page.props;
 
     return (
         <>
@@ -31,6 +32,21 @@ export function NavMain({ groups = [] }: { groups: NavGroup[] }) {
                             const isActive = item.href === '/' ? page.url === '/' : page.url.startsWith(item.href);
 
                             if (item.items && item.items.length > 0) {
+                                // Filter subitems based on permissions
+                                const filteredSubItems = item.items.filter(subItem => {
+                                    if (!subItem.requiredPermissions || subItem.requiredPermissions.length === 0) {
+                                        return true;
+                                    }
+                                    return subItem.requiredPermissions.some(permission =>
+                                        auth.user?.permissions?.includes(permission)
+                                    );
+                                });
+
+                                // If no subitems after filtering, skip parent
+                                if (filteredSubItems.length === 0) {
+                                    return null;
+                                }
+
                                 return (
                                     <Collapsible
                                         key={item.title}
@@ -51,7 +67,7 @@ export function NavMain({ groups = [] }: { groups: NavGroup[] }) {
                                             </CollapsibleTrigger>
                                             <CollapsibleContent>
                                                 <SidebarMenuSub>
-                                                    {item.items.map((subItem) => {
+                                                    {filteredSubItems.map((subItem) => {
                                                         const isSubActive = page.url === subItem.href;
                                                         return (
                                                             <SidebarMenuSubItem key={subItem.title}>

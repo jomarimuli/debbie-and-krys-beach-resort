@@ -3,7 +3,7 @@
 namespace App\Http\Requests\Rebooking;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Contracts\Validation\Validator;
+use App\Services\AccommodationAvailabilityService;
 
 class UpdateRebookingRequest extends FormRequest
 {
@@ -47,8 +47,33 @@ class UpdateRebookingRequest extends FormRequest
             if ($accommodationGuests !== $totalGuests) {
                 $validator->errors()->add(
                     'accommodations',
-                    "Total accommodation guests ($accommodationGuests) must equal total party size ($totalGuests)"
+                    "Total accommodation guests ({$accommodationGuests}) must equal total party size ({$totalGuests})"
                 );
+            }
+
+            // Check accommodation availability
+            if ($rebooking && $this->new_check_in_date && $this->accommodations) {
+                $availabilityService = app(AccommodationAvailabilityService::class);
+
+                $accommodationIds = collect($this->accommodations)
+                    ->pluck('accommodation_id')
+                    ->unique()
+                    ->toArray();
+
+                // Exclude the original booking when checking availability
+                $conflicts = $availabilityService->checkAvailability(
+                    $accommodationIds,
+                    $this->new_check_in_date,
+                    $this->new_check_out_date,
+                    $rebooking->original_booking_id
+                );
+
+                if (!empty($conflicts)) {
+                    $messages = $availabilityService->formatConflictMessages($conflicts);
+                    foreach ($messages as $message) {
+                        $validator->errors()->add('accommodations', $message);
+                    }
+                }
             }
         });
     }

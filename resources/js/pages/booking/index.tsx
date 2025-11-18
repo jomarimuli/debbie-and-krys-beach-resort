@@ -146,7 +146,14 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        {getStatusBadge(booking.status)}
+                                        <div className="flex gap-1 flex-wrap">
+                                            {getStatusBadge(booking.status)}
+                                            {booking.rebookings && booking.rebookings.length > 0 && (
+                                                <Badge variant="outline" className="bg-purple-100 text-purple-800 text-xs">
+                                                    Rebooking
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
@@ -169,7 +176,7 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                                             )}
 
                                             {/* Check delete permission */}
-                                            {canDeleteBooking(booking) && (
+                                            {(isAdmin() && can('booking delete')) && (
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"

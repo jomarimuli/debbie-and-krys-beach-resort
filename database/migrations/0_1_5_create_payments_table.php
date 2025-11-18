@@ -27,6 +27,10 @@ return new class extends Migration
             $table->index('booking_id', 'idx_payment_booking_id');
             $table->index('rebooking_id', 'idx_payment_rebooking_id');
             $table->index('payment_account_id', 'idx_payment_account_id');
+
+            $table->index(['is_rebooking_payment', 'rebooking_id'], 'idx_payment_rebooking_flag');
+            $table->index(['is_down_payment', 'booking_id'], 'idx_payment_down_payment');
+            $table->index('payment_date', 'idx_payment_date');
         });
     }
 

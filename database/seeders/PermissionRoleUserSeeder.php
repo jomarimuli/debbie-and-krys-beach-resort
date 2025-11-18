@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -117,6 +116,7 @@ class PermissionRoleUserSeeder extends Seeder
             'chat access',
             'chat assign',
             'chat close',
+            'chat auto reply'
         ];
 
         foreach ($permissions as $permission) {
@@ -138,14 +138,15 @@ class PermissionRoleUserSeeder extends Seeder
 
         $adminUser = User::firstOrCreate(
             // ['email' => 'admin@example.com'],
-            ['email' => 'jomarisingson04@gmail.com'],
+            // ['email' => 'jomarisingson04@gmail.com'],
+            ['email' => 'castillolanzlaurence@gmail.com'],
             [
                 'name' => 'Admin User',
                 'phone' => '09278210836',
                 'address' => 'Admin Office',
-                // 'email_verified_at' => now(),
+                'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                // 'password_changed_at' => now(),
+                'password_changed_at' => now(),
                 'status' => 'active',
             ]
         );
@@ -153,7 +154,7 @@ class PermissionRoleUserSeeder extends Seeder
         $adminUser->assignRole($adminRole);
 
         // ============================================
-        // STAFF ROLE - Operational Access
+        // STAFF ROLE - Operational Access (NO DELETE)
         // ============================================
         $staffRole = Role::firstOrCreate([
             'name' => 'staff',
@@ -165,7 +166,7 @@ class PermissionRoleUserSeeder extends Seeder
             'accommodation show',
             'accommodation-rate show',
 
-            // Bookings - Full operational control
+            // Bookings - Create, Edit, Status Changes (NO DELETE)
             'booking show',
             'booking create',
             'booking edit',
@@ -174,7 +175,7 @@ class PermissionRoleUserSeeder extends Seeder
             'booking checkout',
             'booking cancel',
 
-            // Rebookings - Full operational control
+            // Rebookings - Full operational control (NO DELETE)
             'rebooking show',
             'rebooking create',
             'rebooking edit',
@@ -182,12 +183,12 @@ class PermissionRoleUserSeeder extends Seeder
             'rebooking complete',
             'rebooking cancel',
 
-            // Payments - Full control
+            // Payments - Create, Edit (NO DELETE)
             'payment show',
             'payment create',
             'payment edit',
 
-            // Refunds - Full control
+            // Refunds - Create, Edit (NO DELETE)
             'refund show',
             'refund create',
             'refund edit',
@@ -195,7 +196,7 @@ class PermissionRoleUserSeeder extends Seeder
             // Payment Accounts - View only
             'payment-account show',
 
-            // Feedback - Can view and approve
+            // Feedback - View and approve only (NO EDIT/DELETE)
             'feedback show',
             'feedback approve',
 
@@ -215,14 +216,16 @@ class PermissionRoleUserSeeder extends Seeder
         ]);
 
         $staffUser = User::firstOrCreate(
-            ['email' => 'pauljustina11@gmail.com'],
+            // ['email' => 'staff@example.com'],
+            // ['email' => 'pauljustina11@gmail.com'],
+            ['email' => 'castillolanz2001@gmail.com'],
             [
                 'name' => 'Staff User',
                 'phone' => '09123456789',
                 'address' => 'Front Desk',
-                // 'email_verified_at' => now(),
+                'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                // 'password_changed_at' => now(),
+                'password_changed_at' => now(),
                 'status' => 'active',
             ]
         );
@@ -230,7 +233,7 @@ class PermissionRoleUserSeeder extends Seeder
         $staffUser->assignRole($staffRole);
 
         // ============================================
-        // CUSTOMER ROLE - Limited Access
+        // CUSTOMER ROLE - Limited Access (NO EDIT/DELETE except pending bookings)
         // ============================================
         $customerRole = Role::firstOrCreate([
             'name' => 'customer',
@@ -242,21 +245,22 @@ class PermissionRoleUserSeeder extends Seeder
             'accommodation show',
             'accommodation-rate show',
 
-            // Bookings - Can view own bookings only
+            // Bookings - Create and view own, edit only pending
             'booking show',
             'booking create',
+            'booking edit', // Can edit but only pending bookings (enforced in controller)
 
             // Rebookings - Can request rebooking for own bookings
             'rebooking show',
             'rebooking create',
 
-            // Payments - Can view own payments
+            // Payments - Can view own payments only
             'payment show',
 
-            // Refunds - Can view own refunds
+            // Refunds - Can view own refunds only
             'refund show',
 
-            // Feedback - Can create and view
+            // Feedback - Can create and view own
             'feedback show',
             'feedback create',
 
@@ -271,14 +275,16 @@ class PermissionRoleUserSeeder extends Seeder
         ]);
 
         $customerUser = User::firstOrCreate(
-            ['email' => 'macalommark18u@gmail.com'],
+            // ['email' => 'customer@example.com'],
+            // ['email' => 'macalommark18u@gmail.com'],
+            ['email' => 'lanzlac3231@gmail.com'],
             [
                 'name' => 'Customer User',
                 'phone' => '09987654321',
                 'address' => 'Customer Address',
-                // 'email_verified_at' => now(),
+                'email_verified_at' => now(),
                 'password' => Hash::make('password'),
-                // 'password_changed_at' => now(),
+                'password_changed_at' => now(),
                 'status' => 'active',
             ]
         );
