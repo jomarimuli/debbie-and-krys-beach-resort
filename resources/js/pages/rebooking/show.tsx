@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { type Rebooking, type PageProps } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Edit, CheckCircle, XCircle, FileText, Plus, Banknote, ReceiptText } from 'lucide-react';
+import { ArrowLeft, Edit, CheckCircle, XCircle, FileText, Plus, Banknote, ReceiptText, LoaderCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
@@ -75,6 +75,9 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
         });
     };
 
+    const [isCompleting, setIsCompleting] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
+
     const handleStatusChange = (action: string) => {
         const routes: Record<string, string> = {
             complete: rebookings.complete.url({ rebooking: rebooking.id }),
@@ -82,7 +85,15 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
         };
 
         if (routes[action]) {
-            router.post(routes[action]);
+            if (action === 'complete') setIsCompleting(true);
+            if (action === 'cancel') setIsCancelling(true);
+
+            router.post(routes[action], {}, {
+                onFinish: () => {
+                    setIsCompleting(false);
+                    setIsCancelling(false);
+                }
+            });
         }
     };
 
@@ -135,14 +146,22 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                         </>
                     )}
                     {rebooking.status === 'approved' && canComplete && (
-                        <Button size="sm" onClick={() => handleStatusChange('complete')}>
-                            <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                        <Button size="sm" onClick={() => handleStatusChange('complete')} disabled={isCompleting}>
+                            {isCompleting ? (
+                                <LoaderCircle className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                            ) : (
+                                <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                            )}
                             Complete
                         </Button>
                     )}
                     {!['cancelled', 'completed'].includes(rebooking.status) && canCancel && (
-                        <Button size="sm" variant="destructive" onClick={() => handleStatusChange('cancel')}>
-                            <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                        <Button size="sm" variant="destructive" onClick={() => handleStatusChange('cancel')} disabled={isCancelling}>
+                            {isCancelling ? (
+                                <LoaderCircle className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                            ) : (
+                                <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                            )}
                             Cancel
                         </Button>
                     )}
@@ -589,6 +608,7 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                             Cancel
                         </Button>
                         <Button onClick={handleApprove} disabled={approving}>
+                            {approving && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
                             Approve
                         </Button>
                     </DialogFooter>
@@ -621,6 +641,7 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                             Cancel
                         </Button>
                         <Button variant="destructive" onClick={handleReject} disabled={rejecting || !rejectData.admin_notes}>
+                            {rejecting && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
                             Reject
                         </Button>
                     </DialogFooter>

@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, LoaderCircle } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type PageProps } from '@/types';
 import announcements from '@/routes/announcements';
@@ -119,6 +119,7 @@ export default function Create({}: PageProps) {
 
                         <div className="flex gap-2 pt-2">
                             <Button type="submit" disabled={processing} size="sm">
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
                                 Create Announcement
                             </Button>
                             <Link href={announcements.index.url()}>

@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useMemo } from 'react';
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, LoaderCircle, Plus, Trash2 } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Booking, type Accommodation, type User, type PageProps } from '@/types';
 import { format } from 'date-fns';
@@ -634,6 +634,7 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
 
                         <div className="flex gap-2 pt-2">
                             <Button type="submit" disabled={processing} size="sm">
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
                                 Update Booking
                             </Button>
                             <Link href={bookings.show.url({ booking: booking.id })}>

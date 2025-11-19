@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { ArrowLeft, LoaderCircle, Upload, X } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Payment, type PaymentAccount, type PageProps } from '@/types';
 import { format } from 'date-fns';
@@ -299,6 +299,7 @@ export default function Edit({ payment, payment_accounts }: PageProps & { paymen
 
                         <div className="flex gap-2 pt-2">
                             <Button type="submit" disabled={processing} size="sm">
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
                                 Update Payment
                             </Button>
                             <Link href={payments.show.url({ payment: payment.id })}>

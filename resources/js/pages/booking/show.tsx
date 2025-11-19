@@ -6,13 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type Booking, type PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, CheckCircle, LogIn, LogOut, XCircle, Plus, Copy, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Edit, CheckCircle, LogIn, LogOut, XCircle, Plus, Copy, RefreshCw, LoaderCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { router } from '@inertiajs/react';
 import { toast } from 'sonner';
 import bookings from '@/routes/bookings';
 import payments from '@/routes/payments';
 import { useAuth } from '@/hooks/use-auth';
+import { useState } from 'react';
 
 export default function Show({ booking }: PageProps & { booking: Booking }) {
     const { can, user, isAdmin, isStaff, isCustomer } = useAuth();
@@ -33,6 +34,12 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
         );
     };
 
+    const [isConfirming, setIsConfirming] = useState(false);
+    const [isCheckingIn, setIsCheckingIn] = useState(false);
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const [isReverting, setIsReverting] = useState(false);
+    const [isCancelling, setIsCancelling] = useState(false);
+
     const handleStatusChange = (action: string) => {
         const routes: Record<string, string> = {
             confirm: bookings.confirm.url({ booking: booking.id }),
@@ -42,13 +49,21 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
         };
 
         if (routes[action]) {
-            router.post(routes[action]);
-        }
-    };
+            // Set loading state based on action
+            if (action === 'confirm') setIsConfirming(true);
+            if (action === 'checkIn') setIsCheckingIn(true);
+            if (action === 'checkOut') setIsCheckingOut(true);
+            if (action === 'cancel') setIsCancelling(true);
 
-    const copyBookingCode = () => {
-        navigator.clipboard.writeText(booking.booking_code);
-        toast.success('Booking code copied to clipboard!');
+            router.post(routes[action], {}, {
+                onFinish: () => {
+                    setIsConfirming(false);
+                    setIsCheckingIn(false);
+                    setIsCheckingOut(false);
+                    setIsCancelling(false);
+                }
+            });
+        }
     };
 
     // Check if booking can be rebooked
@@ -112,8 +127,12 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                 </div>
                 <div className="flex gap-2">
                     {booking.status === 'pending' && !existingRebooking && canConfirm && (
-                        <Button size="sm" onClick={() => handleStatusChange('confirm')}>
-                            <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                        <Button size="sm" onClick={() => handleStatusChange('confirm')} disabled={isConfirming}>
+                            {isConfirming ? (
+                                <LoaderCircle className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                            ) : (
+                                <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                            )}
                             Confirm
                         </Button>
                     )}
@@ -124,14 +143,22 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                         </Button>
                     )}
                     {booking.status === 'confirmed' && canCheckIn && (
-                        <Button size="sm" onClick={() => handleStatusChange('checkIn')}>
-                            <LogIn className="h-3.5 w-3.5 mr-1.5" />
+                        <Button size="sm" onClick={() => handleStatusChange('checkIn')} disabled={isCheckingIn}>
+                            {isCheckingIn ? (
+                                <LoaderCircle className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                            ) : (
+                                <LogIn className="h-3.5 w-3.5 mr-1.5" />
+                            )}
                             Check In
                         </Button>
                     )}
                     {booking.status === 'checked_in' && canCheckOut && (
-                        <Button size="sm" onClick={() => handleStatusChange('checkOut')}>
-                            <LogOut className="h-3.5 w-3.5 mr-1.5" />
+                        <Button size="sm" onClick={() => handleStatusChange('checkOut')} disabled={isCheckingOut}>
+                            {isCheckingOut ? (
+                                <LoaderCircle className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                            ) : (
+                                <LogOut className="h-3.5 w-3.5 mr-1.5" />
+                            )}
                             Check Out
                         </Button>
                     )}
@@ -160,20 +187,32 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                         <Button
                             size="sm"
                             variant="outline"
+                            disabled={isReverting}
                             onClick={() => {
                                 if (confirm(`Revert booking status from ${booking.status} to previous state?`)) {
-                                    router.post(bookings.revertStatus.url({ booking: booking.id }));
+                                    setIsReverting(true);
+                                    router.post(bookings.revertStatus.url({ booking: booking.id }), {}, {
+                                        onFinish: () => setIsReverting(false)
+                                    });
                                 }
                             }}
                         >
-                            <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+                            {isReverting ? (
+                                <LoaderCircle className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                            ) : (
+                                <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+                            )}
                             Revert Status
                         </Button>
                     )}
 
                     {!['cancelled', 'checked_out'].includes(booking.status) && canCancel && (
-                        <Button size="sm" variant="destructive" onClick={() => handleStatusChange('cancel')}>
-                            <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                        <Button size="sm" variant="destructive" onClick={() => handleStatusChange('cancel')} disabled={isCancelling}>
+                            {isCancelling ? (
+                                <LoaderCircle className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                            ) : (
+                                <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                            )}
                             Cancel
                         </Button>
                     )}
