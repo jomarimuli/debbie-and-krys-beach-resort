@@ -142,9 +142,14 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                                         {format(new Date(booking.check_in_date), 'MMM dd, yyyy')}
                                     </TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" className="capitalize text-xs">
-                                            {booking.booking_type.replace('_', ' ')}
-                                        </Badge>
+                                        <div className="flex flex-col gap-1">
+                                            <Badge variant="outline" className="text-xs capitalize w-fit">
+                                                {booking.booking_type.replace('_', ' ')}
+                                            </Badge>
+                                            <span className="text-xs text-muted-foreground">
+                                                {booking.booking_type === 'overnight' ? '22 hrs' : '8 hrs'}
+                                            </span>
+                                        </div>
                                     </TableCell>
                                     <TableCell className="text-sm">{booking.total_guests}</TableCell>
                                     <TableCell>

@@ -281,10 +281,15 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                             {getStatusBadge(booking.status)}
                         </div>
                         <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">Type</p>
-                            <Badge variant="outline" className="capitalize text-xs">
-                                {booking.booking_type.replace('_', ' ')}
-                            </Badge>
+                            <p className="text-xs text-muted-foreground mb-0.5">Booking Type</p>
+                            <div className="flex flex-col gap-1">
+                                <Badge variant="outline" className="capitalize text-xs w-fit">
+                                    {booking.booking_type.replace('_', ' ')}
+                                </Badge>
+                                <span className="text-xs text-muted-foreground">
+                                    {booking.booking_type === 'overnight' ? '22 hours' : '8 hours'}
+                                </span>
+                            </div>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Check-in Date</p>

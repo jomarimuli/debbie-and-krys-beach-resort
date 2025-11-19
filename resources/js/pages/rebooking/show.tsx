@@ -289,7 +289,7 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                                     <div>
                                         <p className="font-medium">{item.accommodation?.name}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            {item.guests} guests · {item.accommodation_rate?.booking_type.replace('_', ' ')}
+                                            {item.guests} guests - {item.accommodation_rate?.booking_type.replace('_', ' ')} ({item.accommodation_rate?.booking_type === 'overnight' ? '22 hours' : '8 hours'})
                                         </p>
                                         {parseFloat(item.additional_pax_charge) > 0 && (
                                             <p className="text-xs text-muted-foreground">
