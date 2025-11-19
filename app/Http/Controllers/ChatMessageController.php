@@ -22,7 +22,7 @@ class ChatMessageController extends Controller
                     'assigned_at' => now(),
                 ]);
 
-                broadcast(new ConversationUpdated($conversation))->toOthers();
+                // broadcast(new ConversationUpdated($conversation))->toOthers();
             } elseif ($conversation->staff_id && $conversation->staff_id !== $user->id) {
                 abort(403, 'This conversation is assigned to another staff member');
             }
@@ -37,8 +37,8 @@ class ChatMessageController extends Controller
 
         $conversation->touch();
 
-        broadcast(new MessageSent($message))->toOthers();
-        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
+        // broadcast(new MessageSent($message))->toOthers();
+        // broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
 
         return response()->json([
             'message' => $message->load('sender'),
@@ -58,7 +58,7 @@ class ChatMessageController extends Controller
                     'read_at' => now(),
                 ]);
 
-            broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
+            // broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
         }
 
         return response()->json(['success' => true]);

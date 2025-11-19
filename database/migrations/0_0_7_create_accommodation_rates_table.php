@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('accommodation_id')->constrained()->cascadeOnDelete();
             $table->enum('booking_type', ['day_tour', 'overnight']);
             $table->decimal('rate', 10, 2);
-            $table->decimal('additional_pax_rate', 10, 2)->nullable();
-            $table->decimal('adult_entrance_fee', 10, 2)->nullable();
-            $table->decimal('child_entrance_fee', 10, 2)->nullable();
+            $table->decimal('additional_pax_rate', 10, 2);
+            $table->decimal('adult_entrance_fee', 10, 2);
+            $table->decimal('child_entrance_fee', 10, 2);
             $table->integer('child_max_age')->nullable();
             $table->boolean('includes_free_cottage')->default(false);
             $table->boolean('includes_free_entrance')->default(false);

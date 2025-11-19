@@ -15,6 +15,7 @@ export * from './announcement';
 export * from './dashboard';
 export * from './faq';
 export * from './chat';
+export * from './calendar';
 
 import { type LucideIcon } from 'lucide-react';
 
@@ -31,6 +32,7 @@ export interface NavItem {
     isActive?: boolean;
     isExternal?: boolean;
     requiredPermissions?: string[];
+    badge?: number;
     items?: Array<{
         title: string;
         href: string;
@@ -126,3 +128,4 @@ export type RebookingIndexProps = PageProps & RebookingIndexData;
 export type FAQIndexProps = PageProps & FAQIndexData;
 export type ChatIndexProps = PageProps & ChatIndexData;
 export type ChatShowProps = PageProps & ChatShowData;
+export type CalendarIndexProps = PageProps & CalendarIndexData;

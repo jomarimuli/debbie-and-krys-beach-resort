@@ -29,8 +29,12 @@ class ChatConversationController extends Controller
 
         $conversations = $query->latest('updated_at')->get();
 
+        // Calculate total unread count
+        $totalUnreadCount = $conversations->sum('unread_messages_count');
+
         return Inertia::render('chat/index', [
             'conversations' => $conversations,
+            'totalUnreadCount' => $totalUnreadCount,
         ]);
     }
 
@@ -62,7 +66,7 @@ class ChatConversationController extends Controller
             'message' => $validated['message'],
         ]);
 
-        broadcast(new MessageSent($userMessage))->toOthers();
+        // broadcast(new MessageSent($userMessage))->toOthers();
 
         $autoReply = ChatAutoReply::getWelcomeMessage();
         if ($autoReply) {
@@ -81,10 +85,10 @@ class ChatConversationController extends Controller
                 'message' => $autoReply,
             ]);
 
-            broadcast(new MessageSent($autoReplyMessage))->toOthers();
+            // broadcast(new MessageSent($autoReplyMessage))->toOthers();
         }
 
-        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
+        // broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
 
         return redirect()->route('chat.show', $conversation)
             ->with('success', 'Chat conversation started');
@@ -103,6 +107,7 @@ class ChatConversationController extends Controller
                 abort(403);
             }
 
+            // Mark messages as read
             $conversation->messages()
                 ->where('sender_id', '!=', $user->id)
                 ->where('is_read', false)
@@ -114,6 +119,15 @@ class ChatConversationController extends Controller
             if ($conversation->guest_session_id !== session('guest_chat_session_id')) {
                 abort(403);
             }
+
+            // Mark messages as read for guest (system/staff messages)
+            $conversation->messages()
+                ->whereNotNull('sender_id')
+                ->where('is_read', false)
+                ->update([
+                    'is_read' => true,
+                    'read_at' => now(),
+                ]);
         }
 
         $conversation->load(['customer', 'staff', 'messages.sender']);
@@ -135,7 +149,7 @@ class ChatConversationController extends Controller
             'assigned_at' => now(),
         ]);
 
-        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
+        // broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
 
         return back()->with('success', 'Conversation assigned to you');
     }
@@ -151,7 +165,7 @@ class ChatConversationController extends Controller
             'closed_at' => now(),
         ]);
 
-        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
+        // broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
 
         return back()->with('success', 'Conversation closed');
     }
@@ -179,7 +193,7 @@ class ChatConversationController extends Controller
             'closed_at' => null,
         ]);
 
-        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
+        // broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
 
         return back()->with('success', 'Conversation reopened');
     }

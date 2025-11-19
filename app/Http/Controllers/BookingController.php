@@ -42,8 +42,7 @@ class BookingController extends Controller
             'accommodations.accommodation',
             'createdBy',
             'rebookings' => function ($q) {
-                $q->whereIn('status', ['pending', 'approved'])
-                    ->latest();
+                $q->whereIn('status', ['pending', 'approved'])->latest();
             }
         ]);
 
@@ -206,8 +205,7 @@ class BookingController extends Controller
             'entranceFees',
             'payments',
             'rebookings' => function ($query) {
-                $query->whereIn('status', ['pending', 'approved'])
-                    ->latest();
+                $query->whereIn('status', ['pending', 'approved'])->latest();
             }
         ]);
 
@@ -258,10 +256,135 @@ class BookingController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $booking->update($request->validated());
+        DB::beginTransaction();
+        try {
+            // Check if accommodations data is provided (pending bookings only)
+            if ($request->has('accommodations') && $booking->status === 'pending') {
+                // Delete existing accommodations and entrance fees
+                $booking->accommodations()->delete();
+                $booking->entranceFees()->delete();
 
-        return redirect()->route('bookings.show', $booking)
-            ->with('success', 'Booking updated successfully.');
+                $accommodationTotal = 0;
+                $entranceFeeTotal = 0;
+                $totalFreeEntrances = 0;
+
+                $numberOfNights = 1;
+                if ($booking->booking_type === 'overnight' && $request->check_out_date) {
+                    $checkIn = \Carbon\Carbon::parse($request->check_in_date);
+                    $checkOut = \Carbon\Carbon::parse($request->check_out_date);
+                    $numberOfNights = max(1, $checkOut->diffInDays($checkIn));
+                }
+
+                // Create new accommodations
+                foreach ($request->accommodations as $item) {
+                    $accommodation = Accommodation::findOrFail($item['accommodation_id']);
+                    $rate = AccommodationRate::findOrFail($item['accommodation_rate_id']);
+
+                    $baseRate = $rate->rate;
+                    if ($booking->booking_type === 'overnight') {
+                        $baseRate = $rate->rate * $numberOfNights;
+                    }
+
+                    $subtotal = $baseRate;
+                    $additionalPaxCharge = 0;
+
+                    if ($accommodation->min_capacity && $item['guests'] > $accommodation->min_capacity) {
+                        $additionalGuests = $item['guests'] - $accommodation->min_capacity;
+                        $additionalPaxRate = $rate->additional_pax_rate ?? 0;
+
+                        if ($booking->booking_type === 'overnight') {
+                            $additionalPaxRate = $additionalPaxRate * $numberOfNights;
+                        }
+
+                        $additionalPaxCharge = $additionalGuests * $additionalPaxRate;
+                        $subtotal += $additionalPaxCharge;
+                    }
+
+                    BookingAccommodation::create([
+                        'booking_id' => $booking->id,
+                        'accommodation_id' => $accommodation->id,
+                        'accommodation_rate_id' => $rate->id,
+                        'guests' => $item['guests'],
+                        'rate' => $rate->rate,
+                        'additional_pax_charge' => $additionalPaxCharge,
+                        'subtotal' => $subtotal,
+                        'free_entrance_used' => $rate->includes_free_entrance
+                            ? min($item['guests'], $accommodation->min_capacity ?? 0)
+                            : 0,
+                    ]);
+
+                    $accommodationTotal += $subtotal;
+
+                    if ($rate->includes_free_entrance) {
+                        $totalFreeEntrances += min($item['guests'], $accommodation->min_capacity ?? 0);
+                    }
+                }
+
+                // Calculate entrance fees
+                $adultsNeedingEntrance = max(0, $request->total_adults - $totalFreeEntrances);
+                $childrenNeedingEntrance = $request->total_children;
+
+                $firstSelectedRate = AccommodationRate::find($request->accommodations[0]['accommodation_rate_id']);
+
+                if ($adultsNeedingEntrance > 0 && $firstSelectedRate?->adult_entrance_fee) {
+                    $adultFee = $adultsNeedingEntrance * $firstSelectedRate->adult_entrance_fee;
+                    BookingEntranceFee::create([
+                        'booking_id' => $booking->id,
+                        'type' => 'adult',
+                        'quantity' => $adultsNeedingEntrance,
+                        'rate' => $firstSelectedRate->adult_entrance_fee,
+                        'subtotal' => $adultFee,
+                    ]);
+                    $entranceFeeTotal += $adultFee;
+                }
+
+                if ($childrenNeedingEntrance > 0 && $firstSelectedRate?->child_entrance_fee) {
+                    $childFee = $childrenNeedingEntrance * $firstSelectedRate->child_entrance_fee;
+                    BookingEntranceFee::create([
+                        'booking_id' => $booking->id,
+                        'type' => 'child',
+                        'quantity' => $childrenNeedingEntrance,
+                        'rate' => $firstSelectedRate->child_entrance_fee,
+                        'subtotal' => $childFee,
+                    ]);
+                    $entranceFeeTotal += $childFee;
+                }
+
+                $totalAmount = $accommodationTotal + $entranceFeeTotal;
+
+                // Update booking with new totals
+                $booking->update([
+                    'guest_name' => $request->guest_name,
+                    'guest_email' => $request->guest_email,
+                    'guest_phone' => $request->guest_phone,
+                    'guest_address' => $request->guest_address,
+                    'check_in_date' => $request->check_in_date,
+                    'check_out_date' => $request->check_out_date,
+                    'total_adults' => $request->total_adults,
+                    'total_children' => $request->total_children,
+                    'accommodation_total' => $accommodationTotal,
+                    'entrance_fee_total' => $entranceFeeTotal,
+                    'total_amount' => $totalAmount,
+                    'down_payment_required' => $request->down_payment_required,
+                    'down_payment_amount' => $request->down_payment_amount,
+                    'notes' => $request->notes,
+                    'status' => $request->status,
+                ]);
+            } else {
+                // Simple update without accommodation changes (for non-pending bookings)
+                $booking->update($request->validated());
+            }
+
+            $booking->load(['accommodations.accommodation', 'entranceFees', 'createdBy']);
+
+            DB::commit();
+
+            return redirect()->route('bookings.show', $booking)
+                ->with('success', 'Booking updated successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to update booking: ' . $e->getMessage());
+        }
     }
 
     public function destroy(Booking $booking): RedirectResponse

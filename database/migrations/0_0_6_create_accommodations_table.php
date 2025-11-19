@@ -19,8 +19,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->boolean('is_air_conditioned')->default(false);
             $table->json('images')->nullable();
-            $table->integer('min_capacity')->nullable(); // 8 pax
-            $table->integer('max_capacity')->nullable(); // 15 pax
+            $table->integer('min_capacity'); // 8 pax
+            $table->integer('max_capacity'); // 15 pax
             $table->boolean('is_active')->default(true);
             $table->integer('sort_order')->default(0);
             $table->timestamps();

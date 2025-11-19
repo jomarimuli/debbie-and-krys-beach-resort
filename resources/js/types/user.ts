@@ -16,6 +16,7 @@ export interface User {
     updated_at: string;
     roles?: string[]; // Make optional (not always loaded)
     permissions?: string[]; // Make optional (not always loaded)
+    unread_chat_count?: number;
 }
 
 export interface UserData extends User {

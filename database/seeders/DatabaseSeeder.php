@@ -10,9 +10,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             PermissionRoleUserSeeder::class,
-            AccommodationSeeder::class,
             FAQSeeder::class,
             ChatAutoReplySeeder::class,
+            DummyDataSeeder::class,
         ]);
     }
 }
