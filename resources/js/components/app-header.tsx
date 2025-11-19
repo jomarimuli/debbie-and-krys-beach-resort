@@ -12,7 +12,7 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, Menu, Search, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw, MessageCircleQuestion, MessageCircle, Settings } from 'lucide-react';
+import { LayoutGrid, Users, Shield, Menu, Search, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw, MessageCircleQuestion, MessageCircle, Settings, Calendar } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
@@ -31,6 +31,12 @@ const allNavItems: NavItem[] = [
         href: '/dashboard',
         icon: LayoutGrid,
         requiredPermissions: [],
+    },
+    {
+        title: 'Calendar',
+        href: '/calendar',
+        icon: Calendar,
+        requiredPermissions: ['booking show', 'global access'],
     },
     // {
     //     title: 'Pulse',

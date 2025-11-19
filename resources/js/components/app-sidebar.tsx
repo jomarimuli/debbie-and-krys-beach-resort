@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavGroup, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw, MessageCircleQuestion, MessageCircle, Settings } from 'lucide-react';
+import { LayoutGrid, Users, Shield, GitBranch, HeartPulse, Hotel, Ticket, Coins, Banknote, MessageSquare, Image as ImageIcon, Megaphone, Home, Wallet, ReceiptText, RefreshCw, MessageCircleQuestion, MessageCircle, Settings, Calendar } from 'lucide-react';
 import { useMemo } from 'react';
 import AppLogo from './app-logo';
 import { GithubUpdatesModal } from '@/components/github-updates-modal';
@@ -24,6 +24,12 @@ const allNavGroups: NavGroup[] = [
                 href: '/dashboard',
                 icon: LayoutGrid,
                 requiredPermissions: [],
+            },
+            {
+                title: 'Calendar',
+                href: '/calendar',
+                icon: Calendar,
+                requiredPermissions: ['booking show', 'global access'],
             },
             // {
             //     title: 'Pulse',

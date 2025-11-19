@@ -23,6 +23,7 @@ use App\Http\Controllers\FAQSearchController;
 use App\Http\Controllers\ChatConversationController;
 use App\Http\Controllers\ChatMessageController;
 use App\Http\Controllers\ChatAutoReplyController;
+use App\Http\Controllers\CalendarController;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
 
@@ -119,6 +120,10 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
     Route::post('/chat/{conversation}/close', [ChatConversationController::class, 'close'])->name('chat.close');
     Route::post('/chat/{conversation}/reopen', [ChatConversationController::class, 'reopen'])->name('chat.reopen');
     Route::post('/chat/{conversation}/messages', [ChatMessageController::class, 'store'])->name('chat.messages.store');
+
+    // Calendar
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/calendar/{date}', [CalendarController::class, 'show'])->name('calendar.show');
 });
 
 require __DIR__.'/settings.php';

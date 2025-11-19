@@ -15,6 +15,7 @@ export * from './announcement';
 export * from './dashboard';
 export * from './faq';
 export * from './chat';
+export * from './calendar';
 
 import { type LucideIcon } from 'lucide-react';
 
@@ -127,3 +128,4 @@ export type RebookingIndexProps = PageProps & RebookingIndexData;
 export type FAQIndexProps = PageProps & FAQIndexData;
 export type ChatIndexProps = PageProps & ChatIndexData;
 export type ChatShowProps = PageProps & ChatShowData;
+export type CalendarIndexProps = PageProps & CalendarIndexData;
