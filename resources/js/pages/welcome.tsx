@@ -428,7 +428,12 @@ export default function Welcome() {
                                                                                         {accommodation.rates && accommodation.rates.length > 0 ? (
                                                                                             accommodation.rates.map((rate, index) => (
                                                                                                 <div key={index} className="flex justify-between items-center p-2 sm:p-3 bg-[#F5F2E8] rounded-lg">
-                                                                                                    <span className="text-[#64748B] text-xs sm:text-sm capitalize">{rate.booking_type.replace('_', ' ')}</span>
+                                                                                                    <span className="text-[#64748B] text-xs sm:text-sm capitalize">
+                                                                                                        {rate.booking_type.replace('_', ' ')}
+                                                                                                    </span>
+                                                                                                    <span className="text-xs text-muted-foreground">
+                                                                                                        {rate.booking_type === 'overnight' ? '22 hours' : '8 hours'}
+                                                                                                    </span>
                                                                                                     <span className="font-bold text-[#E55A2B] text-sm sm:text-base">₱{parseFloat(rate.rate).toLocaleString()}</span>
                                                                                                 </div>
                                                                                             ))
