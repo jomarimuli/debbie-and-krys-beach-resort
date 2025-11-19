@@ -66,7 +66,7 @@ class ChatConversationController extends Controller
             'message' => $validated['message'],
         ]);
 
-        broadcast(new MessageSent($userMessage))->toOthers();
+        // broadcast(new MessageSent($userMessage))->toOthers();
 
         $autoReply = ChatAutoReply::getWelcomeMessage();
         if ($autoReply) {
@@ -85,10 +85,10 @@ class ChatConversationController extends Controller
                 'message' => $autoReply,
             ]);
 
-            broadcast(new MessageSent($autoReplyMessage))->toOthers();
+            // broadcast(new MessageSent($autoReplyMessage))->toOthers();
         }
 
-        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
+        // broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
 
         return redirect()->route('chat.show', $conversation)
             ->with('success', 'Chat conversation started');
@@ -149,7 +149,7 @@ class ChatConversationController extends Controller
             'assigned_at' => now(),
         ]);
 
-        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
+        // broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
 
         return back()->with('success', 'Conversation assigned to you');
     }
@@ -165,7 +165,7 @@ class ChatConversationController extends Controller
             'closed_at' => now(),
         ]);
 
-        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
+        // broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
 
         return back()->with('success', 'Conversation closed');
     }
@@ -193,7 +193,7 @@ class ChatConversationController extends Controller
             'closed_at' => null,
         ]);
 
-        broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
+        // broadcast(new ConversationUpdated($conversation->fresh()))->toOthers();
 
         return back()->with('success', 'Conversation reopened');
     }

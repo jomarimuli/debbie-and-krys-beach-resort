@@ -296,7 +296,7 @@ export function FAQChatbot() {
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
-                                                        className="h-9 px-4 text-xs hover:bg-gray-50 cursor-pointer active:scale-95 transition-transform"
+                                                        className="h-9 px-4 text-xs border-green-500 text-green-600 hover:bg-green-500 hover:text-white cursor-pointer active:scale-95 transition-all"
                                                         onClick={() => handleFeedback(message.searchId!, true)}
                                                     >
                                                         <ThumbsUp className="h-3.5 w-3.5 mr-1.5" />
@@ -305,7 +305,7 @@ export function FAQChatbot() {
                                                     <Button
                                                         size="sm"
                                                         variant="outline"
-                                                        className="h-9 px-4 text-xs hover:bg-gray-50 cursor-pointer active:scale-95 transition-transform"
+                                                        className="h-9 px-4 text-xs border-red-500 text-red-600 hover:bg-red-500 hover:text-white cursor-pointer active:scale-95 transition-all"
                                                         onClick={() => handleFeedback(message.searchId!, false)}
                                                     >
                                                         <ThumbsDown className="h-3.5 w-3.5 mr-1.5" />

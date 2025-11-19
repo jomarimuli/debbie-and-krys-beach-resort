@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, useState } from 'react';
+import { FormEventHandler, useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, Upload, X } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Payment, type PaymentAccount, type PageProps } from '@/types';
@@ -28,6 +28,29 @@ export default function Edit({ payment, payment_accounts }: PageProps & { paymen
         payment_date: format(new Date(payment.payment_date), 'yyyy-MM-dd'),
         _method: 'PUT',
     });
+
+    // Check if down payment is fully paid (excluding current payment being edited)
+    const isDownPaymentFullyPaid = useMemo(() => {
+        if (!payment.booking?.down_payment_required) return false;
+
+        const booking = payment.booking;
+        const downPaymentAmount = parseFloat(booking.down_payment_amount || '0');
+        const downPaymentPaid = parseFloat(booking.down_payment_paid);
+
+        // Calculate down payment paid excluding current payment if it's a down payment
+        const otherDownPaymentsPaid = payment.is_down_payment
+            ? downPaymentPaid - parseFloat(payment.amount)
+            : downPaymentPaid;
+
+        return otherDownPaymentsPaid >= downPaymentAmount;
+    }, [payment]);
+
+    // Auto-check down payment if already fully paid
+    useEffect(() => {
+        if (isDownPaymentFullyPaid && payment.booking?.down_payment_required && !payment.is_down_payment) {
+            setData('is_down_payment', true);
+        }
+    }, [isDownPaymentFullyPaid, payment.booking, payment.is_down_payment]);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -81,21 +104,51 @@ export default function Edit({ payment, payment_accounts }: PageProps & { paymen
                 <CardContent>
                     <form onSubmit={submit} className="space-y-5">
                         {payment.booking?.down_payment_required && (
-                            <div className="space-y-1.5">
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="checkbox"
-                                        id="is_down_payment"
-                                        checked={data.is_down_payment}
-                                        onChange={(e) => setData('is_down_payment', e.target.checked)}
-                                        className="h-4 w-4 rounded border-gray-300"
-                                    />
-                                    <Label htmlFor="is_down_payment" className="text-sm cursor-pointer">
-                                        This is a down payment
-                                    </Label>
+                            <>
+                                <div className="space-y-1.5">
+                                    <div className="flex items-center space-x-2">
+                                        <input
+                                            type="checkbox"
+                                            id="is_down_payment"
+                                            checked={data.is_down_payment}
+                                            onChange={(e) => setData('is_down_payment', e.target.checked)}
+                                            disabled={isDownPaymentFullyPaid && !payment.is_down_payment}
+                                            className="h-4 w-4 rounded border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        />
+                                        <Label
+                                            htmlFor="is_down_payment"
+                                            className={`text-sm ${isDownPaymentFullyPaid && !payment.is_down_payment ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                                        >
+                                            This is a down payment
+                                            {isDownPaymentFullyPaid && !payment.is_down_payment && (
+                                                <span className="text-xs text-green-600 ml-2">(Fully Paid)</span>
+                                            )}
+                                        </Label>
+                                    </div>
+                                    {errors.is_down_payment && <p className="text-xs text-destructive">{errors.is_down_payment}</p>}
                                 </div>
-                                {errors.is_down_payment && <p className="text-xs text-destructive">{errors.is_down_payment}</p>}
-                            </div>
+
+                                <div className={`rounded border p-3 space-y-2 ${isDownPaymentFullyPaid && !payment.is_down_payment ? 'bg-green-50 border-green-200' : 'bg-blue-50'}`}>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Down Payment Required:</span>
+                                        <span className="font-medium">
+                                            ₱{parseFloat(payment.booking.down_payment_amount || '0').toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-muted-foreground">Down Payment Paid:</span>
+                                        <span className="font-medium text-green-600">
+                                            ₱{parseFloat(payment.booking.down_payment_paid).toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between text-sm border-t pt-2">
+                                        <span className="font-semibold">Down Payment Balance:</span>
+                                        <span className={`font-semibold ${isDownPaymentFullyPaid && !payment.is_down_payment ? 'text-green-600' : 'text-red-600'}`}>
+                                            ₱{parseFloat(payment.booking.down_payment_balance).toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+                            </>
                         )}
 
                         <div className="grid gap-4 md:grid-cols-2">

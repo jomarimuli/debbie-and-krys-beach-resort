@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, useState, useEffect } from 'react';
+import { FormEventHandler, useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, Upload, X, RefreshCw } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Booking, type Rebooking, type PaymentAccount, type PageProps } from '@/types';
@@ -44,6 +44,12 @@ export default function Create({
     const selectedBooking = bookings.find((b) => b.id === parseInt(data.booking_id));
     const selectedRebooking = rebookings?.find((r) => r.id === parseInt(data.rebooking_id));
 
+    // Check if down payment is fully paid
+    const isDownPaymentFullyPaid = useMemo(() => {
+        if (!selectedBooking?.down_payment_required) return false;
+        return parseFloat(selectedBooking.down_payment_balance) <= 0;
+    }, [selectedBooking]);
+
     useEffect(() => {
         if (paymentType === 'booking') {
             setData({
@@ -60,7 +66,6 @@ export default function Create({
         }
     }, [paymentType]);
 
-    // Auto-set booking_id when rebooking is selected
     useEffect(() => {
         if (selectedRebooking) {
             setData({
@@ -70,7 +75,6 @@ export default function Create({
         }
     }, [data.rebooking_id]);
 
-    // for preselection
     useEffect(() => {
         if (preselected_rebooking_id && rebookings) {
             setPaymentType('rebooking');
@@ -208,16 +212,23 @@ export default function Create({
                                                             id="is_down_payment"
                                                             checked={data.is_down_payment}
                                                             onChange={(e) => setData('is_down_payment', e.target.checked)}
-                                                            className="h-4 w-4 rounded border-gray-300"
+                                                            disabled={isDownPaymentFullyPaid}
+                                                            className="h-4 w-4 rounded border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         />
-                                                        <Label htmlFor="is_down_payment" className="text-sm cursor-pointer">
+                                                        <Label
+                                                            htmlFor="is_down_payment"
+                                                            className={`text-sm ${isDownPaymentFullyPaid ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'}`}
+                                                        >
                                                             This is a down payment
+                                                            {isDownPaymentFullyPaid && (
+                                                                <span className="text-xs text-green-600 ml-2">(Fully Paid)</span>
+                                                            )}
                                                         </Label>
                                                     </div>
                                                     {errors.is_down_payment && <p className="text-xs text-destructive">{errors.is_down_payment}</p>}
                                                 </div>
 
-                                                <div className="rounded border p-3 bg-blue-50 space-y-2">
+                                                <div className={`rounded border p-3 space-y-2 ${isDownPaymentFullyPaid ? 'bg-green-50 border-green-200' : 'bg-blue-50'}`}>
                                                     <div className="flex justify-between text-sm">
                                                         <span className="text-muted-foreground">Down Payment Required:</span>
                                                         <span className="font-medium">
@@ -232,7 +243,7 @@ export default function Create({
                                                     </div>
                                                     <div className="flex justify-between text-sm border-t pt-2">
                                                         <span className="font-semibold">Down Payment Balance:</span>
-                                                        <span className="font-semibold text-red-600">
+                                                        <span className={`font-semibold ${isDownPaymentFullyPaid ? 'text-green-600' : 'text-red-600'}`}>
                                                             ₱{parseFloat(selectedBooking.down_payment_balance).toLocaleString()}
                                                         </span>
                                                     </div>
