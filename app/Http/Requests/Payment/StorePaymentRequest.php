@@ -36,9 +36,6 @@ class StorePaymentRequest extends FormRequest
         ];
     }
 
-    /**
-     * @param \Illuminate\Contracts\Validation\Validator $validator
-     */
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
@@ -71,6 +68,8 @@ class StorePaymentRequest extends FormRequest
                     if ($this->is_down_payment) {
                         if (!$booking->down_payment_required) {
                             $validator->errors()->add('is_down_payment', 'This booking does not require a down payment.');
+                        } elseif ($booking->isDownPaymentPaid()) {
+                            $validator->errors()->add('is_down_payment', 'Down payment has already been fully paid.');
                         } elseif ($this->amount > $booking->down_payment_balance) {
                             $validator->errors()->add('amount', 'Down payment amount cannot exceed remaining down payment balance of ₱' . number_format($booking->down_payment_balance, 2) . '.');
                         }

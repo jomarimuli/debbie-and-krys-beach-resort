@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useMemo } from 'react';
-import { ArrowLeft, Plus, Trash2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, AlertCircle, LoaderCircle } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Accommodation, type Booking, type PageProps } from '@/types';
 import { format } from 'date-fns';
@@ -525,6 +525,7 @@ export default function Create({
 
                 <div className="flex gap-2">
                     <Button type="submit" disabled={processing} size="sm">
+                        {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
                         Submit Rebooking Request
                     </Button>
                     <Link href={bookings.show.url({ booking: booking.id })}>

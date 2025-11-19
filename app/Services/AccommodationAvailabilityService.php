@@ -21,7 +21,17 @@ class AccommodationAvailabilityService
         $conflicts = [];
 
         foreach ($accommodationIds as $accommodationId) {
-            $conflict = $this->getConflictingBooking($accommodationId, $checkInDate, $checkOutDate, $excludeBookingId);
+            // Skip if accommodation ID is null or invalid
+            if (!$accommodationId || !is_numeric($accommodationId)) {
+                continue;
+            }
+
+            $conflict = $this->getConflictingBooking(
+                (int) $accommodationId,
+                $checkInDate,
+                $checkOutDate,
+                $excludeBookingId
+            );
 
             if ($conflict) {
                 $conflicts[] = [

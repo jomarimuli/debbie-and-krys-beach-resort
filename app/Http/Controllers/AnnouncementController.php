@@ -110,8 +110,6 @@ class AnnouncementController extends Controller
                 new AnnouncementPublished($announcement),
                 50 // Batch size: 50 emails at a time
             );
-
-            Log::info("Announcement email sent to {$totalSent} users for: {$announcement->title}");
         } catch (\Exception $e) {
             Log::error('Announcement email failed: ' . $e->getMessage());
         }

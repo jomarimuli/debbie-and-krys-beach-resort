@@ -23,8 +23,8 @@ class UpdateAccommodationRequest extends FormRequest
             'images.*' => ['image', 'mimes:jpeg,jpg,png,webp'],
             'existing_images' => ['nullable', 'array'],
             'existing_images.*' => ['string'],
-            'min_capacity' => ['nullable', 'integer', 'min:1'],
-            'max_capacity' => ['nullable', 'integer', 'min:1', 'gte:min_capacity'],
+            'min_capacity' => ['required', 'integer', 'min:1'],
+            'max_capacity' => ['required', 'integer', 'min:1', 'gte:min_capacity'],
             'is_active' => ['boolean'],
             'sort_order' => ['integer', 'min:0'],
         ];

@@ -4,23 +4,33 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type Feedback, type PageProps } from '@/types';
 import { Link } from '@inertiajs/react';
-import { ArrowLeft, Edit, Star, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, Edit, Star, CheckCircle, XCircle, LoaderCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { router } from '@inertiajs/react';
 import feedbacks from '@/routes/feedbacks';
 import bookings from '@/routes/bookings';
+import { useState } from 'react';
 
 import { useAuth } from '@/hooks/use-auth';
 
 export default function Show({ feedback }: PageProps & { feedback: Feedback }) {
     const { can, user, isAdmin, isStaff } = useAuth();
 
+    const [isApproving, setIsApproving] = useState(false);
+    const [isRejecting, setIsRejecting] = useState(false);
+
     const handleApprove = () => {
-        router.post(feedbacks.approve.url({ feedback: feedback.id }));
+        setIsApproving(true);
+        router.post(feedbacks.approve.url({ feedback: feedback.id }), {}, {
+            onFinish: () => setIsApproving(false)
+        });
     };
 
     const handleReject = () => {
-        router.post(feedbacks.reject.url({ feedback: feedback.id }));
+        setIsRejecting(true);
+        router.post(feedbacks.reject.url({ feedback: feedback.id }), {}, {
+            onFinish: () => setIsRejecting(false)
+        });
     };
 
     const getStatusBadge = (status: string) => {
@@ -72,12 +82,20 @@ export default function Show({ feedback }: PageProps & { feedback: Feedback }) {
                     {/* Only admin/staff can approve/reject */}
                     {feedback.status === 'pending' && (isAdmin() || isStaff()) && can('feedback approve') && (
                         <>
-                            <Button size="sm" onClick={handleApprove}>
-                                <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                            <Button size="sm" onClick={handleApprove} disabled={isApproving}>
+                                {isApproving ? (
+                                    <LoaderCircle className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                                ) : (
+                                    <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                                )}
                                 Approve
                             </Button>
-                            <Button size="sm" variant="destructive" onClick={handleReject}>
-                                <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                            <Button size="sm" variant="destructive" onClick={handleReject} disabled={isRejecting}>
+                                {isRejecting ? (
+                                    <LoaderCircle className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                                ) : (
+                                    <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                                )}
                                 Reject
                             </Button>
                         </>

@@ -27,6 +27,12 @@ export interface ChatConversation {
     latest_message?: ChatMessage;
     messages?: ChatMessage[];
     messages_count?: number;
+    unread_messages_count: number;
+}
+
+export interface ChatIndexData {
+    conversations: ChatConversation[];
+    totalUnreadCount: number;
 }
 
 export interface ChatMessage {

@@ -23,6 +23,7 @@ use App\Http\Controllers\FAQSearchController;
 use App\Http\Controllers\ChatConversationController;
 use App\Http\Controllers\ChatMessageController;
 use App\Http\Controllers\ChatAutoReplyController;
+use App\Http\Controllers\CalendarController;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('home');
 
@@ -32,6 +33,7 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback'])->name
 // Public FAQ search (no auth required)
 Route::post('/faq/search', [FAQSearchController::class, 'search'])->name('faq.search');
 Route::post('/faq-search/{faqSearch}/feedback', [FAQSearchController::class, 'feedback'])->name('faq.feedback');
+Route::get('/faq/popular', [FAQSearchController::class, 'popularQuestions']);
 
 Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
@@ -103,7 +105,6 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
     // FAQs
     Route::resource('faqs', FAQController::class)->except(['show', 'create', 'edit']);
     Route::get('/faq/analytics', [FAQSearchController::class, 'analytics'])->name('faq.analytics');
-    Route::get('/faq/popular', [FAQSearchController::class, 'popularQuestions']);
 
     // Chat
     Route::get('/chat', [ChatConversationController::class, 'index'])->name('chat.index');
@@ -119,6 +120,10 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
     Route::post('/chat/{conversation}/close', [ChatConversationController::class, 'close'])->name('chat.close');
     Route::post('/chat/{conversation}/reopen', [ChatConversationController::class, 'reopen'])->name('chat.reopen');
     Route::post('/chat/{conversation}/messages', [ChatMessageController::class, 'store'])->name('chat.messages.store');
+
+    // Calendar
+    Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');
+    Route::get('/calendar/{date}', [CalendarController::class, 'show'])->name('calendar.show');
 });
 
 require __DIR__.'/settings.php';

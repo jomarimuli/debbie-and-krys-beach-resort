@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useEffect } from 'react';
-import { ArrowLeft, Star } from 'lucide-react';
+import { ArrowLeft, LoaderCircle, Star } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Booking, type PageProps } from '@/types';
 import feedbacks from '@/routes/feedbacks';
@@ -245,6 +245,7 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
 
                         <div className="flex gap-2 pt-2">
                             <Button type="submit" disabled={processing} size="sm">
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
                                 Create Feedback
                             </Button>
                             <Link href={feedbacks.index.url()}>

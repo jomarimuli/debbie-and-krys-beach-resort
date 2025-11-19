@@ -27,7 +27,7 @@ class ChatConversation extends Model
 
     protected $with = ['customer', 'staff'];
 
-    protected $appends = ['participant_name'];
+    protected $appends = ['participant_name', 'unread_messages_count'];
 
     public function customer(): BelongsTo
     {
@@ -59,8 +59,31 @@ class ChatConversation extends Model
         return $this->customer_id === null;
     }
 
-    public function unreadMessagesCount(int $userId): int
+    public function getUnreadMessagesCountAttribute(): int
     {
+        $user = auth()->user();
+
+        if (!$user) {
+            // For guests, count messages not from guest (system/staff messages)
+            return $this->messages()
+                ->where('sender_id', '!=', null)
+                ->where('is_read', false)
+                ->count();
+        }
+
+        // For authenticated users, count messages not from them
+        return $this->messages()
+            ->where('sender_id', '!=', $user->id)
+            ->where('is_read', false)
+            ->count();
+    }
+
+    public function unreadMessagesCount(?int $userId = null): int
+    {
+        if ($userId === null) {
+            return $this->unread_messages_count;
+        }
+
         return $this->messages()
             ->where('sender_id', '!=', $userId)
             ->where('is_read', false)

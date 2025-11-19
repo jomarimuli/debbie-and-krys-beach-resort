@@ -17,6 +17,7 @@ import {
 import { type NavGroup, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 export function NavMain({ groups = [] }: { groups: NavGroup[] }) {
     const page = usePage<SharedData>();
@@ -62,7 +63,14 @@ export function NavMain({ groups = [] }: { groups: NavGroup[] }) {
                                                 >
                                                     {item.icon && <item.icon />}
                                                     <span>{item.title}</span>
-                                                    <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                                    <div className="ml-auto flex items-center gap-1">
+                                                        {item.badge && item.badge > 0 && (
+                                                            <Badge variant="destructive" className="h-6 min-w-5 px-1.5 text-xs">
+                                                                {item.badge}
+                                                            </Badge>
+                                                        )}
+                                                        <ChevronRight className="transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                                    </div>
                                                 </SidebarMenuButton>
                                             </CollapsibleTrigger>
                                             <CollapsibleContent>
@@ -100,11 +108,21 @@ export function NavMain({ groups = [] }: { groups: NavGroup[] }) {
                                             <a href={item.href}>
                                                 {item.icon && <item.icon />}
                                                 <span>{item.title}</span>
+                                                {item.badge && item.badge > 0 && (
+                                                    <Badge variant="destructive" className="h-6 min-w-5 px-1.5 text-xs">
+                                                        {item.badge}
+                                                    </Badge>
+                                                )}
                                             </a>
                                         ) : (
                                             <Link href={item.href} prefetch>
                                                 {item.icon && <item.icon />}
                                                 <span>{item.title}</span>
+                                                {item.badge && item.badge > 0 && (
+                                                    <Badge variant="destructive" className="h-6 min-w-5 px-1.5 text-xs">
+                                                        {item.badge}
+                                                    </Badge>
+                                                )}
                                             </Link>
                                         )}
                                     </SidebarMenuButton>
