@@ -1,18 +1,17 @@
 // resources/js/pages/calendar/index.tsx
+
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Hotel, Users, Info } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Hotel, Users, DollarSign } from 'lucide-react';
 import { type CalendarIndexProps, type CalendarAccommodation } from '@/types';
-import { useState } from 'react';
 import { format, addDays, subDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from 'date-fns';
 import { cn } from '@/lib/utils';
 import calendar from '@/routes/calendar';
 import { router } from '@inertiajs/react';
 
 export default function Index({ selectedDate, accommodations, monthOverview }: CalendarIndexProps) {
-    const [showDetailsDialog, setShowDetailsDialog] = useState(false);
     const currentDate = new Date(selectedDate);
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
@@ -64,7 +63,18 @@ export default function Index({ selectedDate, accommodations, monthOverview }: C
         }
     };
 
-    const availableCount = accommodations.filter((a: CalendarAccommodation) => a.is_available).length;
+    const formatCurrency = (amount: number | null | undefined) => {
+        if (amount === null || amount === undefined) return 'N/A';
+        return `₱${parseFloat(amount.toString()).toLocaleString('en-PH', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        })}`;
+    };
+
+    // Calculate available/booked count based on booking types
+    const availableCount = accommodations.filter((a: CalendarAccommodation) =>
+        (a.day_tour_rate?.is_available || a.overnight_rate?.is_available)
+    ).length;
     const bookedCount = accommodations.length - availableCount;
 
     return (
@@ -137,10 +147,7 @@ export default function Index({ selectedDate, accommodations, monthOverview }: C
                             {accommodations.map((accommodation: CalendarAccommodation) => (
                                 <div
                                     key={accommodation.id}
-                                    className={cn(
-                                        'flex items-center justify-between p-3 border rounded',
-                                        accommodation.is_available ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
-                                    )}
+                                    className="flex flex-col gap-3 p-3 border rounded"
                                 >
                                     <div className="flex items-center gap-3">
                                         {accommodation.first_image_url ? (
@@ -174,21 +181,88 @@ export default function Index({ selectedDate, accommodations, monthOverview }: C
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        {accommodation.is_available ? (
-                                            <Badge variant="outline" className="bg-green-100 text-green-800 text-xs">
-                                                Available
-                                            </Badge>
-                                        ) : (
-                                            <div className="space-y-1">
-                                                <Badge variant="outline" className="bg-red-100 text-red-800 text-xs">
-                                                    Booked
-                                                </Badge>
-                                                {accommodation.booking && (
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {accommodation.booking.guest_name}
+
+                                    <div className="flex gap-3 text-xs">
+                                        {accommodation.day_tour_rate && (
+                                            <div className={cn(
+                                                'flex-1 p-2 rounded border',
+                                                accommodation.day_tour_rate.is_available
+                                                    ? 'bg-green-50 border-green-200'
+                                                    : 'bg-red-50 border-red-200'
+                                            )}>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <p className="font-medium">Day Tour</p>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={cn(
+                                                            'text-xs',
+                                                            accommodation.day_tour_rate.is_available
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : 'bg-red-100 text-red-800'
+                                                        )}
+                                                    >
+                                                        {accommodation.day_tour_rate.is_available ? 'Available' : 'Booked'}
+                                                    </Badge>
+                                                </div>
+                                                <div className="space-y-0.5 text-muted-foreground">
+                                                    <p className="flex items-center gap-1">
+                                                        <DollarSign className="h-3 w-3" />
+                                                        Base: {formatCurrency(accommodation.day_tour_rate.rate)}
                                                     </p>
-                                                )}
+                                                    <p>Extra Pax: {formatCurrency(accommodation.day_tour_rate.additional_pax_rate)}</p>
+                                                    {accommodation.day_tour_rate.includes_free_cottage && (
+                                                        <p className="text-green-600">Free Cottage</p>
+                                                    )}
+                                                    {accommodation.day_tour_rate.includes_free_entrance && (
+                                                        <p className="text-green-600">Free Entrance</p>
+                                                    )}
+                                                    {!accommodation.day_tour_rate.is_available && accommodation.day_tour_rate.booking && (
+                                                        <p className="text-red-600 font-medium mt-1">
+                                                            {accommodation.day_tour_rate.booking.guest_name}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {accommodation.overnight_rate && (
+                                            <div className={cn(
+                                                'flex-1 p-2 rounded border',
+                                                accommodation.overnight_rate.is_available
+                                                    ? 'bg-green-50 border-green-200'
+                                                    : 'bg-red-50 border-red-200'
+                                            )}>
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <p className="font-medium">Overnight</p>
+                                                    <Badge
+                                                        variant="outline"
+                                                        className={cn(
+                                                            'text-xs',
+                                                            accommodation.overnight_rate.is_available
+                                                                ? 'bg-green-100 text-green-800'
+                                                                : 'bg-red-100 text-red-800'
+                                                        )}
+                                                    >
+                                                        {accommodation.overnight_rate.is_available ? 'Available' : 'Booked'}
+                                                    </Badge>
+                                                </div>
+                                                <div className="space-y-0.5 text-muted-foreground">
+                                                    <p className="flex items-center gap-1">
+                                                        <DollarSign className="h-3 w-3" />
+                                                        Base: {formatCurrency(accommodation.overnight_rate.rate)}
+                                                    </p>
+                                                    <p>Extra Pax: {formatCurrency(accommodation.overnight_rate.additional_pax_rate)}</p>
+                                                    {accommodation.overnight_rate.includes_free_cottage && (
+                                                        <p className="text-green-600">Free Cottage</p>
+                                                    )}
+                                                    {accommodation.overnight_rate.includes_free_entrance && (
+                                                        <p className="text-green-600">Free Entrance</p>
+                                                    )}
+                                                    {!accommodation.overnight_rate.is_available && accommodation.overnight_rate.booking && (
+                                                        <p className="text-red-600 font-medium mt-1">
+                                                            {accommodation.overnight_rate.booking.guest_name}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
                                         )}
                                     </div>

@@ -27,7 +27,7 @@ class AnnouncementController extends Controller
     {
         $announcements = Announcement::latest('published_at')
             ->latest('created_at')
-            ->paginate(10);
+            ->paginate(100);
 
         return Inertia::render('announcement/index', [
             'announcements' => $announcements,

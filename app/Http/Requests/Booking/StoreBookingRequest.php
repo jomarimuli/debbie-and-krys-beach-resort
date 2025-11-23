@@ -4,6 +4,7 @@ namespace App\Http\Requests\Booking;
 
 use Illuminate\Foundation\Http\FormRequest;
 use App\Services\AccommodationAvailabilityService;
+use App\Models\Accommodation;
 
 class StoreBookingRequest extends FormRequest
 {
@@ -18,9 +19,9 @@ class StoreBookingRequest extends FormRequest
             'source' => ['required', 'in:guest,registered,walkin'],
             'booking_type' => ['required', 'in:day_tour,overnight'],
             'guest_name' => ['required', 'string', 'max:255'],
-            'guest_email' => ['nullable', 'email', 'max:255'],
-            'guest_phone' => ['nullable', 'string', 'max:20'],
-            'guest_address' => ['nullable', 'string', 'max:500'],
+            'guest_email' => ['required', 'email', 'max:255'],
+            'guest_phone' => ['required', 'string', 'max:20'],
+            'guest_address' => ['required', 'string', 'max:500'],
             'check_in_date' => ['required', 'date', 'after_or_equal:today'],
             'total_adults' => ['required', 'integer', 'min:1'],
             'total_children' => ['required', 'integer', 'min:0'],
@@ -67,6 +68,22 @@ class StoreBookingRequest extends FormRequest
                     'accommodations',
                     "Total accommodation guests ({$accommodationGuests}) must equal total party size ({$totalGuests})"
                 );
+            }
+
+            // Validate max capacity for each accommodation
+            foreach ($this->accommodations as $index => $accommodationData) {
+                $accommodation = Accommodation::find($accommodationData['accommodation_id']);
+
+                if ($accommodation && $accommodation->max_capacity) {
+                    $guests = (int) $accommodationData['guests'];
+
+                    if ($guests > $accommodation->max_capacity) {
+                        $validator->errors()->add(
+                            "accommodations.{$index}.guests",
+                            "The number of guests ({$guests}) exceeds the maximum capacity ({$accommodation->max_capacity}) for {$accommodation->name}."
+                        );
+                    }
+                }
             }
 
             // Check accommodation availability

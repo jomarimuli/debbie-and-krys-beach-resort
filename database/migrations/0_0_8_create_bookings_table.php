@@ -32,6 +32,11 @@ return new class extends Migration
             $table->integer('total_adults')->default(0);
             $table->integer('total_children')->default(0);
 
+            $table->time('check_in_time')->nullable();
+            $table->text('check_in_remarks')->nullable();
+            $table->time('check_out_time')->nullable();
+            $table->text('check_out_remarks')->nullable();
+
             // Totals
             $table->decimal('accommodation_total', 10, 2)->default(0);
             $table->decimal('entrance_fee_total', 10, 2)->default(0);

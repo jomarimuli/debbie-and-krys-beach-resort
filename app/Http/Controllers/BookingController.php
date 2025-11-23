@@ -10,6 +10,8 @@ use App\Models\BookingEntranceFee;
 use App\Models\User;
 use App\Http\Requests\Booking\StoreBookingRequest;
 use App\Http\Requests\Booking\UpdateBookingRequest;
+use App\Http\Requests\Booking\CheckInBookingRequest;
+use App\Http\Requests\Booking\CheckOutBookingRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -36,8 +38,17 @@ class BookingController extends Controller
         $this->middleware('permission:booking cancel|global access')->only('cancel');
     }
 
-    public function index(): Response
+    public function index(): Response|RedirectResponse
     {
+        // Redirect customers with no bookings to create page
+        if (auth()->user()->hasRole('customer')) {
+            $hasBookings = Booking::where('created_by', auth()->id())->exists();
+
+            if (!$hasBookings) {
+                return redirect()->route('bookings.create');
+            }
+        }
+
         $query = Booking::with([
             'accommodations.accommodation',
             'createdBy',
@@ -50,7 +61,7 @@ class BookingController extends Controller
             $query->where('created_by', auth()->id());
         }
 
-        $bookings = $query->latest()->paginate(10);
+        $bookings = $query->latest()->paginate(100);
 
         return Inertia::render('booking/index', [
             'bookings' => $bookings,
@@ -419,16 +430,24 @@ class BookingController extends Controller
         return back()->with('success', 'Booking confirmed successfully.');
     }
 
-    public function checkIn(Booking $booking): RedirectResponse
+    public function checkIn(CheckInBookingRequest $request, Booking $booking): RedirectResponse
     {
-        $booking->update(['status' => 'checked_in']);
+        $booking->update([
+            'status' => 'checked_in',
+            'check_in_time' => $request->check_in_time,
+            'check_in_remarks' => $request->check_in_remarks,
+        ]);
 
         return back()->with('success', 'Guest checked in successfully.');
     }
 
-    public function checkOut(Booking $booking): RedirectResponse
+    public function checkOut(CheckOutBookingRequest $request, Booking $booking): RedirectResponse
     {
-        $booking->update(['status' => 'checked_out']);
+        $booking->update([
+            'status' => 'checked_out',
+            'check_out_time' => $request->check_out_time,
+            'check_out_remarks' => $request->check_out_remarks,
+        ]);
 
         return back()->with('success', 'Guest checked out successfully.');
     }

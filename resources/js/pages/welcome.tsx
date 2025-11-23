@@ -432,7 +432,7 @@ export default function Welcome() {
                                                                                                         {rate.booking_type.replace('_', ' ')}
                                                                                                     </span>
                                                                                                     <span className="text-xs text-muted-foreground">
-                                                                                                        {rate.booking_type === 'overnight' ? '22 hours' : '8 hours'}
+                                                                                                        {rate.booking_type === 'overnight' ? '6:00 A.M. - 6:00 A.M.' : '6:00 A.M. - 6:00 P.M.'}
                                                                                                     </span>
                                                                                                     <span className="font-bold text-[#E55A2B] text-sm sm:text-base">₱{parseFloat(rate.rate).toLocaleString()}</span>
                                                                                                 </div>

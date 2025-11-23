@@ -20,7 +20,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import announcements from '@/routes/announcements';
-
 import { useAuth } from '@/hooks/use-auth';
 
 export default function Index({ announcements: announcementData }: AnnouncementIndexProps) {
@@ -35,6 +34,17 @@ export default function Index({ announcements: announcementData }: AnnouncementI
         }
     };
 
+    // Permission check helpers
+    const canEditAnnouncement = () => {
+        if (!can('announcement edit')) return false;
+        return isAdmin() || isStaff();
+    };
+
+    const canDeleteAnnouncement = () => {
+        if (!can('announcement delete')) return false;
+        return isAdmin() || isStaff();
+    };
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -42,8 +52,7 @@ export default function Index({ announcements: announcementData }: AnnouncementI
                     <h1 className="text-xl font-semibold">Announcements</h1>
                     <p className="text-sm text-muted-foreground">Manage resort announcements</p>
                 </div>
-                {/* Only admin/staff can create */}
-                {(isAdmin() || isStaff()) && can('announcement create') && (
+                {can('announcement create') && (isAdmin() || isStaff()) && (
                     <Link href={announcements.create.url()}>
                         <Button size="sm">
                             <Plus className="mr-1.5 h-3.5 w-3.5" />
@@ -101,24 +110,32 @@ export default function Index({ announcements: announcementData }: AnnouncementI
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-1">
-                                            <Link href={announcements.show.url({ announcement: announcement.id })}>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Eye className="h-3.5 w-3.5" />
+                                            {can('announcement show') && (
+                                                <Link href={announcements.show.url({ announcement: announcement.id })}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Eye className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </Link>
+                                            )}
+
+                                            {canEditAnnouncement() && (
+                                                <Link href={announcements.edit.url({ announcement: announcement.id })}>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                                        <Edit className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </Link>
+                                            )}
+
+                                            {canDeleteAnnouncement() && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                    onClick={() => setDeleteId(announcement.id)}
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
                                                 </Button>
-                                            </Link>
-                                            <Link href={announcements.edit.url({ announcement: announcement.id })}>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                                    <Edit className="h-3.5 w-3.5" />
-                                                </Button>
-                                            </Link>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={() => setDeleteId(announcement.id)}
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                            </Button>
+                                            )}
                                         </div>
                                     </TableCell>
                                 </TableRow>

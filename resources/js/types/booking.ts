@@ -81,7 +81,7 @@ export interface Rebooking {
     status: 'pending' | 'approved' | 'completed' | 'cancelled';
     payment_status: 'pending' | 'paid' | 'refunded';
     reason: string | null;
-    admin_notes: string | null;
+    remarks: string | null;
     approved_at: string | null;
     completed_at: string | null;
     created_at: string;
@@ -145,6 +145,10 @@ export interface Booking {
     check_out_date: string | null;
     total_adults: number;
     total_children: number;
+    check_in_time: string | null;
+    check_in_remarks: string | null;
+    check_out_time: string | null;
+    check_out_remarks: string | null;
     total_guests: number;
     accommodation_total: string;
     entrance_fee_total: string;

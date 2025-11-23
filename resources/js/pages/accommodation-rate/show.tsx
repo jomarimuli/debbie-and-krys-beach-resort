@@ -57,7 +57,7 @@ export default function Show({ rate }: PageProps & { rate: AccommodationRate }) 
                                     {rate.booking_type.replace('_', ' ')}
                                 </Badge>
                                 <span className="text-xs text-muted-foreground">
-                                    {rate.booking_type === 'overnight' ? '22 hours' : '8 hours'}
+                                    {rate.booking_type === 'overnight' ? '6:00 A.M. - 6:00 A.M.' : '6:00 A.M. - 6:00 P.M.'}
                                 </span>
                             </div>
                         </div>

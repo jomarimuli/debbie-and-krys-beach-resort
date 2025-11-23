@@ -26,7 +26,7 @@ class GalleryController extends Controller
     public function index(): Response
     {
         $galleries = Gallery::ordered()
-            ->paginate(12);
+            ->paginate(100);
 
         return Inertia::render('gallery/index', [
             'galleries' => $galleries,

@@ -1,4 +1,25 @@
 // resources/js/types/calendar.ts
+
+export interface CalendarBooking {
+    booking_number: string;
+    guest_name: string;
+    check_in_date: string;
+    check_out_date: string | null;
+    status: string;
+}
+
+export interface AccommodationRate {
+    rate: number;
+    additional_pax_rate: number;
+    adult_entrance_fee: number;
+    child_entrance_fee: number;
+    child_max_age: number;
+    includes_free_cottage: boolean;
+    includes_free_entrance: boolean;
+    is_available: boolean;
+    booking: CalendarBooking | null;
+}
+
 export interface CalendarAccommodation {
     id: number;
     name: string;
@@ -8,19 +29,8 @@ export interface CalendarAccommodation {
     min_capacity: number;
     max_capacity: number;
     first_image_url: string | null;
-    day_tour_rate: string | null;
-    overnight_rate: string | null;
-    is_available: boolean;
-    booking: CalendarBooking | null;
-}
-
-export interface CalendarBooking {
-    booking_number: string;
-    guest_name: string;
-    check_in_date: string;
-    check_out_date: string | null;
-    status: string;
-    booking_type: 'day_tour' | 'overnight';
+    day_tour_rate: AccommodationRate | null;
+    overnight_rate: AccommodationRate | null;
 }
 
 export interface DayOverview {

@@ -24,7 +24,7 @@ class AccommodationRateController extends Controller
     {
         $rates = AccommodationRate::with('accommodation')
             ->latest()
-            ->paginate(10);
+            ->paginate(100);
 
         return Inertia::render('accommodation-rate/index', [
             'rates' => $rates,

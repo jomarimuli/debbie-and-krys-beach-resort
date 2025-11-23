@@ -145,10 +145,10 @@ export default function Show({ feedback }: PageProps & { feedback: Feedback }) {
                     </CardContent>
                 </Card>
 
-                {/* Rating & Status */}
+                {/* Rating */}
                 <Card>
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-medium">Rating & Status</CardTitle>
+                        <CardTitle className="text-base font-medium">Rating</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
                         <div>
@@ -158,10 +158,10 @@ export default function Show({ feedback }: PageProps & { feedback: Feedback }) {
                                 <span className="text-sm font-medium">({feedback.rating}/5)</span>
                             </div>
                         </div>
-                        <div>
+                        {/* <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Status</p>
                             {getStatusBadge(feedback.status)}
-                        </div>
+                        </div> */}
                         <div>
                             <p className="text-xs text-muted-foreground mb-0.5">Submitted</p>
                             <p className="text-sm font-medium">

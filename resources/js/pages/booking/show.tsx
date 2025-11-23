@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { type Booking, type PageProps } from '@/types';
-import { Link } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Edit, CheckCircle, LogIn, LogOut, XCircle, Plus, Copy, RefreshCw, LoaderCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { router } from '@inertiajs/react';
@@ -14,6 +14,10 @@ import bookings from '@/routes/bookings';
 import payments from '@/routes/payments';
 import { useAuth } from '@/hooks/use-auth';
 import { useState } from 'react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 export default function Show({ booking }: PageProps & { booking: Booking }) {
     const { can, user, isAdmin, isStaff, isCustomer } = useAuth();
@@ -39,6 +43,19 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [isReverting, setIsReverting] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
+
+    const [showCheckInDialog, setShowCheckInDialog] = useState(false);
+    const [showCheckOutDialog, setShowCheckOutDialog] = useState(false);
+
+    const { data: checkInData, setData: setCheckInData, post: postCheckIn, processing: checkingIn, errors: checkInErrors, reset: resetCheckIn } = useForm({
+        check_in_time: '',
+        check_in_remarks: '',
+    });
+
+    const { data: checkOutData, setData: setCheckOutData, post: postCheckOut, processing: checkingOut, errors: checkOutErrors, reset: resetCheckOut } = useForm({
+        check_out_time: '',
+        check_out_remarks: '',
+    });
 
     const handleStatusChange = (action: string) => {
         const routes: Record<string, string> = {
@@ -126,7 +143,8 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    {booking.status === 'pending' && !existingRebooking && canConfirm && (
+                    {/* {booking.status === 'pending' && !existingRebooking && canConfirm && ( */}
+                    {booking.status === 'pending' && canConfirm && (
                         <Button size="sm" onClick={() => handleStatusChange('confirm')} disabled={isConfirming}>
                             {isConfirming ? (
                                 <LoaderCircle className="h-3.5 w-3.5 mr-1.5 animate-spin" />
@@ -136,35 +154,133 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                             Confirm
                         </Button>
                     )}
-                    {booking.status === 'pending' && existingRebooking && (
+
+                    {/* {booking.status === 'pending' && existingRebooking && (
                         <Button size="sm" disabled className="cursor-not-allowed" title={`Booking has ${existingRebooking.status} rebooking`}>
                             <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
                             Cannot Confirm
                         </Button>
-                    )}
+                    )} */}
+
                     {booking.status === 'confirmed' && canCheckIn && (
-                        <Button size="sm" onClick={() => handleStatusChange('checkIn')} disabled={isCheckingIn}>
-                            {isCheckingIn ? (
-                                <LoaderCircle className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                            ) : (
-                                <LogIn className="h-3.5 w-3.5 mr-1.5" />
-                            )}
+                        <Button size="sm" onClick={() => {
+                            const now = new Date();
+                            setCheckInData('check_in_time', `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`);
+                            setShowCheckInDialog(true);
+                        }}>
+                            <LogIn className="h-3.5 w-3.5 mr-1.5" />
                             Check In
                         </Button>
                     )}
+
                     {booking.status === 'checked_in' && canCheckOut && (
-                        <Button size="sm" onClick={() => handleStatusChange('checkOut')} disabled={isCheckingOut}>
-                            {isCheckingOut ? (
-                                <LoaderCircle className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                            ) : (
-                                <LogOut className="h-3.5 w-3.5 mr-1.5" />
-                            )}
+                        <Button size="sm" onClick={() => {
+                            const now = new Date();
+                            setCheckOutData('check_out_time', `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`);
+                            setShowCheckOutDialog(true);
+                        }}>
+                            <LogOut className="h-3.5 w-3.5 mr-1.5" />
                             Check Out
                         </Button>
                     )}
 
-                    {/* Add permission check for rebook */}
-                    {canRebook && !existingRebooking && canCreateRebooking && (
+                    <Dialog open={showCheckInDialog} onOpenChange={(open) => {
+                        setShowCheckInDialog(open);
+                        if (!open) resetCheckIn();
+                    }}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Check In Guest</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="check_in_time" className="text-sm">Check-in Time <span className="text-destructive">*</span></Label>
+                                    <Input
+                                        id="check_in_time"
+                                        type="time"
+                                        value={checkInData.check_in_time}
+                                        onChange={(e) => setCheckInData('check_in_time', e.target.value)}
+                                        className="h-9"
+                                    />
+                                    {checkInErrors.check_in_time && <p className="text-xs text-destructive">{checkInErrors.check_in_time}</p>}
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="check_in_remarks" className="text-sm">Remarks</Label>
+                                    <Textarea
+                                        id="check_in_remarks"
+                                        value={checkInData.check_in_remarks}
+                                        onChange={(e) => setCheckInData('check_in_remarks', e.target.value)}
+                                        rows={3}
+                                        className="resize-none"
+                                        placeholder="Optional remarks..."
+                                    />
+                                    {checkInErrors.check_in_remarks && <p className="text-xs text-destructive">{checkInErrors.check_in_remarks}</p>}
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button variant="outline" onClick={() => setShowCheckInDialog(false)}>Cancel</Button>
+                                <Button
+                                    onClick={() => postCheckIn(bookings.checkIn.url({ booking: booking.id }), {
+                                        onSuccess: () => setShowCheckInDialog(false)
+                                    })}
+                                    disabled={checkingIn || !checkInData.check_in_time}
+                                >
+                                    {checkingIn && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
+                                    Confirm Check In
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={showCheckOutDialog} onOpenChange={(open) => {
+                        setShowCheckOutDialog(open);
+                        if (!open) resetCheckOut();
+                    }}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Check Out Guest</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="check_out_time" className="text-sm">Check-out Time <span className="text-destructive">*</span></Label>
+                                    <Input
+                                        id="check_out_time"
+                                        type="time"
+                                        value={checkOutData.check_out_time}
+                                        onChange={(e) => setCheckOutData('check_out_time', e.target.value)}
+                                        className="h-9"
+                                    />
+                                    {checkOutErrors.check_out_time && <p className="text-xs text-destructive">{checkOutErrors.check_out_time}</p>}
+                                </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="check_out_remarks" className="text-sm">Remarks</Label>
+                                    <Textarea
+                                        id="check_out_remarks"
+                                        value={checkOutData.check_out_remarks}
+                                        onChange={(e) => setCheckOutData('check_out_remarks', e.target.value)}
+                                        rows={3}
+                                        className="resize-none"
+                                        placeholder="Optional remarks..."
+                                    />
+                                    {checkOutErrors.check_out_remarks && <p className="text-xs text-destructive">{checkOutErrors.check_out_remarks}</p>}
+                                </div>
+                            </div>
+                            <DialogFooter>
+                                <Button variant="outline" onClick={() => setShowCheckOutDialog(false)}>Cancel</Button>
+                                <Button
+                                    onClick={() => postCheckOut(bookings.checkOut.url({ booking: booking.id }), {
+                                        onSuccess: () => setShowCheckOutDialog(false)
+                                    })}
+                                    disabled={checkingOut || !checkOutData.check_out_time}
+                                >
+                                    {checkingOut && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
+                                    Confirm Check Out
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+
+                    {/* {canRebook && !existingRebooking && canCreateRebooking && (
                         <Button size="sm" variant="outline" onClick={handleRebook}>
                             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
                             Rebook
@@ -181,7 +297,7 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
                             Rebooking {existingRebooking.status}
                         </Button>
-                    )}
+                    )} */}
 
                     {booking.status !== 'pending' && booking.status !== 'cancelled' && (isAdmin() || isStaff()) && can('booking edit') && (
                         <Button
@@ -287,22 +403,50 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                                     {booking.booking_type.replace('_', ' ')}
                                 </Badge>
                                 <span className="text-xs text-muted-foreground">
-                                    {booking.booking_type === 'overnight' ? '22 hours' : '8 hours'}
+                                    {booking.booking_type === 'overnight' ? '6:00 A.M. - 6:00 A.M.' : '6:00 A.M. - 6:00 P.M.'}
                                 </span>
                             </div>
                         </div>
-                        <div>
-                            <p className="text-xs text-muted-foreground mb-0.5">Check-in Date</p>
-                            <p className="text-sm font-medium">
-                                {format(new Date(booking.check_in_date), 'MMMM dd, yyyy')}
-                            </p>
+                        <div className="grid grid-cols-3 gap-3">
+                            <div>
+                                <p className="text-xs text-muted-foreground mb-0.5">Check-in Date</p>
+                                <p className="text-sm font-medium">
+                                    {format(new Date(booking.check_in_date), 'MMMM dd, yyyy')}
+                                </p>
+                            </div>
+                            {booking.check_in_time && (
+                                <div>
+                                    <p className="text-xs text-muted-foreground mb-0.5">Check-in Time</p>
+                                    <p className="text-sm font-medium">{booking.check_in_time}</p>
+                                </div>
+                            )}
+                            {booking.check_in_remarks && (
+                                <div>
+                                    <p className="text-xs text-muted-foreground mb-0.5">Check-in Remarks</p>
+                                    <p className="text-sm font-medium">{booking.check_in_remarks}</p>
+                                </div>
+                            )}
                         </div>
                         {booking.check_out_date && (
-                            <div>
-                                <p className="text-xs text-muted-foreground mb-0.5">Check-out Date</p>
-                                <p className="text-sm font-medium">
-                                    {format(new Date(booking.check_out_date), 'MMMM dd, yyyy')}
-                                </p>
+                            <div className="grid grid-cols-3 gap-3">
+                                <div>
+                                    <p className="text-xs text-muted-foreground mb-0.5">Check-out Date</p>
+                                    <p className="text-sm font-medium">
+                                        {format(new Date(booking.check_out_date), 'MMMM dd, yyyy')}
+                                    </p>
+                                </div>
+                                {booking.check_out_time && (
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-0.5">Check-out Time</p>
+                                        <p className="text-sm font-medium">{booking.check_out_time}</p>
+                                    </div>
+                                )}
+                                {booking.check_out_remarks && (
+                                    <div>
+                                        <p className="text-xs text-muted-foreground mb-0.5">Check-out Remarks</p>
+                                        <p className="text-sm font-medium">{booking.check_out_remarks}</p>
+                                    </div>
+                                )}
                             </div>
                         )}
                         <div>
@@ -373,7 +517,7 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                         <span className="font-semibold">₱{parseFloat(booking.total_amount).toLocaleString()}</span>
                     </div>
 
-                    {booking.down_payment_required && (
+                    {/* {booking.down_payment_required && (
                         <>
                             <div className="border-t pt-2">
                                 <p className="text-xs font-semibold text-muted-foreground mb-2">Down Payment</p>
@@ -393,7 +537,7 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                                 </span>
                             </div>
                         </>
-                    )}
+                    )} */}
 
                     <div className="border-t pt-2">
                         <div className="flex justify-between text-sm">
@@ -427,11 +571,11 @@ export default function Show({ booking }: PageProps & { booking: Booking }) {
                                     <div className="text-sm">
                                         <div className="flex items-center gap-2">
                                             <p className="font-medium">{payment.payment_number}</p>
-                                            {payment.is_down_payment && (
+                                            {/* {payment.is_down_payment && (
                                                 <Badge variant="outline" className="bg-blue-100 text-blue-800 text-xs">
                                                     DP
                                                 </Badge>
-                                            )}
+                                            )} */}
                                         </div>
                                         <p className="text-xs text-muted-foreground">
                                             {format(new Date(payment.payment_date), 'MMM dd, yyyy')} · {payment.payment_method.replace('_', ' ')}

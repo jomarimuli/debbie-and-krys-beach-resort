@@ -49,7 +49,7 @@ class RebookingController extends Controller
             });
         }
 
-        $rebookings = $query->latest()->paginate(10);
+        $rebookings = $query->latest()->paginate(100);
 
         return Inertia::render('rebooking/index', [
             'rebookings' => $rebookings,
@@ -440,7 +440,7 @@ class RebookingController extends Controller
                 'status' => 'approved',
                 'rebooking_fee' => $rebookingFee,
                 'total_adjustment' => $totalAdjustment,
-                'admin_notes' => $request->admin_notes,
+                'remarks' => $request->remarks,
                 'approved_at' => now(),
             ]);
 
@@ -475,7 +475,7 @@ class RebookingController extends Controller
 
         $rebooking->update([
             'status' => 'cancelled',
-            'admin_notes' => $request->admin_notes,
+            'remarks' => $request->remarks,
         ]);
 
         return back()->with('success', 'Rebooking request rejected.');

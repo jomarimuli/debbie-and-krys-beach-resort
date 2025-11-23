@@ -110,16 +110,16 @@ Route::middleware(['auth', 'verified', 'check.user.status'])->group(function () 
     Route::get('/chat', [ChatConversationController::class, 'index'])->name('chat.index');
     Route::post('/chat', [ChatConversationController::class, 'store'])->name('chat.store');
 
-    Route::get('/chat/auto-replies', [ChatAutoReplyController::class, 'index'])
-        ->name('chat.auto-replies.index');
-    Route::put('/chat/auto-replies/{autoReply}', [ChatAutoReplyController::class, 'update'])
-        ->name('chat.auto-replies.update');
-
     Route::get('/chat/{conversation}', [ChatConversationController::class, 'show'])->name('chat.show');
     Route::post('/chat/{conversation}/assign', [ChatConversationController::class, 'assign'])->name('chat.assign');
     Route::post('/chat/{conversation}/close', [ChatConversationController::class, 'close'])->name('chat.close');
     Route::post('/chat/{conversation}/reopen', [ChatConversationController::class, 'reopen'])->name('chat.reopen');
     Route::post('/chat/{conversation}/messages', [ChatMessageController::class, 'store'])->name('chat.messages.store');
+
+    Route::get('/chat/auto-replies', [ChatAutoReplyController::class, 'index'])
+        ->name('chat.auto-replies.index');
+    Route::put('/chat/auto-replies/{autoReply}', [ChatAutoReplyController::class, 'update'])
+        ->name('chat.auto-replies.update');
 
     // Calendar
     Route::get('/calendar', [CalendarController::class, 'index'])->name('calendar.index');

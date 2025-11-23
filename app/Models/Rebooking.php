@@ -26,7 +26,7 @@ class Rebooking extends Model
         'status',
         'payment_status',
         'reason',
-        'admin_notes',
+        'remarks',
         'approved_at',
         'completed_at',
     ];

@@ -103,7 +103,7 @@ export default function Index({ payments: paymentData }: PaymentIndexProps) {
                                         </div>
                                     </TableCell>
                                     <TableCell>
-                                        {payment.rebooking_id ? (
+                                        {/* {payment.rebooking_id ? (
                                             <Link
                                                 href={rebookings.show.url({ rebooking: payment.rebooking_id })}
                                                 className="text-primary hover:underline text-sm flex items-center gap-1"
@@ -111,29 +111,29 @@ export default function Index({ payments: paymentData }: PaymentIndexProps) {
                                                 <RefreshCw className="h-3 w-3" />
                                                 {payment.rebooking?.rebooking_number}
                                             </Link>
-                                        ) : (
+                                        ) : ( */}
                                             <Link
                                                 href={bookings.show.url({ booking: payment.booking_id })}
                                                 className="text-primary hover:underline text-sm"
                                             >
                                                 {payment.booking?.booking_number}
                                             </Link>
-                                        )}
+                                        {/* )} */}
                                     </TableCell>
                                     <TableCell className="text-sm">{payment.booking?.guest_name}</TableCell>
                                     <TableCell className="font-medium text-sm">
                                         <div className="flex items-center gap-1.5 flex-wrap">
                                             <span>₱{parseFloat(payment.amount).toLocaleString()}</span>
-                                            {payment.is_down_payment && (
+                                            {/* {payment.is_down_payment && (
                                                 <Badge variant="outline" className="bg-blue-100 text-blue-800 text-xs">
                                                     DP
                                                 </Badge>
-                                            )}
-                                            {payment.is_rebooking_payment && (
+                                            )} */}
+                                            {/* {payment.is_rebooking_payment && (
                                                 <Badge variant="outline" className="bg-purple-100 text-purple-800 text-xs">
                                                     Rebooking
                                                 </Badge>
-                                            )}
+                                            )} */}
                                         </div>
                                     </TableCell>
                                     <TableCell>

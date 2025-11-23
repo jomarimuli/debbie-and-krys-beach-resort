@@ -135,7 +135,7 @@ export default function Create({
                         >
                             Booking Payment
                         </Button>
-                        {rebookings && rebookings.length > 0 && (
+                        {/* {rebookings && rebookings.length > 0 && (
                             <Button
                                 type="button"
                                 variant={paymentType === 'rebooking' ? 'default' : 'outline'}
@@ -145,7 +145,7 @@ export default function Create({
                                 <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
                                 Rebooking Payment
                             </Button>
-                        )}
+                        )} */}
                     </div>
                 </CardContent>
             </Card>
@@ -156,8 +156,8 @@ export default function Create({
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={submit} className="space-y-5">
-                        {paymentType === 'booking' ? (
-                            <>
+                        {/* {paymentType === 'booking' ? (
+                            <> */}
                                 <div className="space-y-1.5">
                                     <Label htmlFor="booking_id" className="text-sm cursor-text select-text">Booking</Label>
                                     <Select value={data.booking_id} onValueChange={(value) => setData('booking_id', value)}>
@@ -252,7 +252,7 @@ export default function Create({
                                         )}
                                     </>
                                 )}
-                            </>
+                            {/* </>
                         ) : (
                             <>
                                 <div className="space-y-1.5">
@@ -305,7 +305,7 @@ export default function Create({
                                     </div>
                                 )}
                             </>
-                        )}
+                        )} */}
 
                         <div className="grid gap-4 md:grid-cols-2">
                             <div className="space-y-1.5">

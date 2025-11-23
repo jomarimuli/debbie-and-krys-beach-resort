@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('feedbacks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('booking_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('guest_name');
             $table->string('guest_email')->nullable();
             $table->string('guest_phone')->nullable();

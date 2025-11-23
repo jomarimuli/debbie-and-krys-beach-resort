@@ -75,7 +75,7 @@ export default function Edit({
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={submit} className="space-y-5">
-                        <div className="space-y-1.5">
+                        {/* <div className="space-y-1.5">
                             <Label htmlFor="booking_id" className="text-sm cursor-text select-text">
                                 Booking (Optional)
                             </Label>
@@ -93,7 +93,7 @@ export default function Edit({
                                 </SelectContent>
                             </Select>
                             {errors.booking_id && <p className="text-xs text-destructive">{errors.booking_id}</p>}
-                        </div>
+                        </div> */}
 
                         {selectedBooking && (
                             <div className="rounded border p-3 bg-muted/30 space-y-2">
@@ -224,7 +224,7 @@ export default function Edit({
                             {errors.comment && <p className="text-xs text-destructive">{errors.comment}</p>}
                         </div>
 
-                        <div className="space-y-1.5">
+                        {/* <div className="space-y-1.5">
                             <Label htmlFor="status" className="text-sm cursor-text select-text">
                                 Status
                             </Label>
@@ -245,7 +245,7 @@ export default function Edit({
                                 </SelectContent>
                             </Select>
                             {errors.status && <p className="text-xs text-destructive">{errors.status}</p>}
-                        </div>
+                        </div> */}
 
                         <div className="flex gap-2 pt-2">
                             <Button type="submit" disabled={processing} size="sm">

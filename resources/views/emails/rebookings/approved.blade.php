@@ -39,10 +39,10 @@ Great news! Your rebooking request has been **approved**.
 View Rebooking Details
 </x-mail::button>
 
-@if($rebooking->admin_notes)
+@if($rebooking->remarks)
 ## Admin Notes
 
-{{ $rebooking->admin_notes }}
+{{ $rebooking->remarks }}
 @endif
 
 Best regards,<br>

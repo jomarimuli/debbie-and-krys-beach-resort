@@ -61,12 +61,12 @@ const allNavGroups: NavGroup[] = [
                 icon: Ticket,
                 requiredPermissions: ['booking show', 'global access'],
             },
-            {
-                title: 'Rebookings',
-                href: '/rebookings',
-                icon: RefreshCw,
-                requiredPermissions: ['booking show', 'global access'],
-            },
+            // {
+            //     title: 'Rebookings',
+            //     href: '/rebookings',
+            //     icon: RefreshCw,
+            //     requiredPermissions: ['booking show', 'global access'],
+            // },
         ],
     },
     {
@@ -78,12 +78,12 @@ const allNavGroups: NavGroup[] = [
                 icon: Banknote,
                 requiredPermissions: ['payment show', 'global access'],
             },
-            {
-                title: 'Refunds',
-                href: '/refunds',
-                icon: ReceiptText,
-                requiredPermissions: ['refund show', 'global access'],
-            },
+            // {
+            //     title: 'Refunds',
+            //     href: '/refunds',
+            //     icon: ReceiptText,
+            //     requiredPermissions: ['refund show', 'global access'],
+            // },
             {
                 title: 'Payment Accounts',
                 href: '/payment-accounts',
@@ -171,12 +171,30 @@ export function AppSidebar() {
             .map(group => ({
                 ...group,
                 items: group.items.map(item => {
+                    // Add badge for chat unread count
                     if (item.href === '/chat' && auth.user?.unread_chat_count) {
-                        return {
+                        item = {
                             ...item,
                             badge: auth.user.unread_chat_count,
                         };
                     }
+
+                    // Remove chat submenu if user cannot access auto-reply
+                    if (item.href === '/chat' && item.items) {
+                        const canAccessAutoReply = item.items.some(subItem =>
+                            subItem.href === '/chat/auto-replies' &&
+                            (!subItem.requiredPermissions ||
+                                subItem.requiredPermissions.some(permission =>
+                                auth.user?.permissions?.includes(permission)
+                            ))
+                        );
+
+                        if (!canAccessAutoReply) {
+                            const { items, ...itemWithoutSubmenu } = item;
+                            return itemWithoutSubmenu;
+                        }
+                    }
+
                     return item;
                 }).filter(item => {
                     if (!item.requiredPermissions || item.requiredPermissions.length === 0) {

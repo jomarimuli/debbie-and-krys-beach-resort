@@ -27,11 +27,11 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
 
     const { data: approveData, setData: setApproveData, post: postApprove, processing: approving, errors: approveErrors } = useForm({
         rebooking_fee: '0',
-        admin_notes: '',
+        remarks: '',
     });
 
     const { data: rejectData, setData: setRejectData, post: postReject, processing: rejecting, errors: rejectErrors } = useForm({
-        admin_notes: '',
+        remarks: '',
     });
 
     const getStatusBadge = (status: string) => {
@@ -542,7 +542,7 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                 </>
             )}
 
-            {(rebooking.reason || rebooking.admin_notes) && (
+            {(rebooking.reason || rebooking.remarks) && (
                 <div className="grid gap-4 md:grid-cols-2">
                     {rebooking.reason && (
                         <Card>
@@ -554,13 +554,13 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                             </CardContent>
                         </Card>
                     )}
-                    {rebooking.admin_notes && (
+                    {rebooking.remarks && (
                         <Card>
                             <CardHeader className="pb-3">
                                 <CardTitle className="text-base font-medium">Admin Notes</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-sm text-muted-foreground">{rebooking.admin_notes}</p>
+                                <p className="text-sm text-muted-foreground">{rebooking.remarks}</p>
                             </CardContent>
                         </Card>
                     )}
@@ -591,16 +591,16 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                             {approveErrors.rebooking_fee && <p className="text-xs text-destructive">{approveErrors.rebooking_fee}</p>}
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="admin_notes" className="text-sm">Admin Notes (Optional)</Label>
+                            <Label htmlFor="remarks" className="text-sm">Remarks (Optional)</Label>
                             <Textarea
-                                id="admin_notes"
-                                value={approveData.admin_notes}
-                                onChange={(e) => setApproveData('admin_notes', e.target.value)}
+                                id="remarks"
+                                value={approveData.remarks}
+                                onChange={(e) => setApproveData('remarks', e.target.value)}
                                 rows={3}
                                 className="resize-none"
                                 placeholder="Optional notes..."
                             />
-                            {approveErrors.admin_notes && <p className="text-xs text-destructive">{approveErrors.admin_notes}</p>}
+                            {approveErrors.remarks && <p className="text-xs text-destructive">{approveErrors.remarks}</p>}
                         </div>
                     </div>
                     <DialogFooter>
@@ -627,20 +627,20 @@ export default function Show({ rebooking }: PageProps & { rebooking: Rebooking }
                         <Label htmlFor="reject_notes" className="text-sm">Reason <span className="text-destructive">*</span></Label>
                         <Textarea
                             id="reject_notes"
-                            value={rejectData.admin_notes}
-                            onChange={(e) => setRejectData('admin_notes', e.target.value)}
+                            value={rejectData.remarks}
+                            onChange={(e) => setRejectData('remarks', e.target.value)}
                             rows={3}
                             className="resize-none"
                             placeholder="Explain why this request is being rejected..."
                             required
                         />
-                        {rejectErrors.admin_notes && <p className="text-xs text-destructive">{rejectErrors.admin_notes}</p>}
+                        {rejectErrors.remarks && <p className="text-xs text-destructive">{rejectErrors.remarks}</p>}
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setShowRejectDialog(false)}>
                             Cancel
                         </Button>
-                        <Button variant="destructive" onClick={handleReject} disabled={rejecting || !rejectData.admin_notes}>
+                        <Button variant="destructive" onClick={handleReject} disabled={rejecting || !rejectData.remarks}>
                             {rejecting && <LoaderCircle className="h-4 w-4 animate-spin mr-2" />}
                             Reject
                         </Button>

@@ -1,4 +1,4 @@
-// resources/js/pages/booking/edit.tsx - Fix the form initialization
+// resources/js/pages/booking/edit.tsx
 
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useMemo } from 'react';
-import { ArrowLeft, LoaderCircle, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, LoaderCircle, Trash2 } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { type Booking, type Accommodation, type User, type PageProps } from '@/types';
 import { format } from 'date-fns';
@@ -74,10 +74,16 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
         return minCheckInDate;
     }, [data.check_in_date, minCheckInDate]);
 
+    const getTotalGuests = () => {
+        const adults = parseInt(data.total_adults) || 0;
+        const children = parseInt(data.total_children) || 0;
+        return adults + children;
+    };
+
     const addAccommodation = () => {
         setData('accommodations', [
             ...data.accommodations,
-            { accommodation_id: '', accommodation_rate_id: '', guests: '1' }
+            { accommodation_id: '', accommodation_rate_id: '', guests: getTotalGuests().toString() }
         ]);
     };
 
@@ -90,7 +96,13 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
         updated[index] = { ...updated[index], [field]: value };
 
         if (field === 'accommodation_id') {
-            updated[index].accommodation_rate_id = '';
+            const rates = getAvailableRates(value);
+            if (rates.length > 0) {
+                updated[index].accommodation_rate_id = rates[0].id.toString();
+            } else {
+                updated[index].accommodation_rate_id = '';
+            }
+            updated[index].guests = getTotalGuests().toString();
         }
 
         setData('accommodations', updated);
@@ -276,24 +288,27 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
                                 {errors.check_in_date && <p className="text-xs text-destructive">{errors.check_in_date}</p>}
                             </div>
 
-                            {booking.booking_type === 'overnight' && (
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="check_out_date" className="text-sm cursor-text select-text">
-                                        Check-out Date <span className="text-destructive">*</span>
-                                    </Label>
-                                    <Input
-                                        id="check_out_date"
-                                        type="date"
-                                        value={data.check_out_date}
-                                        onChange={(e) => setData('check_out_date', e.target.value)}
-                                        min={minCheckOutDate}
-                                        className="h-9"
-                                        required
-                                        disabled={!isPending}
-                                    />
-                                    {errors.check_out_date && <p className="text-xs text-destructive">{errors.check_out_date}</p>}
-                                </div>
-                            )}
+                            <div className="space-y-1.5">
+                                <Label htmlFor="check_out_date" className="text-sm cursor-text select-text">
+                                    Check-out Date
+                                    {booking.booking_type === 'overnight' && <span className="text-destructive ml-1">*</span>}
+                                    {booking.booking_type === 'day_tour' && (
+                                        <span className="text-xs text-muted-foreground ml-1">(Same as check-in)</span>
+                                    )}
+                                </Label>
+                                <Input
+                                    id="check_out_date"
+                                    type="date"
+                                    value={booking.booking_type === 'day_tour' ? data.check_in_date : data.check_out_date}
+                                    onChange={(e) => setData('check_out_date', e.target.value)}
+                                    min={minCheckOutDate}
+                                    className="h-9"
+                                    required={booking.booking_type === 'overnight'}
+                                    readOnly={booking.booking_type === 'day_tour'}
+                                    disabled={booking.booking_type === 'day_tour' || !isPending}
+                                />
+                                {errors.check_out_date && <p className="text-xs text-destructive">{errors.check_out_date}</p>}
+                            </div>
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="total_adults" className="text-sm cursor-text select-text">Adults</Label>
@@ -302,7 +317,14 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
                                     type="number"
                                     min="1"
                                     value={data.total_adults}
-                                    onChange={(e) => setData('total_adults', e.target.value)}
+                                    onChange={(e) => {
+                                        setData('total_adults', e.target.value);
+                                        const totalGuests = (parseInt(e.target.value) || 0) + (parseInt(data.total_children) || 0);
+                                        setData('accommodations', data.accommodations.map(acc => ({
+                                            ...acc,
+                                            guests: totalGuests.toString()
+                                        })));
+                                    }}
                                     className="h-9"
                                     disabled={!isPending}
                                 />
@@ -316,7 +338,14 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
                                     type="number"
                                     min="0"
                                     value={data.total_children}
-                                    onChange={(e) => setData('total_children', e.target.value)}
+                                    onChange={(e) => {
+                                        setData('total_children', e.target.value);
+                                        const totalGuests = (parseInt(data.total_adults) || 0) + (parseInt(e.target.value) || 0);
+                                        setData('accommodations', data.accommodations.map(acc => ({
+                                            ...acc,
+                                            guests: totalGuests.toString()
+                                        })));
+                                    }}
                                     className="h-9"
                                     disabled={!isPending}
                                 />
@@ -348,7 +377,8 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
                         {!isPending && (
                             <div className="bg-amber-50 border border-amber-200 rounded p-3">
                                 <p className="text-xs text-amber-800">
-                                    Dates, guest count, and accommodations cannot be edited for non-pending bookings. Please create a rebooking request to modify these details.
+                                    Dates, guest count, and accommodations cannot be edited for non-pending bookings.
+                                    Please cancel this and create a new booking to modify these details.
                                 </p>
                             </div>
                         )}
@@ -358,10 +388,6 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
                                 <CardHeader className="pb-3">
                                     <div className="flex items-center justify-between">
                                         <CardTitle className="text-base font-medium">Accommodations</CardTitle>
-                                        <Button type="button" size="sm" variant="outline" onClick={addAccommodation}>
-                                            <Plus className="h-3.5 w-3.5 mr-1.5" />
-                                            Add
-                                        </Button>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
@@ -406,23 +432,17 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
                                                     </div>
 
                                                     <div className="space-y-1.5">
-                                                        <Label className="text-sm cursor-text select-text">Rate</Label>
-                                                        <Select
-                                                            value={item.accommodation_rate_id}
-                                                            onValueChange={(value) => updateAccommodation(index, 'accommodation_rate_id', value)}
-                                                            disabled={!item.accommodation_id || availableRates.length === 0}
-                                                        >
-                                                            <SelectTrigger className="h-9">
-                                                                <SelectValue placeholder="Select rate..." />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                {availableRates.map((rate) => (
-                                                                    <SelectItem key={rate.id} value={rate.id.toString()}>
-                                                                        ₱{parseFloat(rate.rate).toLocaleString()}
-                                                                    </SelectItem>
-                                                                ))}
-                                                            </SelectContent>
-                                                        </Select>
+                                                        <Label className="text-sm cursor-text select-text">
+                                                            Rate
+                                                            <span className="text-xs text-muted-foreground ml-1">(Auto)</span>
+                                                        </Label>
+                                                        <Input
+                                                            value={selectedRate ? `₱${parseFloat(selectedRate.rate).toLocaleString()}` : ''}
+                                                            className="h-9"
+                                                            readOnly
+                                                            disabled
+                                                            placeholder="Select accommodation first"
+                                                        />
                                                         {errors[`accommodations.${index}.accommodation_rate_id` as keyof typeof errors] && (
                                                             <p className="text-xs text-destructive">
                                                                 {errors[`accommodations.${index}.accommodation_rate_id` as keyof typeof errors]}
@@ -432,13 +452,16 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
 
                                                     <div className="space-y-1.5 flex items-end gap-2">
                                                         <div className="flex-1">
-                                                            <Label className="text-sm cursor-text select-text">Guests</Label>
+                                                            <Label className="text-sm cursor-text select-text">
+                                                                Guests
+                                                                <span className="text-xs text-muted-foreground ml-1">(Auto)</span>
+                                                            </Label>
                                                             <Input
                                                                 type="number"
-                                                                min="1"
                                                                 value={item.guests}
-                                                                onChange={(e) => updateAccommodation(index, 'guests', e.target.value)}
                                                                 className="h-9"
+                                                                readOnly
+                                                                disabled
                                                             />
                                                             {errors[`accommodations.${index}.guests` as keyof typeof errors] && (
                                                                 <p className="text-xs text-destructive">
@@ -463,7 +486,7 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
                                                 {selectedRate && selectedAccommodation && (
                                                     <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
                                                         <div className="flex justify-between">
-                                                            <span>Base Rate ({selectedAccommodation.min_capacity || 0} pax):</span>
+                                                            <span>Base Rate ({selectedAccommodation.min_capacity || 0}-{selectedAccommodation.max_capacity || 0} pax):</span>
                                                             <span className="font-medium">₱{parseFloat(selectedRate.rate).toLocaleString()}</span>
                                                         </div>
                                                         {selectedRate.additional_pax_rate && (
@@ -503,24 +526,35 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
                         )}
 
                         {!canEditAccommodations && booking.accommodations && booking.accommodations.length > 0 && (
-                            <Card className="border-blue-200 bg-blue-50/50">
+                            <Card>
                                 <CardHeader className="pb-3">
                                     <CardTitle className="text-sm font-medium">
-                                        Current Accommodations
-                                        <span className="text-xs text-muted-foreground ml-2">(Read-only)</span>
+                                        Accommodations
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-2 text-sm">
                                         {booking.accommodations.map((item) => (
-                                            <div key={item.id} className="flex justify-between items-start p-2 bg-white border rounded">
-                                                <div>
-                                                    <p className="font-medium">{item.accommodation?.name}</p>
-                                                    <p className="text-xs text-muted-foreground">
-                                                        {item.guests} guests · {item.accommodation_rate?.booking_type.replace('_', ' ')}
-                                                    </p>
+                                            <div key={item.id} className="p-3 border rounded space-y-2">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <p className="font-medium">{item.accommodation?.name}</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {item.guests} guests · {item.accommodation_rate?.booking_type.replace('_', ' ')}
+                                                        </p>
+                                                    </div>
+                                                    <p className="font-medium">₱{parseFloat(item.subtotal).toLocaleString()}</p>
                                                 </div>
-                                                <p className="font-medium">₱{parseFloat(item.subtotal).toLocaleString()}</p>
+                                                {item.accommodation && item.accommodation_rate && (
+                                                    <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
+                                                        <div className="flex justify-between">
+                                                            <span>Base Rate ({item.accommodation.min_capacity || 0}-{item.accommodation.max_capacity || 0} pax):</span>
+                                                            <span className="text-muted-foreground">
+                                                                {item.accommodation_rate.booking_type === 'overnight' ? '6:00 A.M. - 6:00 A.M.' : '6:00 A.M. - 6:00 P.M.'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -528,7 +562,7 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
                             </Card>
                         )}
 
-                        <Card className="border-blue-200 bg-blue-50/50">
+                        <Card>
                             <CardHeader className="pb-3">
                                 <CardTitle className="text-base font-medium">Booking Summary</CardTitle>
                             </CardHeader>
@@ -550,74 +584,15 @@ export default function Edit({ booking, accommodations, users }: PageProps & {
                                 {summary.totalFreeEntrances > 0 && (
                                     <div className="flex justify-between text-sm">
                                         <span className="text-muted-foreground">Free Entrances</span>
-                                        <span className="font-medium text-blue-600">{summary.totalFreeEntrances} pax</span>
+                                        <span className="font-medium text-green-600">{summary.totalFreeEntrances} pax</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between text-sm border-t pt-2">
                                     <span className="font-semibold">Total Amount</span>
                                     <span className="font-semibold text-lg">₱{summary.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
-                                {data.down_payment_required && data.down_payment_amount && (
-                                    <div className="border-t pt-2">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-muted-foreground">Down Payment Required</span>
-                                            <span className="font-medium text-blue-600">₱{parseFloat(data.down_payment_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                        </div>
-                                    </div>
-                                )}
                             </CardContent>
                         </Card>
-
-                        <div className="grid gap-4 md:grid-cols-2 items-start pt-4">
-                            <div className="flex items-center space-x-2 pt-2">
-                                <input
-                                    type="checkbox"
-                                    id="down_payment_required"
-                                    checked={data.down_payment_required}
-                                    onChange={(e) => {
-                                        setData('down_payment_required', e.target.checked);
-                                        if (!e.target.checked) {
-                                            setData('down_payment_amount', '');
-                                        }
-                                    }}
-                                    className="h-4 w-4 rounded border-gray-300"
-                                    disabled={isCustomer()}
-                                />
-                                <Label htmlFor="down_payment_required" className="text-sm cursor-pointer">
-                                    Require down payment
-                                </Label>
-                            </div>
-
-                            {data.down_payment_required && (
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="down_payment_amount" className="text-sm cursor-text select-text">
-                                        Down Payment Amount
-                                    </Label>
-                                    <Input
-                                        id="down_payment_amount"
-                                        type="number"
-                                        step="0.01"
-                                        min="0.01"
-                                        value={data.down_payment_amount}
-                                        onChange={(e) => setData('down_payment_amount', e.target.value)}
-                                        className="h-9"
-                                        placeholder="0.00"
-                                        disabled={isCustomer()}
-                                    />
-                                    {errors.down_payment_amount && (
-                                        <p className="text-xs text-destructive">{errors.down_payment_amount}</p>
-                                    )}
-                                    {errors.down_payment_required && (
-                                        <p className="text-xs text-destructive">{errors.down_payment_required}</p>
-                                    )}
-                                    {parseFloat(booking.down_payment_paid) > 0 && (
-                                        <p className="text-xs text-blue-600">
-                                            Already paid: ₱{parseFloat(booking.down_payment_paid).toLocaleString()}
-                                        </p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
 
                         <div className="space-y-1.5">
                             <Label htmlFor="notes" className="text-sm cursor-text select-text">Notes</Label>

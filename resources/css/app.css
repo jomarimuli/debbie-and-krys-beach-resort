@@ -184,3 +184,39 @@
         }
     }
 }
+
+/* Style date input to position calendar icon at the end */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 0.75rem;
+    cursor: pointer;
+}
+
+input[type="date"] {
+    position: relative;
+    padding-right: 2.5rem;
+}
+
+/* Style datetime-local input to position calendar icon at the end */
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 0.75rem;
+    cursor: pointer;
+}
+
+input[type="datetime-local"] {
+    position: relative;
+    padding-right: 2.5rem;
+}
+
+/* Style time input to position clock icon at the end */
+input[type="time"]::-webkit-calendar-picker-indicator {
+    position: absolute;
+    right: 0.75rem;
+    cursor: pointer;
+}
+
+input[type="time"] {
+    position: relative;
+    padding-right: 2.5rem;
+}

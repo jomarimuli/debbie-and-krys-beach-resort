@@ -11,6 +11,7 @@ class Feedback extends Model
 
     protected $fillable = [
         'booking_id',
+        'created_by',
         'guest_name',
         'guest_email',
         'guest_phone',
@@ -25,6 +26,11 @@ class Feedback extends Model
     ];
 
     // Relationships
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
     public function booking(): BelongsTo
     {
         return $this->belongsTo(Booking::class);

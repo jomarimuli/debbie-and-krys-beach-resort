@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useForm } from '@inertiajs/react';
-import { FormEventHandler, useMemo } from 'react';
+import { FormEventHandler, useMemo, useEffect } from 'react';
 import { ArrowLeft, LoaderCircle, Plus, Trash2 } from 'lucide-react';
 import { Link } from '@inertiajs/react';
 import { format } from 'date-fns';
@@ -62,10 +62,16 @@ export default function Create({ accommodations }: PageProps & { accommodations:
         return minCheckInDate;
     }, [data.check_in_date, minCheckInDate]);
 
+    const getTotalGuests = () => {
+        const adults = parseInt(data.total_adults) || 0;
+        const children = parseInt(data.total_children) || 0;
+        return adults + children;
+    };
+
     const addAccommodation = () => {
         setData('accommodations', [
             ...data.accommodations,
-            { accommodation_id: '', accommodation_rate_id: '', guests: '1' }
+            { accommodation_id: '', accommodation_rate_id: '', guests: getTotalGuests().toString() }
         ]);
     };
 
@@ -78,7 +84,13 @@ export default function Create({ accommodations }: PageProps & { accommodations:
         updated[index] = { ...updated[index], [field]: value };
 
         if (field === 'accommodation_id') {
-            updated[index].accommodation_rate_id = '';
+            const rates = getAvailableRates(value);
+            if (rates.length > 0) {
+                updated[index].accommodation_rate_id = rates[0].id.toString();
+            } else {
+                updated[index].accommodation_rate_id = '';
+            }
+            updated[index].guests = getTotalGuests().toString();
         }
 
         setData('accommodations', updated);
@@ -199,10 +211,75 @@ export default function Create({ accommodations }: PageProps & { accommodations:
             <form onSubmit={submit} className="space-y-4">
                 <Card>
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-medium">Booking Type</CardTitle>
+                        <CardTitle className="text-base font-medium">
+                            Guest Information
+                            {isCustomer() && (
+                                <p className="text-xs text-muted-foreground font-normal mt-1">
+                                    To update this information, please edit your profile settings.
+                                </p>
+                            )}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-1.5">
+                                <Label htmlFor="guest_name" className="text-sm cursor-text select-text">Guest Name</Label>
+                                <Input
+                                    id="guest_name"
+                                    value={data.guest_name}
+                                    onChange={(e) => setData('guest_name', e.target.value)}
+                                    className="h-9"
+                                    disabled={isCustomer()}
+                                />
+                                {errors.guest_name && <p className="text-xs text-destructive">{errors.guest_name}</p>}
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="guest_phone" className="text-sm cursor-text select-text">Phone Number</Label>
+                                <Input
+                                    id="guest_phone"
+                                    value={data.guest_phone}
+                                    onChange={(e) => setData('guest_phone', e.target.value)}
+                                    className="h-9"
+                                    disabled={isCustomer()}
+                                />
+                                {errors.guest_phone && <p className="text-xs text-destructive">{errors.guest_phone}</p>}
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="guest_email" className="text-sm cursor-text select-text">Email</Label>
+                                <Input
+                                    id="guest_email"
+                                    type="email"
+                                    value={data.guest_email}
+                                    onChange={(e) => setData('guest_email', e.target.value)}
+                                    className="h-9"
+                                    disabled={isCustomer()}
+                                />
+                                {errors.guest_email && <p className="text-xs text-destructive">{errors.guest_email}</p>}
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="guest_address" className="text-sm cursor-text select-text">Address</Label>
+                                <Input
+                                    id="guest_address"
+                                    value={data.guest_address}
+                                    onChange={(e) => setData('guest_address', e.target.value)}
+                                    className="h-9"
+                                    disabled={isCustomer()}
+                                />
+                                {errors.guest_address && <p className="text-xs text-destructive">{errors.guest_address}</p>}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base font-medium">Booking Details</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid gap-4 md:grid-cols-3">
                             <div className="space-y-1.5">
                                 <Label htmlFor="booking_type" className="text-sm cursor-text select-text">Type</Label>
                                 <Select
@@ -210,7 +287,7 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                     onValueChange={(value: 'day_tour' | 'overnight') => {
                                         setData('booking_type', value);
                                         setData('accommodations', [
-                                            { accommodation_id: '', accommodation_rate_id: '', guests: '1' }
+                                            { accommodation_id: '', accommodation_rate_id: '', guests: getTotalGuests().toString() }
                                         ]);
                                         if (value === 'day_tour') {
                                             setData('check_out_date', '');
@@ -229,90 +306,6 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="source" className="text-sm cursor-text select-text">Source</Label>
-                                <Select value={data.source} disabled>
-                                    <SelectTrigger className="h-9">
-                                        <SelectValue>
-                                            {data.source === 'walkin' && 'Walk-in'}
-                                            {data.source === 'guest' && 'Guest'}
-                                            {data.source === 'registered' && 'Registered'}
-                                        </SelectValue>
-                                    </SelectTrigger>
-                                </Select>
-                                {errors.source && <p className="text-xs text-destructive">{errors.source}</p>}
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-medium">
-                            Guest Information
-                            {isCustomer() && (
-                                <p className="text-xs text-muted-foreground">
-                                    To update this information, please edit your profile settings.
-                                </p>
-                            )}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="guest_name" className="text-sm cursor-text select-text">Guest Name</Label>
-                                <Input
-                                    id="guest_name"
-                                    value={data.guest_name}
-                                    onChange={(e) => setData('guest_name', e.target.value)}
-                                    className="h-9"
-                                />
-                                {errors.guest_name && <p className="text-xs text-destructive">{errors.guest_name}</p>}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <Label htmlFor="guest_phone" className="text-sm cursor-text select-text">Phone Number</Label>
-                                <Input
-                                    id="guest_phone"
-                                    value={data.guest_phone}
-                                    onChange={(e) => setData('guest_phone', e.target.value)}
-                                    className="h-9"
-                                />
-                                {errors.guest_phone && <p className="text-xs text-destructive">{errors.guest_phone}</p>}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <Label htmlFor="guest_email" className="text-sm cursor-text select-text">Email</Label>
-                                <Input
-                                    id="guest_email"
-                                    type="email"
-                                    value={data.guest_email}
-                                    onChange={(e) => setData('guest_email', e.target.value)}
-                                    className="h-9"
-                                />
-                                {errors.guest_email && <p className="text-xs text-destructive">{errors.guest_email}</p>}
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <Label htmlFor="guest_address" className="text-sm cursor-text select-text">Address</Label>
-                                <Input
-                                    id="guest_address"
-                                    value={data.guest_address}
-                                    onChange={(e) => setData('guest_address', e.target.value)}
-                                    className="h-9"
-                                />
-                                {errors.guest_address && <p className="text-xs text-destructive">{errors.guest_address}</p>}
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-medium">Booking Details</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="space-y-1.5">
                                 <Label htmlFor="check_in_date" className="text-sm cursor-text select-text">
                                     Check-in Date
                                     {isCustomer() && (
@@ -330,23 +323,46 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                 {errors.check_in_date && <p className="text-xs text-destructive">{errors.check_in_date}</p>}
                             </div>
 
-                            {data.booking_type === 'overnight' && (
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="check_out_date" className="text-sm cursor-text select-text">
-                                        Check-out Date <span className="text-destructive">*</span>
-                                    </Label>
-                                    <Input
-                                        id="check_out_date"
-                                        type="date"
-                                        value={data.check_out_date}
-                                        onChange={(e) => setData('check_out_date', e.target.value)}
-                                        min={minCheckOutDate}
-                                        className="h-9"
-                                        required
-                                    />
-                                    {errors.check_out_date && <p className="text-xs text-destructive">{errors.check_out_date}</p>}
-                                </div>
-                            )}
+                            <div className="space-y-1.5">
+                                <Label htmlFor="check_out_date" className="text-sm cursor-text select-text">
+                                    Check-out Date
+                                    {data.booking_type === 'overnight' && <span className="text-destructive ml-1">*</span>}
+                                    {data.booking_type === 'day_tour' && (
+                                        <span className="text-xs text-muted-foreground ml-1">(Same as check-in)</span>
+                                    )}
+                                </Label>
+                                <Input
+                                    id="check_out_date"
+                                    type="date"
+                                    value={data.booking_type === 'day_tour' ? data.check_in_date : data.check_out_date}
+                                    onChange={(e) => setData('check_out_date', e.target.value)}
+                                    min={minCheckOutDate}
+                                    className="h-9"
+                                    required={data.booking_type === 'overnight'}
+                                    readOnly={data.booking_type === 'day_tour'}
+                                    disabled={data.booking_type === 'day_tour'}
+                                />
+                                {errors.check_out_date && <p className="text-xs text-destructive">{errors.check_out_date}</p>}
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 md:grid-cols-3 mt-4">
+                            <div className="space-y-1.5">
+                                {/* <Label htmlFor="source" className="text-sm cursor-text select-text">Source</Label>
+                                <Select value={data.source} disabled>
+                                    <SelectTrigger className="h-9">
+                                        <SelectValue>
+                                            {data.source === 'walkin' && 'Walk-in'}
+                                            {data.source === 'guest' && 'Guest'}
+                                            {data.source === 'registered' && 'Registered'}
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                </Select>
+                                {errors.source && <p className="text-xs text-destructive">{errors.source}</p>} */}
+                                <p className="text-xs text-muted-foreground">
+                                    {data.booking_type === 'overnight' ? '6:00 A.M. - 6:00 A.M.' : '6:00 A.M. - 6:00 P.M.'}
+                                </p>
+                            </div>
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="total_adults" className="text-sm cursor-text select-text">Adults</Label>
@@ -355,7 +371,14 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                     type="number"
                                     min="1"
                                     value={data.total_adults}
-                                    onChange={(e) => setData('total_adults', e.target.value)}
+                                    onChange={(e) => {
+                                        setData('total_adults', e.target.value);
+                                        const totalGuests = (parseInt(e.target.value) || 0) + (parseInt(data.total_children) || 0);
+                                        setData('accommodations', data.accommodations.map(acc => ({
+                                            ...acc,
+                                            guests: totalGuests.toString()
+                                        })));
+                                    }}
                                     className="h-9"
                                 />
                                 {errors.total_adults && <p className="text-xs text-destructive">{errors.total_adults}</p>}
@@ -368,7 +391,14 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                     type="number"
                                     min="0"
                                     value={data.total_children}
-                                    onChange={(e) => setData('total_children', e.target.value)}
+                                    onChange={(e) => {
+                                        setData('total_children', e.target.value);
+                                        const totalGuests = (parseInt(data.total_adults) || 0) + (parseInt(e.target.value) || 0);
+                                        setData('accommodations', data.accommodations.map(acc => ({
+                                            ...acc,
+                                            guests: totalGuests.toString()
+                                        })));
+                                    }}
                                     className="h-9"
                                 />
                                 {errors.total_children && <p className="text-xs text-destructive">{errors.total_children}</p>}
@@ -381,10 +411,6 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                     <CardHeader className="pb-3">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-base font-medium">Accommodations</CardTitle>
-                            <Button type="button" size="sm" variant="outline" onClick={addAccommodation}>
-                                <Plus className="h-3.5 w-3.5 mr-1.5" />
-                                Add
-                            </Button>
                         </div>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -429,23 +455,17 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                         </div>
 
                                         <div className="space-y-1.5">
-                                            <Label className="text-sm cursor-text select-text">Rate</Label>
-                                            <Select
-                                                value={item.accommodation_rate_id.toString()}
-                                                onValueChange={(value) => updateAccommodation(index, 'accommodation_rate_id', value)}
-                                                disabled={!item.accommodation_id || availableRates.length === 0}
-                                            >
-                                                <SelectTrigger className="h-9">
-                                                    <SelectValue placeholder="Select rate..." />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {availableRates.map((rate) => (
-                                                        <SelectItem key={rate.id} value={rate.id.toString()}>
-                                                            ₱{parseFloat(rate.rate).toLocaleString()}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            <Label className="text-sm cursor-text select-text">
+                                                Rate
+                                                <span className="text-xs text-muted-foreground ml-1">(Auto)</span>
+                                            </Label>
+                                            <Input
+                                                value={selectedRate ? `₱${parseFloat(selectedRate.rate).toLocaleString()}` : ''}
+                                                className="h-9"
+                                                readOnly
+                                                disabled
+                                                placeholder="Select accommodation first"
+                                            />
                                             {errors[`accommodations.${index}.accommodation_rate_id` as keyof typeof errors] && (
                                                 <p className="text-xs text-destructive">
                                                     {errors[`accommodations.${index}.accommodation_rate_id` as keyof typeof errors]}
@@ -453,15 +473,18 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                             )}
                                         </div>
 
-                                        <div className="space-y-1.5 flex items-end gap-2">
+                                        <div className="space-y-1.5">
                                             <div className="flex-1">
-                                                <Label className="text-sm cursor-text select-text">Guests</Label>
+                                                <Label className="text-sm cursor-text select-text">
+                                                    Guests
+                                                    <span className="text-xs text-muted-foreground ml-1">(Auto)</span>
+                                                </Label>
                                                 <Input
                                                     type="number"
-                                                    min="1"
                                                     value={item.guests}
-                                                    onChange={(e) => updateAccommodation(index, 'guests', e.target.value)}
                                                     className="h-9"
+                                                    readOnly
+                                                    disabled
                                                 />
                                                 {errors[`accommodations.${index}.guests` as keyof typeof errors] && (
                                                     <p className="text-xs text-destructive">
@@ -486,7 +509,7 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                                     {selectedRate && selectedAccommodation && (
                                         <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
                                             <div className="flex justify-between">
-                                                <span>Base Rate ({selectedAccommodation.min_capacity || 0} pax):</span>
+                                                <span>Base Rate (Min: {selectedAccommodation.min_capacity || 0}, Max: {selectedAccommodation.max_capacity || 0} pax):</span>
                                                 <span className="font-medium">₱{parseFloat(selectedRate.rate).toLocaleString()}</span>
                                             </div>
                                             {selectedRate.additional_pax_rate && (
@@ -526,57 +549,6 @@ export default function Create({ accommodations }: PageProps & { accommodations:
 
                 <Card>
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-base font-medium">Down Payment</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="grid gap-4 md:grid-cols-2 items-start">
-                            <div className="flex items-center space-x-2 pt-2">
-                                <input
-                                    type="checkbox"
-                                    id="down_payment_required"
-                                    checked={data.down_payment_required}
-                                    onChange={(e) => {
-                                        setData('down_payment_required', e.target.checked);
-                                        if (!e.target.checked) {
-                                            setData('down_payment_amount', '');
-                                        }
-                                    }}
-                                    className="h-4 w-4 rounded border-gray-300"
-                                />
-                                <Label htmlFor="down_payment_required" className="text-sm cursor-pointer">
-                                    Require down payment
-                                </Label>
-                            </div>
-
-                            {data.down_payment_required && (
-                                <div className="space-y-1.5">
-                                    <Label htmlFor="down_payment_amount" className="text-sm cursor-text select-text">
-                                        Down Payment Amount
-                                    </Label>
-                                    <Input
-                                        id="down_payment_amount"
-                                        type="number"
-                                        step="0.01"
-                                        min="0.01"
-                                        value={data.down_payment_amount}
-                                        onChange={(e) => setData('down_payment_amount', e.target.value)}
-                                        className="h-9"
-                                        placeholder="0.00"
-                                    />
-                                    {errors.down_payment_amount && (
-                                        <p className="text-xs text-destructive">{errors.down_payment_amount}</p>
-                                    )}
-                                    {errors.down_payment_required && (
-                                        <p className="text-xs text-destructive">{errors.down_payment_required}</p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardHeader className="pb-3">
                         <CardTitle className="text-base font-medium">Additional Notes</CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -592,7 +564,7 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                 </Card>
 
                 {data.accommodations.some(a => a.accommodation_id && a.accommodation_rate_id) && (
-                    <Card className="border-blue-200 bg-blue-50/50">
+                    <Card>
                         <CardHeader className="pb-3">
                             <CardTitle className="text-base font-medium">Booking Summary</CardTitle>
                         </CardHeader>
@@ -614,21 +586,13 @@ export default function Create({ accommodations }: PageProps & { accommodations:
                             {summary.totalFreeEntrances > 0 && (
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Free Entrances</span>
-                                    <span className="font-medium text-blue-600">{summary.totalFreeEntrances} pax</span>
+                                    <span className="font-medium text-green-600">{summary.totalFreeEntrances} pax</span>
                                 </div>
                             )}
                             <div className="flex justify-between text-sm border-t pt-2">
                                 <span className="font-semibold">Total Amount</span>
                                 <span className="font-semibold text-lg">₱{summary.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             </div>
-                            {data.down_payment_required && data.down_payment_amount && (
-                                <div className="border-t pt-2">
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">Down Payment Required</span>
-                                        <span className="font-medium text-blue-600">₱{parseFloat(data.down_payment_amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                    </div>
-                                </div>
-                            )}
                         </CardContent>
                     </Card>
                 )}

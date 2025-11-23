@@ -62,24 +62,24 @@ const allNavItems: NavItem[] = [
         icon: Ticket,
         requiredPermissions: ['booking show', 'global access'],
     },
-    {
-        title: 'Rebookings',
-        href: '/rebookings',
-        icon: RefreshCw,
-        requiredPermissions: ['booking show', 'global access'],
-    },
+    // {
+    //     title: 'Rebookings',
+    //     href: '/rebookings',
+    //     icon: RefreshCw,
+    //     requiredPermissions: ['booking show', 'global access'],
+    // },
     {
         title: 'Payments',
         href: '/payments',
         icon: Banknote,
         requiredPermissions: ['payment show', 'global access'],
     },
-    {
-        title: 'Refunds',
-        href: '/refunds',
-        icon: ReceiptText,
-        requiredPermissions: ['refund show', 'global access'],
-    },
+    // {
+    //     title: 'Refunds',
+    //     href: '/refunds',
+    //     icon: ReceiptText,
+    //     requiredPermissions: ['refund show', 'global access'],
+    // },
     {
         title: 'Payment Accounts',
         href: '/payment-accounts',
@@ -115,6 +115,12 @@ const allNavItems: NavItem[] = [
         href: '/chat',
         icon: MessageCircle,
         requiredPermissions: ['chat access', 'global access'],
+    },
+    {
+        title: 'Auto-Reply',
+        href: '/chat/auto-replies',
+        icon: MessageCircle,
+        requiredPermissions: ['chat auto reply', 'global access'],
     },
     {
         title: 'Users',

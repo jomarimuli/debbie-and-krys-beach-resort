@@ -15,7 +15,7 @@ class ApproveRebookingRequest extends FormRequest
     {
         return [
             'rebooking_fee' => ['nullable', 'numeric', 'min:0'],
-            'admin_notes' => ['nullable', 'string', 'max:1000'],
+            'remarks' => ['nullable', 'string', 'max:1000'],
         ];
     }
 }

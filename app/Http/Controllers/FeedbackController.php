@@ -28,15 +28,13 @@ class FeedbackController extends Controller
 
     public function index(): Response
     {
-        $query = Feedback::with(['booking.accommodations.accommodation']);
+        $query = Feedback::with(['booking.accommodations.accommodation', 'createdBy']);
 
         if (auth()->user()->hasRole('customer')) {
-            $query->whereHas('booking', function ($q) {
-                $q->where('created_by', auth()->id());
-            });
+            $query->where('created_by', auth()->id());
         }
 
-        $feedbacks = $query->latest()->paginate(10);
+        $feedbacks = $query->latest()->paginate(100);
 
         return Inertia::render('feedback/index', [
             'feedbacks' => $feedbacks,
@@ -67,7 +65,10 @@ class FeedbackController extends Controller
             $validated['status'] = 'pending';
         }
 
-        $feedback = Feedback::create($validated);
+        $feedback = Feedback::create([
+            ...$request->validated(),
+            'created_by' => auth()->id(),
+        ]);
 
         $feedback->load('booking');
 
@@ -86,11 +87,11 @@ class FeedbackController extends Controller
 
     public function show(Feedback $feedback): Response
     {
-        if (auth()->user()->hasRole('customer') && $feedback->booking && $feedback->booking->created_by !== auth()->id()) {
+        if (auth()->user()->hasRole('customer') && $feedback->created_by !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $feedback->load(['booking.accommodations.accommodation']);
+        $feedback->load(['booking.accommodations.accommodation', 'createdBy']);
 
         return Inertia::render('feedback/show', [
             'feedback' => $feedback,
@@ -99,7 +100,7 @@ class FeedbackController extends Controller
 
     public function edit(Feedback $feedback): Response
     {
-        if (auth()->user()->hasRole('customer') && $feedback->booking && $feedback->booking->created_by !== auth()->id()) {
+        if (auth()->user()->hasRole('customer') && $feedback->created_by !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -123,7 +124,7 @@ class FeedbackController extends Controller
 
     public function update(UpdateFeedbackRequest $request, Feedback $feedback): RedirectResponse
     {
-        if (auth()->user()->hasRole('customer') && $feedback->booking && $feedback->booking->created_by !== auth()->id()) {
+        if (auth()->user()->hasRole('customer') && $feedback->created_by !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -141,7 +142,7 @@ class FeedbackController extends Controller
 
     public function destroy(Feedback $feedback): RedirectResponse
     {
-        if (auth()->user()->hasRole('customer') && $feedback->booking && $feedback->booking->created_by !== auth()->id()) {
+        if (auth()->user()->hasRole('customer') && $feedback->created_by !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -161,13 +162,13 @@ class FeedbackController extends Controller
 
         $feedback->load('booking');
 
-        try {
-            if ($feedback->booking && $feedback->booking->guest_email) {
-                Mail::to($feedback->booking->guest_email)->send(new FeedbackApproved($feedback));
-            }
-        } catch (\Exception $e) {
-            Log::error('Feedback approval email failed: ' . $e->getMessage());
-        }
+        // try {
+        //     if ($feedback->booking && $feedback->booking->guest_email) {
+        //         Mail::to($feedback->booking->guest_email)->send(new FeedbackApproved($feedback));
+        //     }
+        // } catch (\Exception $e) {
+        //     Log::error('Feedback approval email failed: ' . $e->getMessage());
+        // }
 
         return back()->with('success', 'Feedback approved successfully.');
     }

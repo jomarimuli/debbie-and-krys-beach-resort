@@ -60,7 +60,7 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                 )}
             </div>
 
-            {payment.is_rebooking_payment && payment.rebooking && (
+            {/* {payment.is_rebooking_payment && payment.rebooking && (
                 <Card className="border-purple-200 bg-purple-50/50">
                     <CardHeader className="pb-3">
                         <CardTitle className="text-base font-medium flex items-center gap-2">
@@ -86,7 +86,7 @@ export default function Show({ payment }: PageProps & { payment: Payment }) {
                         </div>
                     </CardContent>
                 </Card>
-            )}
+            )} */}
 
             {payment.reference_image_url && (
                 <Card>

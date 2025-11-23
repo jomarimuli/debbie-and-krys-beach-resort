@@ -16,9 +16,9 @@ class UpdateFeedbackRequest extends FormRequest
         return [
             'booking_id' => ['nullable', 'exists:bookings,id'],
             'guest_name' => ['required', 'string', 'max:255'],
-            'guest_email' => ['nullable', 'email', 'max:255'],
-            'guest_phone' => ['nullable', 'string', 'max:20'],
-            'guest_address' => ['nullable', 'string', 'max:255'],
+            'guest_email' => ['required', 'email', 'max:255'],
+            'guest_phone' => ['required', 'string', 'max:20'],
+            'guest_address' => ['required', 'string', 'max:255'],
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'comment' => ['nullable', 'string', 'max:1000'],
             'status' => ['in:pending,approved,rejected'],

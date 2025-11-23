@@ -28,7 +28,7 @@ class AccommodationController extends Controller
         $accommodations = Accommodation::with('rates')
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->paginate(10);
+            ->paginate(100);
 
         return Inertia::render('accommodation/index', [
             'accommodations' => $accommodations,

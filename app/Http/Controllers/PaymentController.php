@@ -43,7 +43,7 @@ class PaymentController extends Controller
             });
         }
 
-        $payments = $query->latest('payment_date')->paginate(10);
+        $payments = $query->latest('payment_date')->paginate(100);
 
         return Inertia::render('payment/index', [
             'payments' => $payments,

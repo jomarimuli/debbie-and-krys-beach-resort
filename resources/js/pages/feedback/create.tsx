@@ -9,22 +9,22 @@ import { useForm } from '@inertiajs/react';
 import { FormEventHandler, useEffect } from 'react';
 import { ArrowLeft, LoaderCircle, Star } from 'lucide-react';
 import { Link } from '@inertiajs/react';
-import { type Booking, type PageProps } from '@/types';
+import { type Booking, type PageProps, type FeedbackFormData } from '@/types';
 import feedbacks from '@/routes/feedbacks';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 
 export default function Create({ bookings }: PageProps & { bookings: Booking[] }) {
-    const { isCustomer } = useAuth();
-    const { data, setData, post, processing, errors } = useForm({
+    const { isCustomer, user } = useAuth();
+    const { data, setData, post, processing, errors } = useForm<FeedbackFormData>({
         booking_id: '',
-        guest_name: '',
-        guest_email: '',
-        guest_phone: '',
-        guest_address: '',
+        guest_name: isCustomer() ? user?.name || '' : '',
+        guest_email: isCustomer() ? user?.email || '' : '',
+        guest_phone: isCustomer() ? user?.phone || '' : '',
+        guest_address: isCustomer() ? user?.address || '' : '',
         rating: 5,
         comment: '',
-        status: 'pending' as 'pending' | 'approved' | 'rejected',
+        status: 'pending',
     });
 
     const selectedBooking = bookings.find((b) => b.id === parseInt(data.booking_id));
@@ -39,7 +39,7 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
         setData('booking_id', value);
         const booking = bookings.find((b) => b.id === parseInt(value));
         if (booking) {
-            setData((prev) => ({
+            setData((prev: FeedbackFormData) => ({
                 ...prev,
                 booking_id: value,
                 guest_name: booking.guest_name,
@@ -75,7 +75,7 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={submit} className="space-y-5">
-                        <div className="space-y-1.5">
+                        {/* <div className="space-y-1.5">
                             <Label htmlFor="booking_id" className="text-sm cursor-text select-text">
                                 Booking (Optional)
                             </Label>
@@ -92,7 +92,7 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                                 </SelectContent>
                             </Select>
                             {errors.booking_id && <p className="text-xs text-destructive">{errors.booking_id}</p>}
-                        </div>
+                        </div> */}
 
                         {selectedBooking && (
                             <div className="rounded border p-3 bg-muted/30 space-y-2">
@@ -123,58 +123,73 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                             </div>
                         )}
 
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="guest_name" className="text-sm cursor-text select-text">
-                                    Guest Name
-                                </Label>
-                                <Input
-                                    id="guest_name"
-                                    value={data.guest_name}
-                                    onChange={(e) => setData('guest_name', e.target.value)}
-                                    className="h-9"
-                                />
-                                {errors.guest_name && <p className="text-xs text-destructive">{errors.guest_name}</p>}
+                        <div className="space-y-4">
+                            <div>
+                                <h3 className="text-sm font-medium">Guest Information</h3>
+                                {isCustomer() && (
+                                    <p className="text-xs text-muted-foreground">
+                                        To update this information, please edit your profile settings.
+                                    </p>
+                                )}
                             </div>
 
-                            <div className="space-y-1.5">
-                                <Label htmlFor="guest_phone" className="text-sm cursor-text select-text">
-                                    Phone Number
-                                </Label>
-                                <Input
-                                    id="guest_phone"
-                                    value={data.guest_phone}
-                                    onChange={(e) => setData('guest_phone', e.target.value)}
-                                    className="h-9"
-                                />
-                                {errors.guest_phone && <p className="text-xs text-destructive">{errors.guest_phone}</p>}
-                            </div>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="guest_name" className="text-sm cursor-text select-text">
+                                        Guest Name
+                                    </Label>
+                                    <Input
+                                        id="guest_name"
+                                        value={data.guest_name}
+                                        onChange={(e) => setData('guest_name', e.target.value)}
+                                        className="h-9"
+                                        disabled={isCustomer()}
+                                    />
+                                    {errors.guest_name && <p className="text-xs text-destructive">{errors.guest_name}</p>}
+                                </div>
 
-                            <div className="space-y-1.5">
-                                <Label htmlFor="guest_email" className="text-sm cursor-text select-text">
-                                    Email
-                                </Label>
-                                <Input
-                                    id="guest_email"
-                                    type="email"
-                                    value={data.guest_email}
-                                    onChange={(e) => setData('guest_email', e.target.value)}
-                                    className="h-9"
-                                />
-                                {errors.guest_email && <p className="text-xs text-destructive">{errors.guest_email}</p>}
-                            </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="guest_phone" className="text-sm cursor-text select-text">
+                                        Phone Number
+                                    </Label>
+                                    <Input
+                                        id="guest_phone"
+                                        value={data.guest_phone}
+                                        onChange={(e) => setData('guest_phone', e.target.value)}
+                                        className="h-9"
+                                        disabled={isCustomer()}
+                                    />
+                                    {errors.guest_phone && <p className="text-xs text-destructive">{errors.guest_phone}</p>}
+                                </div>
 
-                            <div className="space-y-1.5">
-                                <Label htmlFor="guest_address" className="text-sm cursor-text select-text">
-                                    Address
-                                </Label>
-                                <Input
-                                    id="guest_address"
-                                    value={data.guest_address}
-                                    onChange={(e) => setData('guest_address', e.target.value)}
-                                    className="h-9"
-                                />
-                                {errors.guest_address && <p className="text-xs text-destructive">{errors.guest_address}</p>}
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="guest_email" className="text-sm cursor-text select-text">
+                                        Email
+                                    </Label>
+                                    <Input
+                                        id="guest_email"
+                                        type="email"
+                                        value={data.guest_email}
+                                        onChange={(e) => setData('guest_email', e.target.value)}
+                                        className="h-9"
+                                        disabled={isCustomer()}
+                                    />
+                                    {errors.guest_email && <p className="text-xs text-destructive">{errors.guest_email}</p>}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="guest_address" className="text-sm cursor-text select-text">
+                                        Address
+                                    </Label>
+                                    <Input
+                                        id="guest_address"
+                                        value={data.guest_address}
+                                        onChange={(e) => setData('guest_address', e.target.value)}
+                                        className="h-9"
+                                        disabled={isCustomer()}
+                                    />
+                                    {errors.guest_address && <p className="text-xs text-destructive">{errors.guest_address}</p>}
+                                </div>
                             </div>
                         </div>
 
@@ -220,7 +235,7 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                             {errors.comment && <p className="text-xs text-destructive">{errors.comment}</p>}
                         </div>
 
-                        <div className="space-y-1.5">
+                        {/* <div className="space-y-1.5">
                             <Label htmlFor="status" className="text-sm cursor-text select-text">
                                 Status
                             </Label>
@@ -241,7 +256,7 @@ export default function Create({ bookings }: PageProps & { bookings: Booking[] }
                                 </SelectContent>
                             </Select>
                             {errors.status && <p className="text-xs text-destructive">{errors.status}</p>}
-                        </div>
+                        </div> */}
 
                         <div className="flex gap-2 pt-2">
                             <Button type="submit" disabled={processing} size="sm">

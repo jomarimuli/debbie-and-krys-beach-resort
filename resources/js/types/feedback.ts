@@ -1,5 +1,6 @@
 import type { PaginatedData } from './datatable';
 import type { Booking } from './booking';
+import type { User } from './user';
 
 export interface Feedback {
     id: number;
@@ -13,7 +14,9 @@ export interface Feedback {
     status: 'pending' | 'approved' | 'rejected';
     created_at: string;
     updated_at: string;
+    created_by: number;
     booking?: Booking;
+    created_by_user?: User;
 }
 
 export interface FeedbackIndexData {
@@ -21,12 +24,12 @@ export interface FeedbackIndexData {
 }
 
 export interface FeedbackFormData {
-    booking_id?: string;
+    booking_id: string;
     guest_name: string;
-    guest_email?: string;
-    guest_phone?: string;
-    guest_address?: string;
+    guest_email: string;
+    guest_phone: string;
+    guest_address: string;
     rating: number;
-    comment?: string;
+    comment: string;
     status: 'pending' | 'approved' | 'rejected';
 }

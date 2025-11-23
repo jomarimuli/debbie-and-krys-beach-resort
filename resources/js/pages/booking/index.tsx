@@ -147,7 +147,7 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                                                 {booking.booking_type.replace('_', ' ')}
                                             </Badge>
                                             <span className="text-xs text-muted-foreground">
-                                                {booking.booking_type === 'overnight' ? '22 hrs' : '8 hrs'}
+                                                {booking.booking_type === 'overnight' ? '6:00 A.M. - 6:00 A.M.' : '6:00 A.M. - 6:00 P.M.'}
                                             </span>
                                         </div>
                                     </TableCell>
@@ -155,11 +155,11 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                                     <TableCell>
                                         <div>
                                             <p className="font-medium text-sm">₱{parseFloat(booking.total_amount).toLocaleString()}</p>
-                                            {booking.down_payment_required && (
+                                            {/* {booking.down_payment_required && (
                                                 <p className="text-xs text-blue-600">
                                                     DP: ₱{parseFloat(booking.down_payment_amount || '0').toLocaleString()}
                                                 </p>
-                                            )}
+                                            )} */}
                                             {parseFloat(booking.balance) > 0 && (
                                                 <p className="text-xs text-muted-foreground">
                                                     Bal: ₱{parseFloat(booking.balance).toLocaleString()}
@@ -170,11 +170,11 @@ export default function Index({ bookings: bookingData }: BookingIndexProps) {
                                     <TableCell>
                                         <div className="flex gap-1 flex-wrap">
                                             {getStatusBadge(booking.status)}
-                                            {booking.rebookings && booking.rebookings.length > 0 && (
+                                            {/* {booking.rebookings && booking.rebookings.length > 0 && (
                                                 <Badge variant="outline" className="bg-purple-100 text-purple-800 text-xs">
                                                     Rebooking
                                                 </Badge>
-                                            )}
+                                            )} */}
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-right">

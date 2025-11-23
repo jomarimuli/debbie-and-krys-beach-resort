@@ -36,7 +36,7 @@ return new class extends Migration
 
             // Reason and notes
             $table->text('reason')->nullable();
-            $table->text('admin_notes')->nullable();
+            $table->text('remarks')->nullable();
 
             $table->timestamp('approved_at')->nullable();
             $table->timestamp('completed_at')->nullable();

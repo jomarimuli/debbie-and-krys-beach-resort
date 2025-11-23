@@ -40,7 +40,7 @@ class RefundController extends Controller
             });
         }
 
-        $refunds = $query->latest('refund_date')->paginate(10);
+        $refunds = $query->latest('refund_date')->paginate(100);
 
         return Inertia::render('refund/index', [
             'refunds' => $refunds,

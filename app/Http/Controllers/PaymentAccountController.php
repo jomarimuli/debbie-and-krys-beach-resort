@@ -28,7 +28,7 @@ class PaymentAccountController extends Controller
     {
         $paymentAccounts = PaymentAccount::query()
             ->ordered()
-            ->paginate(10);
+            ->paginate(100);
 
         return Inertia::render('payment-account/index', [
             'payment_accounts' => $paymentAccounts,

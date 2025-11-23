@@ -108,8 +108,8 @@ export default function Index({ feedbacks: feedbackData }: FeedbackIndexProps) {
                                 <TableHead>Guest</TableHead>
                                 <TableHead>Rating</TableHead>
                                 <TableHead>Comment</TableHead>
-                                <TableHead>Booking</TableHead>
-                                <TableHead>Status</TableHead>
+                                {/* <TableHead>Booking</TableHead> */}
+                                {/* <TableHead>Status</TableHead> */}
                                 <TableHead>Date</TableHead>
                                 <TableHead className="w-32 text-right">Actions</TableHead>
                             </TableRow>
@@ -136,7 +136,7 @@ export default function Index({ feedbacks: feedbackData }: FeedbackIndexProps) {
                                             {feedback.comment || <span className="text-muted-foreground">No comment</span>}
                                         </p>
                                     </TableCell>
-                                    <TableCell className="text-sm">
+                                    {/* <TableCell className="text-sm">
                                         {feedback.booking ? (
                                             <Link
                                                 href={`/bookings/${feedback.booking_id}`}
@@ -147,8 +147,8 @@ export default function Index({ feedbacks: feedbackData }: FeedbackIndexProps) {
                                         ) : (
                                             <span className="text-muted-foreground">Walk-in</span>
                                         )}
-                                    </TableCell>
-                                    <TableCell>{getStatusBadge(feedback.status)}</TableCell>
+                                    </TableCell> */}
+                                    {/* <TableCell>{getStatusBadge(feedback.status)}</TableCell> */}
                                     <TableCell className="text-sm">
                                         {format(new Date(feedback.created_at), 'MMM dd, yyyy')}
                                     </TableCell>

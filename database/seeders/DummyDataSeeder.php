@@ -636,7 +636,7 @@ class DummyDataSeeder extends Seeder
                 'status' => ['pending', 'approved', 'completed'][array_rand(['pending', 'approved', 'completed'])],
                 'payment_status' => ['pending', 'paid'][array_rand(['pending', 'paid'])],
                 'reason' => "Rebooking reason for {$i}",
-                'admin_notes' => $i % 2 === 0 ? "Admin notes for rebooking {$i}" : null,
+                'remarks' => $i % 2 === 0 ? "Admin notes for rebooking {$i}" : null,
                 'approved_at' => $i % 2 === 0 ? now()->subDays(rand(0, 10)) : null,
                 'completed_at' => $i % 3 === 0 ? now()->subDays(rand(0, 5)) : null,
             ]);

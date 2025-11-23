@@ -105,7 +105,7 @@ export default function Index({ rates }: AccommodationRateIndexProps) {
                                                 {rate.booking_type.replace('_', ' ')}
                                             </Badge>
                                             <span className="text-xs text-muted-foreground">
-                                                {rate.booking_type === 'overnight' ? '22 hrs' : '8 hrs'}
+                                                {rate.booking_type === 'overnight' ? '6:00 A.M. - 6:00 A.M.' : '6:00 A.M. - 6:00 P.M.'}
                                             </span>
                                         </div>
                                     </TableCell>
