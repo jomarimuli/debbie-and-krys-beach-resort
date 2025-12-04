@@ -26,46 +26,40 @@ class DummyDataSeeder extends Seeder
 {
     public function run(): void
     {
-        // Create test users
-        $admin = User::firstOrCreate(
-            ['email' => 'admin@test.com'],
-            [
-                'name' => 'Admin User',
-                'password' => Hash::make('P@ssw0rd'),
-                'email_verified_at' => now(),
-                'password_changed_at' => now(),
-                'phone' => '09123456789',
-                'address' => 'Manila, Philippines',
-                'status' => 'active',
-            ]
-        );
-        $admin->assignRole('admin');
-
-        $staff = User::firstOrCreate(
-            ['email' => 'staff@test.com'],
-            [
-                'name' => 'Staff User',
-                'password' => Hash::make('P@ssw0rd'),
-                'email_verified_at' => now(),
-                'password_changed_at' => now(),
-                'phone' => '09234567890',
-                'address' => 'Quezon City, Philippines',
-                'status' => 'active',
-            ]
-        );
-        $staff->assignRole('staff');
+        // Filipino names for customers
+        $filipinoNames = [
+            ['name' => 'Maria Santos', 'address' => 'Quezon City, Metro Manila'],
+            ['name' => 'Juan dela Cruz', 'address' => 'Makati City, Metro Manila'],
+            ['name' => 'Rosa Reyes', 'address' => 'Caloocan City, Metro Manila'],
+            ['name' => 'Pedro Garcia', 'address' => 'Davao City, Davao del Sur'],
+            ['name' => 'Ana Mendoza', 'address' => 'Cebu City, Cebu'],
+            ['name' => 'Carlos Bautista', 'address' => 'Pasig City, Metro Manila'],
+            ['name' => 'Luz Fernandez', 'address' => 'Taguig City, Metro Manila'],
+            ['name' => 'Ramon Torres', 'address' => 'Antipolo City, Rizal'],
+            ['name' => 'Elena Cruz', 'address' => 'Las Piñas City, Metro Manila'],
+            ['name' => 'Miguel Ramos', 'address' => 'Parañaque City, Metro Manila'],
+            ['name' => 'Sofia Villanueva', 'address' => 'Mandaluyong City, Metro Manila'],
+            ['name' => 'Diego Lopez', 'address' => 'San Juan City, Metro Manila'],
+            ['name' => 'Carmen Aquino', 'address' => 'Valenzuela City, Metro Manila'],
+            ['name' => 'Jose Martinez', 'address' => 'Marikina City, Metro Manila'],
+            ['name' => 'Isabel Gonzales', 'address' => 'Malabon City, Metro Manila'],
+        ];
 
         $customers = [];
-        for ($i = 1; $i <= 10; $i++) {
+        foreach ($filipinoNames as $index => $person) {
+            $i = $index + 1;
+            $firstName = explode(' ', $person['name'])[0];
+            $lastName = explode(' ', $person['name'])[count(explode(' ', $person['name'])) - 1];
+
             $customer = User::firstOrCreate(
-                ['email' => "customer{$i}@test.com"],
+                ['email' => strtolower($firstName) . '.' . strtolower($lastName) . '@gmail.com'],
                 [
-                    'name' => "Customer {$i}",
+                    'name' => $person['name'],
                     'password' => Hash::make('P@ssw0rd'),
                     'email_verified_at' => now(),
                     'password_changed_at' => now(),
-                    'phone' => '0912345' . str_pad($i, 4, '0', STR_PAD_LEFT),
-                    'address' => "Address {$i}, Philippines",
+                    'phone' => '09' . rand(100000000, 999999999),
+                    'address' => $person['address'],
                     'status' => 'active',
                 ]
             );
@@ -73,55 +67,56 @@ class DummyDataSeeder extends Seeder
             $customers[] = $customer;
         }
 
-        // Accommodations with rates
-        $bigRoom = Accommodation::create([
-            'name' => 'Big Room',
-            'type' => 'room',
-            'size' => 'big',
-            'description' => 'Spacious airconditioned room perfect for families',
-            'is_air_conditioned' => true,
-            'min_capacity' => 6,
-            'max_capacity' => 10,
-            'is_active' => true,
-            'sort_order' => 1,
-        ]);
+        // Get admin and staff users for later use
+        $admin = User::where('email', 'jomarisingson04@gmail.com')->first();
+        $staff = User::where('email', 'pauljustina11@gmail.com')->first();
 
-        AccommodationRate::create([
-            'accommodation_id' => $bigRoom->id,
-            'booking_type' => 'day_tour',
-            'rate' => 4500,
-            'additional_pax_rate' => 150,
-            'adult_entrance_fee' => 100,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => true,
-            'includes_free_entrance' => true,
-            'is_active' => true,
-        ]);
+        // ============================================
+        // ACCOMMODATIONS - Real Client Offers
+        // ============================================
 
-        AccommodationRate::create([
-            'accommodation_id' => $bigRoom->id,
-            'booking_type' => 'overnight',
-            'rate' => 5500,
-            'additional_pax_rate' => 200,
-            'adult_entrance_fee' => 150,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => true,
-            'includes_free_entrance' => true,
-            'is_active' => true,
-        ]);
+        // 2 Big Rooms with AC - Day Tour Only
+        $bigRooms = [];
+        for ($i = 1; $i <= 2; $i++) {
+            $bigRoom = Accommodation::create([
+                'name' => "Big Room {$i}",
+                'type' => 'room',
+                'size' => 'big',
+                'description' => 'Spacious airconditioned room with free small cottage',
+                'is_air_conditioned' => true,
+                'min_capacity' => 6,
+                'max_capacity' => 10,
+                'is_active' => true,
+                'sort_order' => $i,
+            ]);
 
+            AccommodationRate::create([
+                'accommodation_id' => $bigRoom->id,
+                'booking_type' => 'day_tour',
+                'rate' => 4500,
+                'additional_pax_rate' => 150,
+                'adult_entrance_fee' => 100,
+                'child_entrance_fee' => 50,
+                'child_max_age' => 5,
+                'includes_free_cottage' => true,
+                'includes_free_entrance' => true,
+                'is_active' => true,
+            ]);
+
+            $bigRooms[] = $bigRoom;
+        }
+
+        // 1 Small Room with AC - Day Tour Only
         $smallRoom = Accommodation::create([
             'name' => 'Small Room',
             'type' => 'room',
             'size' => 'small',
-            'description' => 'Cozy airconditioned room for small groups',
+            'description' => 'Cozy airconditioned room with free small cottage',
             'is_air_conditioned' => true,
             'min_capacity' => 4,
-            'max_capacity' => 6,
+            'max_capacity' => 8,
             'is_active' => true,
-            'sort_order' => 2,
+            'sort_order' => 3,
         ]);
 
         AccommodationRate::create([
@@ -137,322 +132,139 @@ class DummyDataSeeder extends Seeder
             'is_active' => true,
         ]);
 
-        AccommodationRate::create([
-            'accommodation_id' => $smallRoom->id,
-            'booking_type' => 'overnight',
-            'rate' => 4000,
-            'additional_pax_rate' => 200,
-            'adult_entrance_fee' => 150,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => true,
-            'includes_free_entrance' => true,
-            'is_active' => true,
-        ]);
+        // 3 Big Cottages without AC - Day Tour
+        $bigCottagesDayTour = [];
+        for ($i = 1; $i <= 3; $i++) {
+            $bigCottage = Accommodation::create([
+                'name' => "Big Cottage {$i}",
+                'type' => 'cottage',
+                'size' => 'big',
+                'description' => 'Large cottage for groups (Day Tour)',
+                'is_air_conditioned' => false,
+                'min_capacity' => 10,
+                'max_capacity' => 15,
+                'is_active' => true,
+                'sort_order' => 3 + $i,
+            ]);
 
-        $bigCottage = Accommodation::create([
-            'name' => 'Big Cottage',
-            'type' => 'cottage',
-            'size' => 'big',
-            'description' => 'Large cottage for groups',
-            'is_air_conditioned' => false,
-            'min_capacity' => 10,
-            'max_capacity' => 15,
-            'is_active' => true,
-            'sort_order' => 3,
-        ]);
+            AccommodationRate::create([
+                'accommodation_id' => $bigCottage->id,
+                'booking_type' => 'day_tour',
+                'rate' => 800,
+                'additional_pax_rate' => 0,
+                'adult_entrance_fee' => 100,
+                'child_entrance_fee' => 50,
+                'child_max_age' => 5,
+                'includes_free_cottage' => false,
+                'includes_free_entrance' => false,
+                'is_active' => true,
+            ]);
 
-        AccommodationRate::create([
-            'accommodation_id' => $bigCottage->id,
-            'booking_type' => 'day_tour',
-            'rate' => 800,
-            'additional_pax_rate' => 100,
-            'adult_entrance_fee' => 100,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => false,
-            'includes_free_entrance' => false,
-            'is_active' => true,
-        ]);
+            $bigCottagesDayTour[] = $bigCottage;
+        }
 
-        AccommodationRate::create([
-            'accommodation_id' => $bigCottage->id,
-            'booking_type' => 'overnight',
-            'rate' => 1000,
-            'additional_pax_rate' => 120,
-            'adult_entrance_fee' => 150,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => false,
-            'includes_free_entrance' => false,
-            'is_active' => true,
-        ]);
+        // 2 Small Cottages without AC - Day Tour
+        $smallCottagesDayTour = [];
+        for ($i = 1; $i <= 2; $i++) {
+            $smallCottage = Accommodation::create([
+                'name' => "Small Cottage {$i}",
+                'type' => 'cottage',
+                'size' => 'small',
+                'description' => 'Compact cottage for small groups (Day Tour)',
+                'is_air_conditioned' => false,
+                'min_capacity' => 8,
+                'max_capacity' => 10,
+                'is_active' => true,
+                'sort_order' => 6 + $i,
+            ]);
 
-        $smallCottage = Accommodation::create([
-            'name' => 'Small Cottage',
-            'type' => 'cottage',
-            'size' => 'small',
-            'description' => 'Compact cottage for small groups',
-            'is_air_conditioned' => false,
-            'min_capacity' => 8,
-            'max_capacity' => 10,
-            'is_active' => true,
-            'sort_order' => 4,
-        ]);
+            AccommodationRate::create([
+                'accommodation_id' => $smallCottage->id,
+                'booking_type' => 'day_tour',
+                'rate' => 400,
+                'additional_pax_rate' => 0,
+                'adult_entrance_fee' => 100,
+                'child_entrance_fee' => 50,
+                'child_max_age' => 5,
+                'includes_free_cottage' => false,
+                'includes_free_entrance' => false,
+                'is_active' => true,
+            ]);
 
-        AccommodationRate::create([
-            'accommodation_id' => $smallCottage->id,
-            'booking_type' => 'day_tour',
-            'rate' => 400,
-            'additional_pax_rate' => 100,
-            'adult_entrance_fee' => 100,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => false,
-            'includes_free_entrance' => false,
-            'is_active' => true,
-        ]);
+            $smallCottagesDayTour[] = $smallCottage;
+        }
 
-        AccommodationRate::create([
-            'accommodation_id' => $smallCottage->id,
-            'booking_type' => 'overnight',
-            'rate' => 600,
-            'additional_pax_rate' => 120,
-            'adult_entrance_fee' => 150,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => false,
-            'includes_free_entrance' => false,
-            'is_active' => true,
-        ]);
+        // 3 Big Cottages without AC - Overnight
+        $bigCottagesOvernight = [];
+        for ($i = 4; $i <= 6; $i++) {
+            $bigCottage = Accommodation::create([
+                'name' => "Big Cottage {$i}",
+                'type' => 'cottage',
+                'size' => 'big',
+                'description' => 'Large cottage for groups (Overnight)',
+                'is_air_conditioned' => false,
+                'min_capacity' => 10,
+                'max_capacity' => 15,
+                'is_active' => true,
+                'sort_order' => 6 + $i,
+            ]);
 
-        $deluxeRoom = Accommodation::create([
-            'name' => 'Deluxe Room',
-            'type' => 'room',
-            'size' => 'big',
-            'description' => 'Premium airconditioned room with amenities',
-            'is_air_conditioned' => true,
-            'min_capacity' => 8,
-            'max_capacity' => 12,
-            'is_active' => true,
-            'sort_order' => 5,
-        ]);
+            AccommodationRate::create([
+                'accommodation_id' => $bigCottage->id,
+                'booking_type' => 'overnight',
+                'rate' => 1000,
+                'additional_pax_rate' => 0,
+                'adult_entrance_fee' => 150,
+                'child_entrance_fee' => 100,
+                'child_max_age' => 5,
+                'includes_free_cottage' => false,
+                'includes_free_entrance' => false,
+                'is_active' => true,
+            ]);
 
-        AccommodationRate::create([
-            'accommodation_id' => $deluxeRoom->id,
-            'booking_type' => 'day_tour',
-            'rate' => 6000,
-            'additional_pax_rate' => 200,
-            'adult_entrance_fee' => 120,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => true,
-            'includes_free_entrance' => true,
-            'is_active' => true,
-        ]);
+            $bigCottagesOvernight[] = $bigCottage;
+        }
 
-        AccommodationRate::create([
-            'accommodation_id' => $deluxeRoom->id,
-            'booking_type' => 'overnight',
-            'rate' => 7500,
-            'additional_pax_rate' => 250,
-            'adult_entrance_fee' => 150,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => true,
-            'includes_free_entrance' => true,
-            'is_active' => true,
-        ]);
+        // 2 Small Cottages without AC - Overnight
+        $smallCottagesOvernight = [];
+        for ($i = 3; $i <= 4; $i++) {
+            $smallCottage = Accommodation::create([
+                'name' => "Small Cottage {$i}",
+                'type' => 'cottage',
+                'size' => 'small',
+                'description' => 'Compact cottage for small groups (Overnight)',
+                'is_air_conditioned' => false,
+                'min_capacity' => 8,
+                'max_capacity' => 10,
+                'is_active' => true,
+                'sort_order' => 12 + $i,
+            ]);
 
-        $familyCottage = Accommodation::create([
-            'name' => 'Family Cottage',
-            'type' => 'cottage',
-            'size' => 'big',
-            'description' => 'Family-sized cottage with extra space',
-            'is_air_conditioned' => false,
-            'min_capacity' => 12,
-            'max_capacity' => 18,
-            'is_active' => true,
-            'sort_order' => 6,
-        ]);
+            AccommodationRate::create([
+                'accommodation_id' => $smallCottage->id,
+                'booking_type' => 'overnight',
+                'rate' => 600,
+                'additional_pax_rate' => 0,
+                'adult_entrance_fee' => 150,
+                'child_entrance_fee' => 100,
+                'child_max_age' => 5,
+                'includes_free_cottage' => false,
+                'includes_free_entrance' => false,
+                'is_active' => true,
+            ]);
 
-        AccommodationRate::create([
-            'accommodation_id' => $familyCottage->id,
-            'booking_type' => 'day_tour',
-            'rate' => 1200,
-            'additional_pax_rate' => 110,
-            'adult_entrance_fee' => 100,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => false,
-            'includes_free_entrance' => false,
-            'is_active' => true,
-        ]);
+            $smallCottagesOvernight[] = $smallCottage;
+        }
 
-        AccommodationRate::create([
-            'accommodation_id' => $familyCottage->id,
-            'booking_type' => 'overnight',
-            'rate' => 1500,
-            'additional_pax_rate' => 130,
-            'adult_entrance_fee' => 150,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => false,
-            'includes_free_entrance' => false,
-            'is_active' => true,
-        ]);
-
-        $premiumCottage = Accommodation::create([
-            'name' => 'Premium Cottage',
-            'type' => 'cottage',
-            'size' => 'big',
-            'description' => 'Premium cottage with covered area',
-            'is_air_conditioned' => false,
-            'min_capacity' => 15,
-            'max_capacity' => 20,
-            'is_active' => true,
-            'sort_order' => 7,
-        ]);
-
-        AccommodationRate::create([
-            'accommodation_id' => $premiumCottage->id,
-            'booking_type' => 'day_tour',
-            'rate' => 1500,
-            'additional_pax_rate' => 120,
-            'adult_entrance_fee' => 100,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => false,
-            'includes_free_entrance' => false,
-            'is_active' => true,
-        ]);
-
-        AccommodationRate::create([
-            'accommodation_id' => $premiumCottage->id,
-            'booking_type' => 'overnight',
-            'rate' => 2000,
-            'additional_pax_rate' => 140,
-            'adult_entrance_fee' => 150,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => false,
-            'includes_free_entrance' => false,
-            'is_active' => true,
-        ]);
-
-        $standardRoom = Accommodation::create([
-            'name' => 'Standard Room',
-            'type' => 'room',
-            'size' => 'small',
-            'description' => 'Basic airconditioned room for couples',
-            'is_air_conditioned' => true,
-            'min_capacity' => 2,
-            'max_capacity' => 4,
-            'is_active' => true,
-            'sort_order' => 8,
-        ]);
-
-        AccommodationRate::create([
-            'accommodation_id' => $standardRoom->id,
-            'booking_type' => 'day_tour',
-            'rate' => 2500,
-            'additional_pax_rate' => 150,
-            'adult_entrance_fee' => 100,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => false,
-            'includes_free_entrance' => true,
-            'is_active' => true,
-        ]);
-
-        AccommodationRate::create([
-            'accommodation_id' => $standardRoom->id,
-            'booking_type' => 'overnight',
-            'rate' => 3000,
-            'additional_pax_rate' => 200,
-            'adult_entrance_fee' => 150,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => false,
-            'includes_free_entrance' => true,
-            'is_active' => true,
-        ]);
-
-        $gardenCottage = Accommodation::create([
-            'name' => 'Garden Cottage',
-            'type' => 'cottage',
-            'size' => 'small',
-            'description' => 'Cottage with garden view',
-            'is_air_conditioned' => false,
-            'min_capacity' => 6,
-            'max_capacity' => 8,
-            'is_active' => true,
-            'sort_order' => 9,
-        ]);
-
-        AccommodationRate::create([
-            'accommodation_id' => $gardenCottage->id,
-            'booking_type' => 'day_tour',
-            'rate' => 600,
-            'additional_pax_rate' => 100,
-            'adult_entrance_fee' => 100,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => false,
-            'includes_free_entrance' => false,
-            'is_active' => true,
-        ]);
-
-        AccommodationRate::create([
-            'accommodation_id' => $gardenCottage->id,
-            'booking_type' => 'overnight',
-            'rate' => 800,
-            'additional_pax_rate' => 120,
-            'adult_entrance_fee' => 150,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => false,
-            'includes_free_entrance' => false,
-            'is_active' => true,
-        ]);
-
-        $vipRoom = Accommodation::create([
-            'name' => 'VIP Room',
-            'type' => 'room',
-            'size' => 'big',
-            'description' => 'VIP airconditioned room with exclusive amenities',
-            'is_air_conditioned' => true,
-            'min_capacity' => 10,
-            'max_capacity' => 15,
-            'is_active' => true,
-            'sort_order' => 10,
-        ]);
-
-        AccommodationRate::create([
-            'accommodation_id' => $vipRoom->id,
-            'booking_type' => 'day_tour',
-            'rate' => 8000,
-            'additional_pax_rate' => 250,
-            'adult_entrance_fee' => 120,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => true,
-            'includes_free_entrance' => true,
-            'is_active' => true,
-        ]);
-
-        AccommodationRate::create([
-            'accommodation_id' => $vipRoom->id,
-            'booking_type' => 'overnight',
-            'rate' => 10000,
-            'additional_pax_rate' => 300,
-            'adult_entrance_fee' => 150,
-            'child_entrance_fee' => 50,
-            'child_max_age' => 5,
-            'includes_free_cottage' => true,
-            'includes_free_entrance' => true,
-            'is_active' => true,
-        ]);
+        // Combine all accommodations for bookings
+        $allAccommodations = array_merge(
+            $bigRooms,
+            [$smallRoom],
+            $bigCottagesDayTour,
+            $smallCottagesDayTour,
+            $bigCottagesOvernight,
+            $smallCottagesOvernight
+        );
 
         // Payment Accounts
         $paymentAccounts = [
@@ -505,11 +317,24 @@ class DummyDataSeeder extends Seeder
         $bookingTypes = ['day_tour', 'overnight'];
 
         for ($i = 1; $i <= 10; $i++) {
+            $customer = $customers[array_rand($customers)];
             $bookingType = $bookingTypes[array_rand($bookingTypes)];
             $checkInDate = now()->addDays(rand(-30, 30))->format('Y-m-d');
             $checkOutDate = $bookingType === 'overnight' ? date('Y-m-d', strtotime($checkInDate . ' +1 day')) : null;
 
-            $accommodationTotal = rand(3000, 10000);
+            // Select appropriate accommodation based on booking type
+            $accommodation = $allAccommodations[array_rand($allAccommodations)];
+            $rate = $accommodation->rates()->where('booking_type', $bookingType)->first();
+
+            // Skip if no rate found for this booking type
+            if (!$rate) {
+                continue;
+            }
+
+            $guests = rand($accommodation->min_capacity, $accommodation->max_capacity);
+            $additionalPax = max(0, $guests - $accommodation->min_capacity);
+            $accommodationTotal = $rate->rate + ($additionalPax * $rate->additional_pax_rate);
+
             $entranceFeeTotal = rand(500, 2000);
             $totalAmount = $accommodationTotal + $entranceFeeTotal;
             $paidAmount = rand(0, $totalAmount);
@@ -519,11 +344,11 @@ class DummyDataSeeder extends Seeder
                 'booking_code' => strtoupper(substr(md5($i), 0, 8)),
                 'source' => $sources[array_rand($sources)],
                 'booking_type' => $bookingType,
-                'created_by' => $customers[array_rand($customers)]->id,
-                'guest_name' => "Guest {$i}",
-                'guest_email' => "guest{$i}@example.com",
-                'guest_phone' => '09123456' . str_pad($i, 3, '0', STR_PAD_LEFT),
-                'guest_address' => "Address {$i}, Philippines",
+                'created_by' => $customer->id,
+                'guest_name' => $customer->name,
+                'guest_email' => $customer->email,
+                'guest_phone' => $customer->phone,
+                'guest_address' => $customer->address,
                 'check_in_date' => $checkInDate,
                 'check_out_date' => $checkOutDate,
                 'total_adults' => rand(4, 10),
@@ -542,16 +367,13 @@ class DummyDataSeeder extends Seeder
             $bookings[] = $booking;
 
             // Booking Accommodations
-            $accommodation = [$bigRoom, $smallRoom, $bigCottage, $smallCottage][array_rand([$bigRoom, $smallRoom, $bigCottage, $smallCottage])];
-            $rate = $accommodation->rates()->where('booking_type', $bookingType)->first();
-
             BookingAccommodation::create([
                 'booking_id' => $booking->id,
                 'accommodation_id' => $accommodation->id,
                 'accommodation_rate_id' => $rate->id,
-                'guests' => rand(4, 10),
+                'guests' => $guests,
                 'rate' => $rate->rate,
-                'additional_pax_charge' => rand(0, 500),
+                'additional_pax_charge' => $additionalPax * $rate->additional_pax_rate,
                 'subtotal' => $accommodationTotal,
                 'free_entrance_used' => $rate->includes_free_entrance ? rand(0, 6) : 0,
             ]);
@@ -570,7 +392,7 @@ class DummyDataSeeder extends Seeder
                     'booking_id' => $booking->id,
                     'type' => 'child',
                     'quantity' => rand(1, 5),
-                    'rate' => $bookingType === 'day_tour' ? 50 : 150,
+                    'rate' => $bookingType === 'day_tour' ? 50 : 100,
                     'subtotal' => rand(50, 500),
                 ]);
             }
@@ -642,32 +464,38 @@ class DummyDataSeeder extends Seeder
             ]);
 
             // Rebooking Accommodations
-            $accommodation = [$bigRoom, $smallRoom, $bigCottage, $smallCottage][array_rand([$bigRoom, $smallRoom, $bigCottage, $smallCottage])];
+            $accommodation = $allAccommodations[array_rand($allAccommodations)];
             $rate = $accommodation->rates()->where('booking_type', $originalBooking->booking_type)->first();
 
-            RebookingAccommodation::create([
-                'rebooking_id' => $rebooking->id,
-                'accommodation_id' => $accommodation->id,
-                'accommodation_rate_id' => $rate->id,
-                'guests' => rand(4, 10),
-                'rate' => $rate->rate,
-                'additional_pax_charge' => rand(0, 500),
-                'subtotal' => rand(3000, 8000),
-                'free_entrance_used' => $rate->includes_free_entrance ? rand(0, 6) : 0,
-            ]);
+            if ($rate) {
+                $guests = rand($accommodation->min_capacity, $accommodation->max_capacity);
+                $additionalPax = max(0, $guests - $accommodation->min_capacity);
 
-            // Rebooking Entrance Fees
-            RebookingEntranceFee::create([
-                'rebooking_id' => $rebooking->id,
-                'type' => 'adult',
-                'quantity' => rand(4, 10),
-                'rate' => $originalBooking->booking_type === 'day_tour' ? 100 : 150,
-                'subtotal' => rand(400, 1500),
-            ]);
+                RebookingAccommodation::create([
+                    'rebooking_id' => $rebooking->id,
+                    'accommodation_id' => $accommodation->id,
+                    'accommodation_rate_id' => $rate->id,
+                    'guests' => $guests,
+                    'rate' => $rate->rate,
+                    'additional_pax_charge' => $additionalPax * $rate->additional_pax_rate,
+                    'subtotal' => $rate->rate + ($additionalPax * $rate->additional_pax_rate),
+                    'free_entrance_used' => $rate->includes_free_entrance ? rand(0, 6) : 0,
+                ]);
+
+                // Rebooking Entrance Fees
+                RebookingEntranceFee::create([
+                    'rebooking_id' => $rebooking->id,
+                    'type' => 'adult',
+                    'quantity' => rand(4, 10),
+                    'rate' => $originalBooking->booking_type === 'day_tour' ? 100 : 150,
+                    'subtotal' => rand(400, 1500),
+                ]);
+            }
         }
 
         // Feedbacks
         for ($i = 1; $i <= 10; $i++) {
+            $customer = $customers[array_rand($customers)];
             $status = 'approved';
             if ($i > 6 && $i <= 8) {
                 $status = 'pending';
@@ -677,12 +505,12 @@ class DummyDataSeeder extends Seeder
 
             Feedback::create([
                 'booking_id' => $bookings[array_rand($bookings)]->id,
-                'guest_name' => "Guest {$i}",
-                'guest_email' => "guest{$i}@example.com",
-                'guest_phone' => '09123456' . str_pad($i, 3, '0', STR_PAD_LEFT),
-                'guest_address' => "Address {$i}, Philippines",
+                'guest_name' => $customer->name,
+                'guest_email' => $customer->email,
+                'guest_phone' => $customer->phone,
+                'guest_address' => $customer->address,
                 'rating' => rand(3, 5),
-                'comment' => "Great experience! Feedback {$i}",
+                'comment' => "Great experience! The resort was amazing and the staff was very accommodating.",
                 'status' => $status,
             ]);
         }
@@ -711,18 +539,16 @@ class DummyDataSeeder extends Seeder
             ]);
         }
 
-        // Galleries
+        // Galleries - Real client images only
         $galleries = [
-            'Pool View',
             'Beach Front',
+            'Garden View',
+            'Sunset View',
+            'Activities Area',
             'Big Room Interior',
             'Small Room Interior',
             'Big Cottage',
             'Small Cottage',
-            'Restaurant Area',
-            'Garden View',
-            'Sunset View',
-            'Activities Area',
         ];
 
         foreach ($galleries as $index => $title) {
@@ -738,11 +564,13 @@ class DummyDataSeeder extends Seeder
         // Chat Conversations
         for ($i = 1; $i <= 10; $i++) {
             $isCustomer = $i % 2 === 0;
+            $customer = $customers[array_rand($customers)];
+
             $conversation = ChatConversation::create([
-                'customer_id' => $isCustomer ? $customers[array_rand($customers)]->id : null,
+                'customer_id' => $isCustomer ? $customer->id : null,
                 'staff_id' => $i % 3 === 0 ? $staff->id : null,
-                'guest_name' => !$isCustomer ? "Guest {$i}" : null,
-                'guest_email' => !$isCustomer ? "guest{$i}@example.com" : null,
+                'guest_name' => !$isCustomer ? $customer->name : null,
+                'guest_email' => !$isCustomer ? $customer->email : null,
                 'guest_session_id' => !$isCustomer ? 'session_' . $i : null,
                 'status' => ['open', 'assigned', 'closed'][array_rand(['open', 'assigned', 'closed'])],
                 'subject' => "Inquiry about booking {$i}",
@@ -755,7 +583,7 @@ class DummyDataSeeder extends Seeder
                 ChatMessage::create([
                     'conversation_id' => $conversation->id,
                     'sender_id' => $j % 2 === 0 ? ($isCustomer ? $conversation->customer_id : null) : $staff->id,
-                    'sender_name' => $j % 2 === 0 && !$isCustomer ? "Guest {$i}" : null,
+                    'sender_name' => $j % 2 === 0 && !$isCustomer ? $customer->name : null,
                     'message' => "Message {$j} in conversation {$i}",
                     'is_read' => rand(0, 1),
                     'read_at' => rand(0, 1) ? now()->subMinutes(rand(1, 60)) : null,
