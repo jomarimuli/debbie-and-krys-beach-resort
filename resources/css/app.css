@@ -60,104 +60,104 @@
 }
 
 :root {
-    /* Beach Resort Palette - Cream/Ivory Based */
-    --background: #F5F2E8;                    /* Cream/Ivory */
-    --foreground: #2C3E50;                    /* Charcoal */
-    --card: #F5F2E8;                          /* Cream/Ivory */
-    --card-foreground: #2C3E50;               /* Charcoal */
-    --popover: #F5F2E8;                       /* Cream/Ivory */
-    --popover-foreground: #2C3E50;            /* Charcoal */
+    /* Classic Professional Palette - High Contrast for Better Readability */
+    --background: #FFFFFF;                    /* Pure White */
+    --foreground: #1E293B;                    /* Dark Slate */
+    --card: #FFFFFF;                          /* Pure White */
+    --card-foreground: #1E293B;               /* Dark Slate */
+    --popover: #FFFFFF;                       /* Pure White */
+    --popover-foreground: #1E293B;            /* Dark Slate */
 
-    /* Primary - Sunset Orange */
-    --primary: #E55A2B;                       /* Sunset Orange */
+    /* Primary - Classic Navy Blue */
+    --primary: #1E40AF;                       /* Navy Blue */
     --primary-foreground: #FFFFFF;            /* White text */
 
-    /* Secondary - Deep Teal */
-    --secondary: #1F5F5B;                     /* Deep Teal */
-    --secondary-foreground: #F5F2E8;          /* Cream text */
+    /* Secondary - Soft Steel Blue */
+    --secondary: #64748B;                     /* Steel Blue */
+    --secondary-foreground: #FFFFFF;          /* White text */
 
-    /* Muted - Warm Sand */
-    --muted: #D4B896;                         /* Warm Sand */
-    --muted-foreground: #64748B;              /* Slate Gray */
+    /* Muted - Light Gray */
+    --muted: #F1F5F9;                         /* Very Light Gray */
+    --muted-foreground: #64748B;              /* Steel Blue */
 
-    /* Accent - Ocean Blue */
-    --accent: #2E86AB;                        /* Ocean Blue */
+    /* Accent - Bright Sky Blue */
+    --accent: #3B82F6;                        /* Sky Blue */
     --accent-foreground: #FFFFFF;             /* White text */
 
-    /* Success - Palm Green */
-    --success: #6B8E23;                       /* Palm Green */
+    /* Success - Classic Green */
+    --success: #22C55E;                       /* Green */
     --success-foreground: #FFFFFF;            /* White text */
 
     /* Borders and inputs */
-    --border: #D4B896;                        /* Warm Sand */
-    --input: #EBE6D8;                         /* Very light cream */
-    --ring: #E55A2B;                          /* Sunset Orange for focus */
+    --border: #E2E8F0;                        /* Light Gray Border */
+    --input: #F8FAFC;                         /* Very light background */
+    --ring: #3B82F6;                          /* Sky Blue for focus */
 
     /* Destructive */
-    --destructive: #DC3545;                   /* Coral red */
+    --destructive: #DC2626;                   /* Clear Red */
     --destructive-foreground: #FFFFFF;        /* White text */
 
-    --chart-1: #E55A2B;                       /* Sunset Orange */
-    --chart-2: #2E86AB;                       /* Ocean Blue */
-    --chart-3: #6B8E23;                       /* Palm Green */
-    --chart-4: #F4D03F;                       /* Golden Yellow */
-    --chart-5: #1F5F5B;                       /* Deep Teal */
-    --radius: 0.625rem;
+    --chart-1: #1E40AF;                       /* Navy Blue */
+    --chart-2: #3B82F6;                       /* Sky Blue */
+    --chart-3: #22C55E;                       /* Green */
+    --chart-4: #F59E0B;                       /* Amber */
+    --chart-5: #8B5CF6;                       /* Purple */
+    --radius: 0.5rem;
 
-    /* Sidebar - Deep Ocean Theme */
-    --sidebar: #1F5F5B;                       /* Deep Teal - main sidebar */
-    --sidebar-foreground: #F5F2E8;            /* Cream text */
-    --sidebar-primary: #E55A2B;               /* Sunset Orange */
+    /* Sidebar - Professional Navy */
+    --sidebar: #1E293B;                       /* Dark Slate */
+    --sidebar-foreground: #F8FAFC;            /* Almost White */
+    --sidebar-primary: #3B82F6;               /* Sky Blue */
     --sidebar-primary-foreground: #FFFFFF;    /* White text */
-    --sidebar-accent: #2E86AB;                /* Ocean Blue */
+    --sidebar-accent: #1E40AF;                /* Navy Blue */
     --sidebar-accent-foreground: #FFFFFF;     /* White text */
-    --sidebar-border: #164C48;                /* Darker teal */
-    --sidebar-ring: #E55A2B;                  /* Sunset Orange focus */
+    --sidebar-border: #334155;                /* Slightly lighter slate */
+    --sidebar-ring: #3B82F6;                  /* Sky Blue focus */
 }
 
 .dark {
-    /* Dark mode - Deep ocean night theme */
-    --background: #1A1A1A;                    /* Deep dark */
-    --foreground: #F5F2E8;                    /* Cream text */
-    --card: #2A2A2A;                          /* Dark card */
-    --card-foreground: #F5F2E8;               /* Cream text */
-    --popover: #1A1A1A;                       /* Deep dark */
-    --popover-foreground: #F5F2E8;            /* Cream text */
+    /* Dark mode - Easy on the eyes */
+    --background: #0F172A;                    /* Very Dark Blue */
+    --foreground: #F8FAFC;                    /* Almost White */
+    --card: #1E293B;                          /* Dark Slate */
+    --card-foreground: #F8FAFC;               /* Almost White */
+    --popover: #1E293B;                       /* Dark Slate */
+    --popover-foreground: #F8FAFC;            /* Almost White */
 
-    --primary: #F06B3B;                       /* Brighter sunset orange */
-    --primary-foreground: #1A1A1A;            /* Dark text */
+    --primary: #60A5FA;                       /* Lighter Blue */
+    --primary-foreground: #0F172A;            /* Very Dark */
 
-    --secondary: #2A7873;                     /* Lighter teal */
-    --secondary-foreground: #F5F2E8;          /* Cream text */
+    --secondary: #94A3B8;                     /* Light Steel */
+    --secondary-foreground: #0F172A;          /* Very Dark */
 
-    --muted: #3A3A3A;                         /* Dark muted */
-    --muted-foreground: #B0B0B0;              /* Light gray */
+    --muted: #334155;                         /* Muted Slate */
+    --muted-foreground: #CBD5E1;              /* Light Gray */
 
-    --accent: #2E86AB;                        /* Ocean Blue */
-    --accent-foreground: #F5F2E8;             /* Cream text */
+    --accent: #60A5FA;                        /* Lighter Blue */
+    --accent-foreground: #0F172A;             /* Very Dark */
 
-    --border: #3A3A3A;                        /* Dark border */
-    --input: #2A2A2A;                         /* Dark input background */
-    --ring: #F06B3B;                          /* Bright sunset orange focus */
+    --border: #334155;                        /* Muted Slate */
+    --input: #1E293B;                         /* Dark Slate */
+    --ring: #60A5FA;                          /* Lighter Blue focus */
 
-    --destructive: #FF4757;                   /* Bright red */
+    --destructive: #EF4444;                   /* Bright Red */
     --destructive-foreground: #FFFFFF;        /* White text */
 
-    --chart-1: #F06B3B;                       /* Brighter sunset */
-    --chart-2: #2E86AB;                       /* Ocean Blue */
-    --chart-3: #6B8E23;                       /* Palm Green */
-    --chart-4: #F4D03F;                       /* Golden Yellow */
-    --chart-5: #2A7873;                       /* Lighter Teal */
+    --chart-1: #60A5FA;                       /* Lighter Blue */
+    --chart-2: #3B82F6;                       /* Sky Blue */
+    --chart-3: #34D399;                       /* Light Green */
+    --chart-4: #FBBF24;                       /* Light Amber */
+    --chart-5: #A78BFA;                       /* Light Purple */
 
     /* Dark sidebar */
-    --sidebar: #0F1419;                       /* Very dark teal */
-    --sidebar-foreground: #F5F2E8;            /* Cream text */
-    --sidebar-primary: #F06B3B;               /* Bright sunset orange */
-    --sidebar-primary-foreground: #0F1419;    /* Very dark text */
-    --sidebar-accent: #2E86AB;                /* Ocean Blue */
-    --sidebar-accent-foreground: #F5F2E8;     /* Cream text */
-    --sidebar-border: #2A2A2A;                /* Dark border */
-    --sidebar-ring: #F06B3B;                  /* Bright sunset orange focus */
+    --sidebar: #0F172A;                       /* Very Dark Blue */
+    --sidebar-foreground: #F8FAFC;            /* Almost White */
+    --sidebar-primary: #60A5FA;               /* Lighter Blue */
+    --sidebar-primary-foreground: #0F172A;    /* Very Dark */
+    --sidebar-accent: #3B82F6;                /* Sky Blue */
+    --sidebar-accent-foreground: #F8FAFC;     /* Almost White */
+    --sidebar-border: #1E293B;                /* Dark Slate */
+    --sidebar-ring: #60A5FA;                  /* Lighter Blue focus */
 }
 
 @layer base {

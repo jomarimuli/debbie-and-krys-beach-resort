@@ -46,6 +46,10 @@ export default function Welcome() {
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxImages, setLightboxImages] = useState<string[]>([]);
     const [lightboxIndex, setLightboxIndex] = useState(0);
+    const [galleryImageErrors, setGalleryImageErrors] = useState<Set<number>>(new Set());
+    const handleGalleryImageError = (galleryId: number) => {
+        setGalleryImageErrors(prev => new Set(prev).add(galleryId));
+    };
 
     const openLightbox = (images: string[], index: number = 0) => {
         setLightboxImages(images);
@@ -90,21 +94,21 @@ export default function Welcome() {
                     rel="stylesheet"
                 />
             </Head>
-            <div className="flex min-h-screen flex-col items-center bg-[#F5F2E8] px-4 py-6 text-[#2C3E50] sm:px-6 lg:px-8">
+            <div className="flex min-h-screen flex-col items-center bg-background px-4 py-6 text-foreground sm:px-6 lg:px-8">
                 <header className="mb-6 w-full max-w-7xl">
                     <nav className="flex flex-wrap items-center justify-end gap-2 sm:gap-4">
                         {auth.user ? (
                             <>
                                 <Link
                                     href={dashboard()}
-                                    className="inline-flex items-center justify-center px-3 py-1.5 text-xs sm:px-5 sm:text-sm font-medium text-white bg-[#E55A2B] border border-[#E55A2B] rounded-md hover:bg-[#D14D24] hover:border-[#D14D24] active:bg-[#B8421F] transition-all duration-200 shadow-md hover:shadow-lg"
+                                    className="inline-flex items-center justify-center px-3 py-1.5 text-xs sm:px-5 sm:text-sm font-medium text-primary-foreground bg-primary border border-primary rounded-md hover:bg-primary/90 active:bg-primary/80 transition-all duration-200 shadow-md hover:shadow-lg"
                                 >
                                     Dashboard
                                 </Link>
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
                                         <button
-                                            className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs sm:px-5 sm:text-sm font-medium text-white bg-[#E55A2B] border border-[#E55A2B] rounded-md hover:bg-[#D14D24] hover:border-[#D14D24] active:bg-[#B8421F] transition-all duration-200 shadow-md hover:shadow-lg"
+                                            className="inline-flex items-center justify-center gap-2 px-3 py-1.5 text-xs sm:px-5 sm:text-sm font-medium text-primary-foreground bg-primary border border-primary rounded-md hover:bg-primary/90 active:bg-primary/80 transition-all duration-200 shadow-md hover:shadow-lg"
                                         >
                                             <span className="max-w-20 sm:max-w-none truncate">{auth.user.name}</span>
                                             <ChevronDown className="h-4 w-4 shrink-0" />
@@ -128,13 +132,13 @@ export default function Welcome() {
                             <>
                                 <Link
                                     href={login()}
-                                    className="inline-flex items-center justify-center px-3 py-1.5 text-xs sm:px-5 sm:text-sm font-medium text-white bg-[#E55A2B] border border-[#E55A2B] rounded-md hover:bg-[#D14D24] hover:border-[#D14D24] active:bg-[#B8421F] transition-all duration-200 shadow-md hover:shadow-lg"
+                                    className="inline-flex items-center justify-center px-3 py-1.5 text-xs sm:px-5 sm:text-sm font-medium text-primary-foreground bg-primary border border-primary rounded-md hover:bg-primary/90 active:bg-primary/80 transition-all duration-200 shadow-md hover:shadow-lg"
                                 >
                                     Login
                                 </Link>
                                 <Link
                                     href={register()}
-                                    className="inline-block rounded-sm border border-[#D4B896] px-3 py-1.5 text-xs sm:px-5 sm:text-sm leading-normal text-[#1F5F5B] hover:border-[#C3A277] hover:bg-[#EBE6D8] transition-all duration-200"
+                                    className="inline-block rounded-sm border border-border px-3 py-1.5 text-xs sm:px-5 sm:text-sm leading-normal text-secondary hover:border-secondary/70 hover:bg-muted transition-all duration-200"
                                 >
                                     Register
                                 </Link>
@@ -147,76 +151,76 @@ export default function Welcome() {
                     <main className="flex w-full max-w-7xl flex-col space-y-12 sm:space-y-16">
                         {/* Hero Section */}
                         <section className="flex flex-col-reverse lg:flex-row lg:items-center lg:gap-12">
-                            <div className="relative -mb-px aspect-335/376 w-full shrink-0 overflow-hidden rounded-t-lg bg-[#EBE6D8] sm:aspect-4/3 lg:mb-0 lg:aspect-4/5 lg:w-[480px] lg:rounded-lg lg:shadow-2xl">
+                            <div className="relative -mb-px aspect-335/376 w-full shrink-0 overflow-hidden rounded-t-lg bg-muted sm:aspect-4/3 lg:mb-0 lg:aspect-4/5 lg:w-[480px] lg:rounded-lg lg:shadow-2xl">
                                 <img
                                     src="/dk_bg.jpeg"
                                     alt="Debbie & Krys Beach Resort"
                                     className="w-full h-full object-cover transition-all duration-750"
                                 />
-                                <div className="absolute inset-0 rounded-t-lg shadow-[inset_0px_0px_0px_1px_rgba(212,184,150,0.3)] lg:rounded-lg" />
+                                <div className="absolute inset-0 rounded-t-lg shadow-[inset_0px_0px_0px_1px_rgba(226,232,240,0.3)] lg:rounded-lg" />
                             </div>
 
                             <div className="flex flex-col items-center lg:items-start lg:flex-1 text-center lg:text-left space-y-6 sm:space-y-8 py-8 sm:py-12 lg:py-0">
                                 <div className="space-y-4 sm:space-y-6">
                                     <h1
-                                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-[#2C3E50] leading-tight"
+                                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-foreground leading-tight"
                                         style={{ fontFamily: 'Playfair Display, serif' }}
                                     >
                                         Debbie & Krys
                                     </h1>
                                     <h2
-                                        className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-[#2C3E50] tracking-wide leading-tight"
+                                        className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground tracking-wide leading-tight"
                                         style={{ fontFamily: 'Playfair Display, serif' }}
                                     >
                                         Beach Resort
                                     </h2>
                                 </div>
 
-                                <div className="w-24 h-px bg-linear-to-r from-[#E55A2B] to-[#F06B3B]"></div>
+                                <div className="w-24 h-px bg-linear-to-r from-primary to-accent"></div>
 
                                 <div
-                                    className="space-y-2 sm:space-y-3 text-sm sm:text-base lg:text-lg text-[#64748B] font-medium"
+                                    className="space-y-2 sm:space-y-3 text-sm sm:text-base lg:text-lg text-muted-foreground font-medium"
                                     style={{ fontFamily: 'Instrument Sans, sans-serif' }}
                                 >
                                     <div className="flex items-center gap-2 sm:gap-3">
-                                        <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
+                                        <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
                                         <a
                                             href="https://maps.app.goo.gl/Fvkn2SNiKCa1pXsp8"
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="hover:text-[#E55A2B] transition-colors duration-200 cursor-pointer text-left"
+                                            className="hover:text-primary transition-colors duration-200 cursor-pointer text-left"
                                             title="Open in Google Maps"
                                         >
                                             Sampaguita, Bauan, Batangas, Philippines
                                         </a>
                                     </div>
                                     <div className="flex items-center gap-2 sm:gap-3">
-                                        <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
+                                        <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
                                         <a
                                             href="#"
-                                            className="font-mono tracking-wider hover:text-[#E55A2B] transition-colors duration-200 cursor-pointer"
+                                            className="font-mono tracking-wider hover:text-primary transition-colors duration-200 cursor-pointer"
                                             title="Click to call"
                                         >
                                             0927 821 0836
                                         </a>
                                     </div>
                                     <div className="flex items-center gap-2 sm:gap-3">
-                                        <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
+                                        <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
                                         <a
                                             href="#"
-                                            className="break-all hover:text-[#E55A2B] transition-colors duration-200 cursor-pointer"
+                                            className="break-all hover:text-primary transition-colors duration-200 cursor-pointer"
                                             title="Click to send email"
                                         >
                                             debbiekrysb@gmail.com
                                         </a>
                                     </div>
                                     <div className="flex items-center gap-2 sm:gap-3">
-                                        <Facebook className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
+                                        <Facebook className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
                                         <a
                                             href="https://www.facebook.com/DebbieAndKrysBeachResort/"
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="hover:text-[#E55A2B] transition-colors duration-200 cursor-pointer"
+                                            className="hover:text-primary transition-colors duration-200 cursor-pointer"
                                             title="Visit our Facebook page"
                                         >
                                             Debbie & Krys Beach Resort
@@ -227,7 +231,7 @@ export default function Welcome() {
                                 <div className="flex flex-col sm:flex-row gap-4 pt-2 sm:pt-4 w-full sm:w-auto">
                                     <Link
                                         href="/login"
-                                        className="inline-flex items-center justify-center px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-white bg-[#E55A2B] border border-[#E55A2B] rounded-md hover:bg-[#D14D24] hover:border-[#D14D24] active:bg-[#B8421F] transition-all duration-200 shadow-md hover:shadow-lg"
+                                        className="inline-flex items-center justify-center px-6 sm:px-8 py-2.5 sm:py-3 text-sm sm:text-base font-medium text-primary-foreground bg-primary border border-primary rounded-md hover:bg-primary/90 active:bg-primary/80 transition-all duration-200 shadow-md hover:shadow-lg"
                                     >
                                         Book Now
                                     </Link>
@@ -251,16 +255,16 @@ export default function Welcome() {
                                         <Megaphone className="h-5 w-5 sm:h-6 sm:w-6 shrink-0 text-secondary mt-0.5" />
                                         <div className="flex-1 pr-6">
                                             <h3
-                                                className="text-base sm:text-lg font-bold text-[#2C3E50] mb-2"
+                                                className="text-base sm:text-lg font-bold text-foreground mb-2"
                                                 style={{ fontFamily: 'Instrument Sans, sans-serif' }}
                                             >
                                                 {latestAnnouncement.title}
                                             </h3>
-                                            <p className="text-sm sm:text-base text-[#64748B] whitespace-pre-wrap">
+                                            <p className="text-sm sm:text-base text-muted-foreground whitespace-pre-wrap">
                                                 {latestAnnouncement.content}
                                             </p>
                                             {latestAnnouncement.published_at && (
-                                                <p className="text-xs text-[#64748B] mt-3">
+                                                <p className="text-xs text-muted-foreground mt-3">
                                                     {format(new Date(latestAnnouncement.published_at), 'MMMM dd, yyyy')}
                                                 </p>
                                             )}
@@ -270,16 +274,16 @@ export default function Welcome() {
                             </section>
                         ) : !latestAnnouncement ? (
                             <section>
-                                <Card className="border-[#D4B896]">
+                                <Card className="border-border">
                                     <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12">
-                                        <Megaphone className="w-10 h-10 sm:w-12 sm:h-12 text-[#D4B896] mb-3" />
+                                        <Megaphone className="w-10 h-10 sm:w-12 sm:h-12 text-muted mb-3" />
                                         <h3
-                                            className="text-base sm:text-lg font-semibold text-[#2C3E50] mb-1"
+                                            className="text-base sm:text-lg font-semibold text-foreground mb-1"
                                             style={{ fontFamily: 'Instrument Sans, sans-serif' }}
                                         >
                                             No Announcements
                                         </h3>
-                                        <p className="text-[#64748B] text-center text-sm">
+                                        <p className="text-muted-foreground text-center text-sm">
                                             Stay tuned for updates and important information.
                                         </p>
                                     </CardContent>
@@ -291,12 +295,12 @@ export default function Welcome() {
                         <section id="accommodation" className="scroll-mt-8">
                             <div className="text-center mb-6 sm:mb-8">
                                 <h2
-                                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#2C3E50] mb-3"
+                                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3"
                                     style={{ fontFamily: 'Playfair Display, serif' }}
                                 >
                                     Accommodation
                                 </h2>
-                                <div className="w-16 h-px bg-linear-to-r from-[#E55A2B] to-[#F06B3B] mx-auto"></div>
+                                <div className="w-16 h-px bg-linear-to-r from-primary to-accent mx-auto"></div>
                             </div>
 
                             {accommodations.length > 0 ? (
@@ -310,10 +314,10 @@ export default function Welcome() {
                                     <CarouselContent className="-ml-2 sm:-ml-4">
                                         {accommodations.map((accommodation) => (
                                             <CarouselItem key={accommodation.id} className="pl-2 sm:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
-                                                <Card className="overflow-hidden border-[#D4B896] hover:shadow-lg transition-shadow duration-300">
+                                                <Card className="overflow-hidden border-border hover:shadow-lg transition-shadow duration-300">
                                                     <CardContent className="p-0">
                                                         <div
-                                                            className="aspect-4/3 relative overflow-hidden bg-[#EBE6D8] cursor-pointer"
+                                                            className="aspect-4/3 relative overflow-hidden bg-muted cursor-pointer"
                                                             onClick={() => accommodation.image_urls.length > 0 && openLightbox(accommodation.image_urls, 0)}
                                                         >
                                                             {accommodation.first_image_url ? (
@@ -324,20 +328,20 @@ export default function Welcome() {
                                                                 />
                                                             ) : (
                                                                 <div className="w-full h-full flex items-center justify-center">
-                                                                    <Hotel className="w-12 h-12 sm:w-16 sm:h-16 text-[#D4B896]" />
+                                                                    <Hotel className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground" />
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <div className="p-4 sm:p-5 bg-white space-y-3">
+                                                        <div className="p-4 sm:p-5 bg-card space-y-3">
                                                             <div>
                                                                 <h3
-                                                                    className="font-bold text-[#2C3E50] text-base sm:text-lg mb-1"
+                                                                    className="font-bold text-card-foreground text-base sm:text-lg mb-1"
                                                                     style={{ fontFamily: 'Instrument Sans, sans-serif' }}
                                                                 >
                                                                     {accommodation.name}
                                                                 </h3>
                                                                 {accommodation.description && (
-                                                                    <p className="text-xs sm:text-sm text-[#64748B] line-clamp-2">
+                                                                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                                                                         {accommodation.description}
                                                                     </p>
                                                                 )}
@@ -359,8 +363,8 @@ export default function Welcome() {
 
                                                             <div className="flex items-center justify-between pt-2">
                                                                 <div>
-                                                                    <p className="text-xs text-[#64748B]">Starting from</p>
-                                                                    <p className="text-lg sm:text-xl font-bold text-[#E55A2B]">
+                                                                    <p className="text-xs text-muted-foreground">Starting from</p>
+                                                                    <p className="text-lg sm:text-xl font-bold text-primary">
                                                                         ₱{accommodation.rates && accommodation.rates.length > 0
                                                                             ? Math.min(...accommodation.rates.map(r => parseFloat(r.rate))).toLocaleString()
                                                                             : '0'}
@@ -368,7 +372,7 @@ export default function Welcome() {
                                                                 </div>
                                                                 <Dialog>
                                                                     <DialogTrigger asChild>
-                                                                        <Button size="sm" variant="outline" className="border-[#D4B896] text-[#1F5F5B] hover:bg-[#EBE6D8] text-xs sm:text-sm">
+                                                                        <Button size="sm" variant="outline" className="border-border text-secondary hover:bg-muted text-xs sm:text-sm">
                                                                             <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 sm:mr-1.5" />
                                                                             <span className="hidden xs:inline">View Details</span>
                                                                             <span className="xs:hidden">Details</span>
@@ -376,7 +380,7 @@ export default function Welcome() {
                                                                     </DialogTrigger>
                                                                     <DialogContent className="max-w-xs sm:max-w-md md:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto">
                                                                         <DialogHeader>
-                                                                            <DialogTitle className="text-xl sm:text-2xl font-bold text-[#2C3E50] pr-8" style={{ fontFamily: 'Playfair Display, serif' }}>
+                                                                            <DialogTitle className="text-xl sm:text-2xl font-bold text-foreground pr-8" style={{ fontFamily: 'Playfair Display, serif' }}>
                                                                                 {accommodation.name}
                                                                             </DialogTitle>
                                                                         </DialogHeader>
@@ -406,8 +410,8 @@ export default function Welcome() {
 
                                                                             <div className="space-y-4">
                                                                                 <div>
-                                                                                    <h4 className="font-semibold text-[#2C3E50] mb-2 text-sm sm:text-base">Description</h4>
-                                                                                    <p className="text-[#64748B] text-sm sm:text-base">{accommodation.description || 'No description available.'}</p>
+                                                                                    <h4 className="font-semibold text-foreground mb-2 text-sm sm:text-base">Description</h4>
+                                                                                    <p className="text-muted-foreground text-sm sm:text-base">{accommodation.description || 'No description available.'}</p>
                                                                                 </div>
 
                                                                                 <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -423,22 +427,22 @@ export default function Welcome() {
                                                                                 </div>
 
                                                                                 <div>
-                                                                                    <h4 className="font-semibold text-[#2C3E50] mb-3 text-sm sm:text-base">Rates</h4>
+                                                                                    <h4 className="font-semibold text-foreground mb-3 text-sm sm:text-base">Rates</h4>
                                                                                     <div className="space-y-2">
                                                                                         {accommodation.rates && accommodation.rates.length > 0 ? (
                                                                                             accommodation.rates.map((rate, index) => (
-                                                                                                <div key={index} className="flex justify-between items-center p-2 sm:p-3 bg-[#F5F2E8] rounded-lg">
-                                                                                                    <span className="text-[#64748B] text-xs sm:text-sm capitalize">
+                                                                                                <div key={index} className="flex justify-between items-center p-2 sm:p-3 bg-muted rounded-lg">
+                                                                                                    <span className="text-muted-foreground text-xs sm:text-sm capitalize">
                                                                                                         {rate.booking_type.replace('_', ' ')}
                                                                                                     </span>
                                                                                                     <span className="text-xs text-muted-foreground">
                                                                                                         {rate.booking_type === 'overnight' ? '6:00 A.M. - 6:00 A.M.' : '6:00 A.M. - 6:00 P.M.'}
                                                                                                     </span>
-                                                                                                    <span className="font-bold text-[#E55A2B] text-sm sm:text-base">₱{parseFloat(rate.rate).toLocaleString()}</span>
+                                                                                                    <span className="font-bold text-primary text-sm sm:text-base">₱{parseFloat(rate.rate).toLocaleString()}</span>
                                                                                                 </div>
                                                                                             ))
                                                                                         ) : (
-                                                                                            <p className="text-[#64748B] text-sm">No rates available</p>
+                                                                                            <p className="text-muted-foreground text-sm">No rates available</p>
                                                                                         )}
                                                                                     </div>
                                                                                 </div>
@@ -453,20 +457,20 @@ export default function Welcome() {
                                             </CarouselItem>
                                         ))}
                                     </CarouselContent>
-                                    <CarouselPrevious className="hidden sm:flex -left-6 md:-left-12 bg-[#E55A2B] text-white hover:bg-[#D14D24] border-none" />
-                                    <CarouselNext className="hidden sm:flex -right-6 md:-right-12 bg-[#E55A2B] text-white hover:bg-[#D14D24] border-none" />
+                                    <CarouselPrevious className="hidden sm:flex -left-6 md:-left-12 bg-primary text-primary-foreground hover:bg-primary/90 border-none" />
+                                    <CarouselNext className="hidden sm:flex -right-6 md:-right-12 bg-primary text-primary-foreground hover:bg-primary/90 border-none" />
                                 </Carousel>
                             ) : (
-                                <Card className="border-[#D4B896]">
+                                <Card className="border-border">
                                     <CardContent className="flex flex-col items-center justify-center py-12 sm:py-16">
-                                        <Hotel className="w-12 h-12 sm:w-16 sm:h-16 text-[#D4B896] mb-4" />
+                                        <Hotel className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mb-4" />
                                         <h3
-                                            className="text-lg sm:text-xl font-semibold text-[#2C3E50] mb-2"
+                                            className="text-lg sm:text-xl font-semibold text-foreground mb-2"
                                             style={{ fontFamily: 'Instrument Sans, sans-serif' }}
                                         >
                                             No Accommodation Available
                                         </h3>
-                                        <p className="text-[#64748B] text-center text-sm sm:text-base">
+                                        <p className="text-muted-foreground text-center text-sm sm:text-base">
                                             Check back soon for our available accommodations.
                                         </p>
                                     </CardContent>
@@ -478,12 +482,12 @@ export default function Welcome() {
                         <section id="gallery" className="scroll-mt-8">
                             <div className="text-center mb-6 sm:mb-8">
                                 <h2
-                                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#2C3E50] mb-3"
+                                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3"
                                     style={{ fontFamily: 'Playfair Display, serif' }}
                                 >
                                     Gallery
                                 </h2>
-                                <div className="w-16 h-px bg-linear-to-r from-[#E55A2B] to-[#F06B3B] mx-auto"></div>
+                                <div className="w-16 h-px bg-linear-to-r from-primary to-accent mx-auto"></div>
                             </div>
 
                             {galleries.length > 0 ? (
@@ -501,27 +505,34 @@ export default function Welcome() {
                                                 className="basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4"
                                             >
                                                 <div className="p-2">
-                                                    <Card className="overflow-hidden border-[#D4B896]">
+                                                    <Card className="overflow-hidden border-border">
                                                         <CardContent className="p-0">
                                                             <div
-                                                                className="aspect-square relative overflow-hidden cursor-pointer"
-                                                                onClick={() => openLightbox([gallery.image_url], 0)}
+                                                                className="aspect-square relative overflow-hidden bg-muted cursor-pointer"
+                                                                onClick={() => gallery.image_url && !galleryImageErrors.has(gallery.id) && openLightbox([gallery.image_url], 0)}
                                                             >
-                                                                <img
-                                                                    src={gallery.image_url}
-                                                                    alt={gallery.title}
-                                                                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
-                                                                />
+                                                                {gallery.image_url && !galleryImageErrors.has(gallery.id) ? (
+                                                                    <img
+                                                                        src={gallery.image_url}
+                                                                        alt={gallery.title}
+                                                                        className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                                                                        onError={() => handleGalleryImageError(gallery.id)}
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center">
+                                                                        <ImageIcon className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground" />
+                                                                    </div>
+                                                                )}
                                                             </div>
-                                                            <div className="p-3 sm:p-4 bg-white">
+                                                            <div className="p-3 sm:p-4 bg-card">
                                                                 <h3
-                                                                    className="font-semibold text-[#2C3E50] text-sm sm:text-base mb-1"
+                                                                    className="font-semibold text-card-foreground text-sm sm:text-base mb-1"
                                                                     style={{ fontFamily: 'Instrument Sans, sans-serif' }}
                                                                 >
                                                                     {gallery.title}
                                                                 </h3>
                                                                 {gallery.description && (
-                                                                    <p className="text-xs sm:text-sm text-[#64748B] line-clamp-2">
+                                                                    <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                                                                         {gallery.description}
                                                                     </p>
                                                                 )}
@@ -532,20 +543,20 @@ export default function Welcome() {
                                             </CarouselItem>
                                         ))}
                                     </CarouselContent>
-                                    <CarouselPrevious className="border-[#D4B896] text-[#2C3E50] hover:bg-[#EBE6D8]" />
-                                    <CarouselNext className="border-[#D4B896] text-[#2C3E50] hover:bg-[#EBE6D8]" />
+                                    <CarouselPrevious className="border-border text-foreground hover:bg-muted" />
+                                    <CarouselNext className="border-border text-foreground hover:bg-muted" />
                                 </Carousel>
                             ) : (
-                                <Card className="border-[#D4B896]">
+                                <Card className="border-border">
                                     <CardContent className="flex flex-col items-center justify-center py-12 sm:py-16">
-                                        <ImageIcon className="w-12 h-12 sm:w-16 sm:h-16 text-[#D4B896] mb-4" />
+                                        <ImageIcon className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mb-4" />
                                         <h3
-                                            className="text-lg sm:text-xl font-semibold text-[#2C3E50] mb-2"
+                                            className="text-lg sm:text-xl font-semibold text-foreground mb-2"
                                             style={{ fontFamily: 'Instrument Sans, sans-serif' }}
                                         >
                                             No Gallery Images Yet
                                         </h3>
-                                        <p className="text-[#64748B] text-center text-sm sm:text-base">
+                                        <p className="text-muted-foreground text-center text-sm sm:text-base">
                                             We're currently updating our gallery. Check back soon!
                                         </p>
                                     </CardContent>
@@ -557,12 +568,12 @@ export default function Welcome() {
                         <section className="pb-12 sm:pb-16">
                             <div className="text-center mb-6 sm:mb-8">
                                 <h2
-                                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-[#2C3E50] mb-3"
+                                    className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-3"
                                     style={{ fontFamily: 'Playfair Display, serif' }}
                                 >
                                     Feedbacks
                                 </h2>
-                                <div className="w-16 h-px bg-linear-to-r from-[#E55A2B] to-[#F06B3B] mx-auto"></div>
+                                <div className="w-16 h-px bg-linear-to-r from-primary to-accent mx-auto"></div>
                             </div>
 
                             {feedbacks.length > 0 ? (
@@ -570,24 +581,24 @@ export default function Welcome() {
                                     {feedbacks.map((feedback) => (
                                         <Card
                                             key={feedback.id}
-                                            className="border-[#D4B896] hover:shadow-lg transition-shadow duration-300"
+                                            className="border-border hover:shadow-lg transition-shadow duration-300"
                                         >
                                             <CardContent className="p-4 sm:p-6">
-                                                <Quote className="w-6 h-6 sm:w-8 sm:h-8 text-[#E55A2B] opacity-50 mb-3" />
+                                                <Quote className="w-6 h-6 sm:w-8 sm:h-8 text-primary opacity-50 mb-3" />
                                                 <div className="mb-3">{renderStars(feedback.rating)}</div>
                                                 {feedback.comment && (
-                                                    <p className="text-[#64748B] text-xs sm:text-sm mb-4 line-clamp-4 italic">
+                                                    <p className="text-muted-foreground text-xs sm:text-sm mb-4 line-clamp-4 italic">
                                                         "{feedback.comment}"
                                                     </p>
                                                 )}
-                                                <div className="border-t border-[#D4B896] pt-3">
+                                                <div className="border-t border-border pt-3">
                                                     <p
-                                                        className="font-semibold text-[#2C3E50] text-sm sm:text-base"
+                                                        className="font-semibold text-foreground text-sm sm:text-base"
                                                         style={{ fontFamily: 'Instrument Sans, sans-serif' }}
                                                     >
                                                         {feedback.guest_name}
                                                     </p>
-                                                    <p className="text-xs text-[#64748B]">
+                                                    <p className="text-xs text-muted-foreground">
                                                         {format(new Date(feedback.created_at), 'MMMM dd, yyyy')}
                                                     </p>
                                                 </div>
@@ -596,16 +607,16 @@ export default function Welcome() {
                                     ))}
                                 </div>
                             ) : (
-                                <Card className="border-[#D4B896]">
+                                <Card className="border-border">
                                     <CardContent className="flex flex-col items-center justify-center py-12 sm:py-16">
-                                        <MessageSquare className="w-12 h-12 sm:w-16 sm:h-16 text-[#D4B896] mb-4" />
+                                        <MessageSquare className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mb-4" />
                                         <h3
-                                            className="text-lg sm:text-xl font-semibold text-[#2C3E50] mb-2"
+                                            className="text-lg sm:text-xl font-semibold text-foreground mb-2"
                                             style={{ fontFamily: 'Instrument Sans, sans-serif' }}
                                         >
                                             No Reviews Yet
                                         </h3>
-                                        <p className="text-[#64748B] text-center text-sm sm:text-base">
+                                        <p className="text-muted-foreground text-center text-sm sm:text-base">
                                             Be the first to share your experience at our resort!
                                         </p>
                                     </CardContent>
@@ -619,7 +630,7 @@ export default function Welcome() {
                 {showScrollTop && (
                     <button
                         onClick={scrollToTop}
-                        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 p-2.5 sm:p-3 bg-[#E55A2B] text-white rounded-full shadow-lg hover:bg-[#D14D24] transition-all duration-200 hover:shadow-xl"
+                        className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 p-2.5 sm:p-3 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-all duration-200 hover:shadow-xl"
                         aria-label="Scroll to top"
                     >
                         <ArrowUp className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -628,18 +639,18 @@ export default function Welcome() {
             </div>
 
             {/* Footer */}
-            <footer className="border-t border-[#D4B896] bg-[#EBE6D8]">
+            <footer className="border-t border-border bg-muted">
                 <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
                     <div className="grid grid-cols-1 gap-6 sm:gap-8 lg:grid-cols-3">
                         {/* Brand */}
                         <div className="space-y-3 sm:space-y-4">
                             <h3
-                                className="text-xl sm:text-2xl font-bold text-[#2C3E50]"
+                                className="text-xl sm:text-2xl font-bold text-foreground"
                                 style={{ fontFamily: 'Playfair Display, serif' }}
                             >
                                 Debbie & Krys Beach Resort
                             </h3>
-                            <p className="text-xs sm:text-sm text-[#64748B]">
+                            <p className="text-xs sm:text-sm text-muted-foreground">
                                 Your perfect getaway destination. Experience the beauty of the beach with comfort and hospitality.
                             </p>
                         </div>
@@ -647,48 +658,48 @@ export default function Welcome() {
                         {/* Contact Information */}
                         <div className="space-y-3 sm:space-y-4">
                             <h4
-                                className="text-base sm:text-lg font-semibold text-[#2C3E50]"
+                                className="text-base sm:text-lg font-semibold text-foreground"
                                 style={{ fontFamily: 'Instrument Sans, sans-serif' }}
                             >
                                 Contact Us
                             </h4>
                             <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                                 <div className="flex items-start gap-2 sm:gap-3">
-                                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0 mt-0.5" />
+                                    <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0 mt-0.5" />
                                     <a
                                         href="https://maps.app.goo.gl/Fvkn2SNiKCa1pXsp8"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200"
+                                        className="text-muted-foreground hover:text-primary transition-colors duration-200"
                                     >
                                         Sampaguita, Bauan, Batangas, Philippines
                                     </a>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
+                                    <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
                                     <a
                                         href="#"
-                                        className="text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200 font-mono"
+                                        className="text-muted-foreground hover:text-primary transition-colors duration-200 font-mono"
                                     >
                                         0927 821 0836
                                     </a>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
+                                    <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
                                     <a
                                         href="#"
-                                        className="text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200 break-all"
+                                        className="text-muted-foreground hover:text-primary transition-colors duration-200 break-all"
                                     >
                                         debbiekrysb@gmail.com
                                     </a>
                                 </div>
                                 <div className="flex items-center gap-2 sm:gap-3">
-                                    <Facebook className="w-4 h-4 sm:w-5 sm:h-5 text-[#E55A2B] shrink-0" />
+                                    <Facebook className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0" />
                                     <a
                                         href="https://www.facebook.com/DebbieAndKrysBeachResort/"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200"
+                                        className="text-muted-foreground hover:text-primary transition-colors duration-200"
                                     >
                                         Debbie & Krys Beach Resort
                                     </a>
@@ -699,7 +710,7 @@ export default function Welcome() {
                         {/* Quick Links */}
                         <div className="space-y-3 sm:space-y-4">
                             <h4
-                                className="text-base sm:text-lg font-semibold text-[#2C3E50]"
+                                className="text-base sm:text-lg font-semibold text-foreground"
                                 style={{ fontFamily: 'Instrument Sans, sans-serif' }}
                             >
                                 Quick Links
@@ -707,26 +718,26 @@ export default function Welcome() {
                             <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
                                 <Link
                                     href="/login"
-                                    className="block text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200"
+                                    className="block text-muted-foreground hover:text-primary transition-colors duration-200"
                                 >
                                     Book Now
                                 </Link>
                                 <a
                                     href="#accommodation"
-                                    className="block text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200"
+                                    className="block text-muted-foreground hover:text-primary transition-colors duration-200"
                                 >
                                     Accommodation
                                 </a>
                                 <a
                                     href="#gallery"
-                                    className="block text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200"
+                                    className="block text-muted-foreground hover:text-primary transition-colors duration-200"
                                 >
                                     Gallery
                                 </a>
                                 {auth.user ? (
                                     <Link
                                         href={dashboard()}
-                                        className="block text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200"
+                                        className="block text-muted-foreground hover:text-primary transition-colors duration-200"
                                     >
                                         Dashboard
                                     </Link>
@@ -734,13 +745,13 @@ export default function Welcome() {
                                     <>
                                         <Link
                                             href={login()}
-                                            className="block text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200"
+                                            className="block text-muted-foreground hover:text-primary transition-colors duration-200"
                                         >
                                             Login
                                         </Link>
                                         <Link
                                             href={register()}
-                                            className="block text-[#64748B] hover:text-[#E55A2B] transition-colors duration-200"
+                                            className="block text-muted-foreground hover:text-primary transition-colors duration-200"
                                         >
                                             Register
                                         </Link>
@@ -751,8 +762,8 @@ export default function Welcome() {
                     </div>
 
                     {/* Bottom Bar */}
-                    <div className="mt-6 sm:mt-8 border-t border-[#D4B896] pt-6 sm:pt-8 text-center">
-                        <p className="text-xs sm:text-sm text-[#64748B]">
+                    <div className="mt-6 sm:mt-8 border-t border-border pt-6 sm:pt-8 text-center">
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                             &copy; {new Date().getFullYear()} Debbie & Krys Beach Resort. All rights reserved.
                         </p>
                     </div>

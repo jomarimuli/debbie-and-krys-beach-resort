@@ -24,6 +24,7 @@ import { useAuth } from '@/hooks/use-auth';
 export default function Index({ galleries: galleryData }: GalleryIndexProps) {
     const { can, isAdmin, isStaff } = useAuth();
     const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [imageErrors, setImageErrors] = useState<Set<number>>(new Set());
 
     const handleDelete = () => {
         if (deleteId) {
@@ -31,6 +32,10 @@ export default function Index({ galleries: galleryData }: GalleryIndexProps) {
                 onSuccess: () => setDeleteId(null),
             });
         }
+    };
+
+    const handleImageError = (galleryId: number) => {
+        setImageErrors(prev => new Set(prev).add(galleryId));
     };
 
     return (
@@ -62,12 +67,19 @@ export default function Index({ galleries: galleryData }: GalleryIndexProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {galleryData.data.map((gallery: Gallery) => (
                         <Card key={gallery.id} className="overflow-hidden group">
-                            <div className="relative aspect-square overflow-hidden">
-                                <img
-                                    src={gallery.image_url}
-                                    alt={gallery.title}
-                                    className="w-full h-full object-cover"
-                                />
+                            <div className="relative aspect-square overflow-hidden bg-muted">
+                                {gallery.image_url && !imageErrors.has(gallery.id) ? (
+                                    <img
+                                        src={gallery.image_url}
+                                        alt={gallery.title}
+                                        className="w-full h-full object-cover"
+                                        onError={() => handleImageError(gallery.id)}
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <ImageIcon className="h-16 w-16 text-muted-foreground" />
+                                    </div>
+                                )}
                                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-2">
                                     {/* Everyone can view */}
                                     {can('gallery show') && (
